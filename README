@@ -1,0 +1,3 @@
+This is a special branch used for storing static content that you want to access from the badge.
+
+Stuff stored in here is explicitly excempt from the "no sideloading" rule for badge apps since it goes through the same approval process.
