@@ -75,14 +75,14 @@ class Database:
         self.flush()
 
 
-def get(key, default_value = None, *args):
-    with Database(*args) as db:
+def get(key, default_value = None, *args, **kwargs):
+    with Database(*args, **kwargs) as db:
         return db.get(key, default_value)
 
-def set(key, value, *args):
-    with Database(*args) as db:
+def set(key, value, *args, **kwargs):
+    with Database(*args, **kwargs) as db:
         return db.set(key, value)
 
-def delete(key, *args):
-    with Database(*args) as db:
+def delete(key, *args, **kwargs):
+    with Database(*args, **kwargs) as db:
         return db.delete(key)

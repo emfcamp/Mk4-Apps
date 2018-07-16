@@ -32,7 +32,7 @@ def menu():
     ugfx.clear()
 
 def name():
-    return database.get("homescreen.name", "Marek")
+    return database.get("homescreen.name", "bar")
 
 def mobile_strength():
     return 0.75

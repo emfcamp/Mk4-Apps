@@ -2,6 +2,7 @@ import pyb, os, micropython
 
 micropython.alloc_emergency_exception_buf(100)
 
+os.sync()
 root = os.listdir()
 
 def app(a):
@@ -9,12 +10,14 @@ def app(a):
         return a + "/main.py"
 
 def file(file, remove):
+    print(file)
     try:
+        a = None
         with open(file, 'r') as f:
             a = f.read().strip()
-            if remove:
-                os.remove(file)
-            return app(a)
+        if remove:
+            os.remove(file)
+        return app(a)
     except Exception as e:
         print(e)
 
