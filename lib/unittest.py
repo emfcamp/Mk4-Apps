@@ -1,3 +1,7 @@
+"""Base libarary for test cases"""
+
+___license___ = "MIT"
+
 import sys
 
 class SkipTest(Exception):

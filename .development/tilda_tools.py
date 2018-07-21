@@ -2,7 +2,7 @@
 
 """Toolchain for working with the TiLDA Mk4
 
-Usage (currently more of a wishlist)
+Usage
 ------------------------------------
 
 Reboot badge
@@ -27,7 +27,7 @@ $ tilda_toold.py sync --run some_other_file.py
 Executes a single file on the badge without copying anything (Using pyboard.py)
 $ tilda_tools run my_app/main.py
 
-Runs local validation against metadata (doesn't require a badge)
+Runs local validation (doesn't require a badge, but doesn't run unit tests)
 $ tilda_tools validate
 
 Runs local validation and badge-side tests
@@ -46,11 +46,12 @@ Common parameters
 
 import sys, glob
 import sync, pyboard_util
+from resources import *
 
 def main():
     import argparse
     cmd_parser = argparse.ArgumentParser(description='Toolchain for working with the TiLDA Mk4')
-    cmd_parser.add_argument('command', nargs=1, help='command')
+    cmd_parser.add_argument('command', nargs=1, help='command [test|reset|sync|run]')
     cmd_parser.add_argument('-d', '--device', help='the serial device of the badge')
     cmd_parser.add_argument('-s', '--storage', help='the usb mass storage path of the badge')
     cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
@@ -60,6 +61,23 @@ def main():
     cmd_parser.add_argument('paths', nargs='*', help='input files')
     args = cmd_parser.parse_args()
     command = args.command[0]
+    path = sync.get_root()
+
+    if command in ["test", "validate"]:
+        resources = get_resources(path)
+        add_metadata(path, resources)
+        resolve_dependencies(resources)
+        validate(path, resources)
+        errors = get_error_summary(resources)
+        if errors:
+            print("Problems found:\n")
+            print(errors)
+            sys.exit(1)
+        print("Local Test: PASS")
+        if command == "test":
+            command = "sync"
+            args.path = []
+            args.run = "test/main.py"
 
     if command in ["reset", "sync"]:
         pyboard_util.stop_badge(args)

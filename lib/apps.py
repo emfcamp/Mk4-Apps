@@ -176,4 +176,4 @@ def empty_local_app_cache():
     global _public_apps_cache, _category_cache
     _public_apps_cache = None
     _category_cache = None
-        gc.collect()
+    gc.collect()
