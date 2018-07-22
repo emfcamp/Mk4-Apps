@@ -1,6 +1,8 @@
 """switches between app libraries, updates and installs apps.
 
-To publish apps use https://badge.emfcamp.org"""
+To publish apps use https://badge.emfcamp.org
+
+Some minor change"""
 
 ___license___      = "MIT"
 ___name___         = "App Library"
