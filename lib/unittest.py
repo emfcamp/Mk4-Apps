@@ -15,7 +15,7 @@ class FailTest(Exception):
 class TestCase(object):
     def run(self):
         test_class = type(self).__name__
-        self.setUp()
+        self.setUpClass()
         self.count_pass = 0
         self.count_fail = 0
         self.count_skip = 0
@@ -23,7 +23,9 @@ class TestCase(object):
             if not method.startswith("test"):
                 continue
             try:
+                self.setUp()
                 getattr(self, method)()
+                self.tearDown()
                 print("%s.%s [PASS]" % (test_class, method))
                 self.count_pass += 1
             except SkipTest as e:
@@ -38,7 +40,7 @@ class TestCase(object):
                 sys.print_exception(e)
                 print("")
                 self.count_fail += 1
-        self.tearDown()
+        self.tearDownClass()
         return self.count_fail == 0
 
     def run_standalone(self):
@@ -52,6 +54,12 @@ class TestCase(object):
         pass
 
     def tearDown(self):
+        pass
+
+    def setUpClass(self):
+        pass
+
+    def tearDownClass(self):
         pass
 
     def assertEqual(self, actual, expected):
