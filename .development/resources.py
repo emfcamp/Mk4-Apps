@@ -189,8 +189,11 @@ def _validate_resource(path, resource):
 
     # Metadata check
     if resource['type'] in ["app", "lib"]:
-        pass #todo: what exactly are we're making required?
+        pass #todo: should we make license required?
 
+    if resource['type'] == "app":
+        if 'categories' not in resource or (not isinstance(resource['categories'], list)) or len(resource['categories']) == 0:
+            resource.setdefault("errors", []).append("___categories___ list is required in main.py but not found")
 
 """
 helpers

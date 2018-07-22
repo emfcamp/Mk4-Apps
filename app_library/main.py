@@ -5,6 +5,7 @@ To publish apps use https://badge.emfcamp.org"""
 ___license___      = "MIT"
 ___name___         = "App Library"
 ___dependencies___ = ["wifi", "dialogs"]
+___categories___   = ["System"]
 ___bootstrapped___ = True
 
 import pyb
