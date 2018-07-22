@@ -8,6 +8,8 @@ ___dependencies___ = ["wifi", "dialogs"]
 ___categories___   = ["System"]
 ___bootstrapped___ = True
 
+*&*&*& #this will fail
+
 import pyb
 import ugfx
 import os
