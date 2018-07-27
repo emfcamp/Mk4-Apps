@@ -48,7 +48,7 @@ Common parameters
 """
 
 import sys, glob
-import sync, pyboard_util, wifi, pydfu_util
+import sync, pyboard_util, wifi
 from resources import *
 
 def main():
@@ -69,6 +69,7 @@ def main():
     path = sync.get_root()
 
     if command == "firmware-update":
+        import pydfu_util # to avoid having a "usb" dependency for other calls
         pydfu_util.firmware_update(args.verbose)
 
     if command == "wifi":
