@@ -6,6 +6,7 @@ _pyb = None
 def get_pyb(args):
     global _pyb
     if not _pyb:
+        print("Connected to badge:", end="")
         if not args.device:
             args.device = find_tty()
 
@@ -13,10 +14,10 @@ def get_pyb(args):
         try:
             _pyb = Pyboard(args.device, args.baudrate, None, None, args.wait)
         except PyboardError as er:
+            print(" FAIL")
             print(er)
             sys.exit(1)
-        print("Connected to badge.")
-
+        print(" DONE")
     return _pyb
 
 def close_pyb():
@@ -24,10 +25,13 @@ def close_pyb():
     if _pyb:
         _pyb.close()
 
-def stop_badge(args):
+def stop_badge(args, verbose):
     pyb = get_pyb(args)
-    print("stopping running app")
+    if verbose:
+        print("Stopping running app:", end="")
     write_command(pyb, b'\r\x03\x03') # ctrl-C twice: interrupt any running program
+    if verbose:
+        print(" DONE")
 
 def write_command(pyb, command):
     flush_input(pyb)
@@ -42,14 +46,15 @@ def flush_input(pyb):
 
 def soft_reset(args):
     pyb = get_pyb(args)
-    print("trying to soft reboot badge")
+    print("Soft reboot:", end="")
     write_command(pyb, b'\x04') # ctrl-D: soft reset
     #print("1")
     data = pyb.read_until(1, b'soft reboot\r\n')
     #print("2")
     if data.endswith(b'soft reboot\r\n'):
-        print("Soft reboot was successful.")
+        print(" DONE")
     else:
+        print(" FAIL")
         raise PyboardError('could not soft reboot')
 
 def find_tty():
@@ -60,10 +65,17 @@ def find_tty():
     print("Couldn't find badge tty - Please make it's plugged in and reset it if necessary")
     sys.exit(1)
 
+def check_run(args):
+    if args.command is not None or len(args.paths):
+        for filename in args.paths:
+            with open(filename, 'r') as f:
+                pyfile = f.read()
+                compile(pyfile + '\n', filename, 'exec')
+
 def run(args):
     pyb = get_pyb(args)
-    print("executing %s" % args.paths)
-    print("----------------")
+
+    print("Preparing execution:", end="")
     # run any command or file(s) - this is mostly a copy from pyboard.py
     if args.command is not None or len(args.paths):
         # we must enter raw-REPL mode to execute commands
@@ -71,9 +83,11 @@ def run(args):
         try:
             pyb.enter_raw_repl()
         except PyboardError as er:
+            print(" FAIL")
             print(er)
             pyb.close()
             sys.exit(1)
+        print(" DONE")
 
         def execbuffer(buf):
             try:
@@ -93,6 +107,7 @@ def run(args):
         # run any files
         for filename in args.paths:
             with open(filename, 'rb') as f:
+                print("-------- %s --------" % filename)
                 pyfile = f.read()
                 execbuffer(pyfile)
 

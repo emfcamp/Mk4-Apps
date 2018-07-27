@@ -1,21 +1,47 @@
-"""This app's purpose is to run a series of tests against library code
-
-Once successful it displays and prints 'ok' on the screen.
-
-Please make sure that all tests pass before sending a PR. You can easily
-do this by running "tilda_tools test". Thank you for keeping all the
-tests green! *face-throwing-a-kiss-emoji*
-"""
+"""Tests for http"""
 
 ___license___      = "MIT"
-___dependencies___ = ["unittest"]
+___dependencies___ = ["unittest", "http", "wifi"]
 
 import unittest
+from http import *
+import wifi
 
 class TestHttp(unittest.TestCase):
 
-    def test_foo(self):
-        pass
+    def setUpClass(self):
+        wifi.connect()
+
+    def test_get_with_https(self):
+        with self.assertRaises(OSError) as context:
+            get("https://httpbin.org/get")
+        self.assertIn("HTTPS is currently not supported", str(context.exception))
+
+    def test_get(self):
+        with get("http://httpbin.org/get", params={"foo": "bar"}, headers={"accept": "application/json"}) as response:
+            self.assertEqual(response.headers["Content-Type"], "application/json")
+            self.assertEqual(response.status, 200)
+            content = response.json()
+            self.assertEqual(content["headers"]["Accept"], "application/json")
+            self.assertEqual(content["args"], {"foo":"bar"})
+
+    def test_post_form(self):
+        with post("http://httpbin.org/post", data={"foo": "bar"}).raise_for_status() as response:
+            content = response.json()
+            self.assertEqual(content["headers"]["Content-Type"], "application/x-www-form-urlencoded")
+            self.assertEqual(content["form"], {"foo":"bar"})
+
+    def test_post_string(self):
+        with post("http://httpbin.org/post", data="foobar").raise_for_status() as response:
+            content = response.json()
+            self.assertEqual(content["headers"]["Content-Type"], "text/plain; charset=UTF-8")
+            self.assertEqual(content["data"], "foobar")
+
+    def test_post_json(self):
+        with post("http://httpbin.org/post", json={"foo":"bar"}).raise_for_status() as response:
+            content = response.json()
+            self.assertEqual(content["headers"]["Content-Type"], "application/json")
+            self.assertEqual(content["json"], {"foo":"bar"})
 
 
 if __name__ == "__main__":

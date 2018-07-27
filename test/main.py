@@ -10,11 +10,12 @@ tests green! *face-throwing-a-kiss-emoji*
 ___license___      = "MIT"
 ___categories___   = ["Development"]
 ___name___         = "Integration test app"
-___dependencies___ = ["unittest", "test_database", "test_http"]
+___dependencies___ = ["unittest", "test_database", "test_http", "test_urlencode"]
 
 # Add all tests that need to be run here:
 import test_database
 import test_http
+import test_urlencode
 
 # run
 import sys, unittest

@@ -16,7 +16,7 @@ $ tilda_tools sync
 
 Update files in folder(s) to match current local version
 $ tilda_tools sync my_game shared
-$ tilda_tools sync <folder1> <folder2> ...
+$ tilda_tools sync <pattern1> <pattern2> ...
 
 Sync (as above), but execute my_app after reboot
 $ tilda_toold.py sync --boot my_app [<other sync parameter>]
@@ -36,6 +36,9 @@ $ tilda_tools test
 Update firmware on badge (warning, this will delete all settings etc. stored on the badge!)
 $ tilda_tools firmware-update
 
+Setup wifi.json to be copied to the badge on every sync
+$ tilda_tools wifi
+
 Common parameters
 -----------------
 
@@ -45,16 +48,18 @@ Common parameters
 """
 
 import sys, glob
-import sync, pyboard_util
+import sync, pyboard_util, wifi, pydfu_util
 from resources import *
 
 def main():
     import argparse
     cmd_parser = argparse.ArgumentParser(description='Toolchain for working with the TiLDA Mk4')
-    cmd_parser.add_argument('command', nargs=1, help='command [test|reset|sync|run]')
+    cmd_parser.add_argument('command', nargs=1, help='command [test|reset|sync|run|validate|wifi|firmware-update]', choices=['test', 'reset', 'sync', 'validate', 'run', 'wifi', 'firmware-update'])
     cmd_parser.add_argument('-d', '--device', help='the serial device of the badge')
     cmd_parser.add_argument('-s', '--storage', help='the usb mass storage path of the badge')
     cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
+    cmd_parser.add_argument('-v', '--verbose', action='store_true', help='adds more output')
+    cmd_parser.add_argument('--print_resources', action='store_true', help='prints resources in json')
     cmd_parser.add_argument('--boot', help='defines which app to boot into after reboot')
     cmd_parser.add_argument('--run', help='like run, but after a sync')
     cmd_parser.add_argument('-w', '--wait', default=0, type=int, help='seconds to wait for USB connected board to become available')
@@ -63,11 +68,20 @@ def main():
     command = args.command[0]
     path = sync.get_root()
 
-    if command in ["test", "validate"]:
+    if command == "firmware-update":
+        pydfu_util.firmware_update(args.verbose)
+
+    if command == "wifi":
+        wifi.select_wifi()
+
+    if command in ["test", "validate", "sync"]:
         resources = get_resources(path)
         add_metadata(path, resources)
-        resolve_dependencies(resources)
         validate(path, resources)
+        resolve_dependencies(resources)
+        remove_upip(resources)
+        if args.print_resources:
+            print(pretty_print_resources(resources))
         errors = get_error_summary(resources)
         if errors:
             print("Problems found:\n")
@@ -76,15 +90,20 @@ def main():
         print("Local Test: PASS")
         if command == "test":
             command = "sync"
-            args.path = []
-            args.run = "test/main.py"
+            if len(args.paths) == 0:
+                args.run = "test/main.py"
+            else:
+                if "." not in args.paths[0]:
+                    args.paths[0] = "lib/%s.py" % args.paths[0]
+                args.run = args.paths[0]
+
 
     if command in ["reset", "sync"]:
-        pyboard_util.stop_badge(args)
+        pyboard_util.stop_badge(args, args.verbose)
 
     if command == "sync":
         paths = args.paths if len(args.paths) else None
-        sync.sync(get_storage(args), paths)
+        sync.sync(get_storage(args), paths, resources, args.verbose)
 
     if command in ["reset", "sync"]:
         sync.set_boot_app(get_storage(args), args.boot or "")
@@ -94,6 +113,7 @@ def main():
             args.paths = [args.run]
 
     if command == "run":
+        pyboard_util.check_run(args)
         pyboard_util.run(args)
 
 
@@ -101,7 +121,7 @@ def main():
 
 def find_storage():
     # todo: find solution for windows and linux
-    for pattern in ['/Volumes/PYBFLASH']:
+    for pattern in ['/Volumes/PYBFLASH', '/Volumes/NO NAME']:
         for path in glob.glob(pattern):
             return path
     print("Couldn't find badge storage - Please make it's plugged in and reset it if necessary")

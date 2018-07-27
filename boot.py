@@ -1,6 +1,8 @@
-import pyb, os, micropython
+import pyb, os, micropython, sys
 
 micropython.alloc_emergency_exception_buf(100)
+
+sys.path.append('/flash/upip')
 
 os.sync()
 root = os.listdir()

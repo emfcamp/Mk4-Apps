@@ -1,11 +1,4 @@
-"""This app's purpose is to run a series of tests against library code
-
-Once successful it displays and prints 'ok' on the screen.
-
-Please make sure that all tests pass before sending a PR. You can easily
-do this by running "tilda_tools test". Thank you for keeping all the
-tests green! *face-throwing-a-kiss-emoji*
-"""
+"""Tests for database"""
 
 ___license___      = "MIT"
 ___dependencies___ = ["unittest", "database"]

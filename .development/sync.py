@@ -1,30 +1,46 @@
-import os, glob, shutil, sys
+import os, shutil, sys, fnmatch
 
-def sync(storage, patterns):
+def sync(storage, patterns, resources, verbose):
     root = get_root()
 
     # Add all paths that are already files
-    paths = [os.path.join(root, p) for p in (patterns or []) if os.path.isfile(os.path.join(root, p))]
+    paths = set([p for p in (patterns or []) if os.path.isfile(os.path.join(root, p))])
 
-    if patterns:
-        new_patterns = []
-        patterns = [os.path.join(root, p, "**") for p in patterns]
-    else:
-        patterns = ["**/**", "boot.py"]
+    # Always copy boot.py
+    paths.add("boot.py")
+
+    # wifi.json
+    wifi_path = os.path.join(root, "wifi.json")
+    if os.path.isfile(wifi_path):
+        paths.add(wifi_path)
+
+    if not patterns:
+        patterns = ["*"]
 
     for pattern in patterns:
-        for path in glob.glob(pattern):
-            paths.append(path)
+        found = False
+        for key, resource in resources.items():
+            if fnmatch.fnmatch(key, pattern):
+                found = True
+                if verbose:
+                    print("Resource %s is going to be synced" % key)
+                for path in resource['files'].keys():
+                    paths.add(path)
+        if not found:
+            print("WARN: No resources to copy found for pattern %s" % patterns)
 
-    if len(paths) == 0:
-        print("No files to copy found for pattern %s" % patterns)
-        sys.exit(1)
-
+    if not verbose:
+        print("Copying %s files: " % len(paths), end="")
     for path in paths:
-        rel_path = os.path.relpath(path, root)
-        if rel_path.startswith("."):
+        if not path:
             continue
-        print("Copying %s..." % rel_path)
+        rel_path = os.path.relpath(path, root)
+        if rel_path.startswith(".") or os.path.isdir(path) or os.path.islink(path):
+            continue
+        if verbose:
+            print("Copying %s..." % rel_path)
+        else:
+            print(".", end="")
 
         target = os.path.join(storage, rel_path)
         target_dir = os.path.dirname(target)
@@ -35,9 +51,10 @@ def sync(storage, patterns):
             os.makedirs(target_dir)
         shutil.copy2(path, target)
 
-    else:
+    if verbose:
         print("Files copied successfully")
-
+    else:
+        print(" DONE")
 
 def set_boot_app(storage, app_to_boot):
     path = os.path.join(storage, 'once.txt')
@@ -47,7 +64,8 @@ def set_boot_app(storage, app_to_boot):
         pass
     with open(path, 'w') as f:
         f.write(app_to_boot + "\n")
-    print("setting next boot to %s" % app_to_boot)
+    if app_to_boot:
+        print("setting next boot to %s" % app_to_boot)
 
 def get_root():
     root = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..'))
