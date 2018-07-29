@@ -1,7 +1,7 @@
 """Tests for urlencode"""
 
 ___license___      = "MIT"
-___dependencies___ = ["unittest", "urlencode"]
+___dependencies___ = ["upip:unittest", "urlencode"]
 
 import unittest
 from urlencode import *
@@ -15,5 +15,5 @@ class TestUrlencode(unittest.TestCase):
         )
 
 
-if __name__ == "__main__":
-    TestUrlencode().run_standalone()
+if __name__ == '__main__':
+    unittest.main()

@@ -1,9 +1,11 @@
-"""switches between app libraries, updates and installs apps.
+"""Official TiLDA MK4 Badge Store App
+
+switches between app libraries, updates and installs apps.
 
 To publish apps use https://badge.emfcamp.org"""
 
 ___license___      = "MIT"
-___name___         = "App Library"
+___title___        = "Badge Store"
 ___dependencies___ = ["wifi", "dialogs"]
 ___categories___   = ["System"]
 ___bootstrapped___ = True

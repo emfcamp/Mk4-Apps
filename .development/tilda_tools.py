@@ -67,6 +67,7 @@ def main():
     args = cmd_parser.parse_args()
     command = args.command[0]
     path = sync.get_root()
+    run_tests = command == "test"
 
     if command == "firmware-update":
         import pydfu_util # to avoid having a "usb" dependency for other calls
@@ -92,11 +93,9 @@ def main():
         if command == "test":
             command = "sync"
             if len(args.paths) == 0:
-                args.run = "test/main.py"
+                args.paths = ["lib/test_*"]
             else:
-                if "." not in args.paths[0]:
-                    args.paths[0] = "lib/%s.py" % args.paths[0]
-                args.run = args.paths[0]
+                args.paths = ["lib/test_%s.py" % p for p in args.paths]
 
 
     if command in ["reset", "sync"]:
@@ -104,7 +103,7 @@ def main():
 
     if command == "sync":
         paths = args.paths if len(args.paths) else None
-        sync.sync(get_storage(args), paths, resources, args.verbose)
+        synced_resources = sync.sync(get_storage(args), paths, resources, args.verbose)
 
     if command in ["reset", "sync"]:
         sync.set_boot_app(get_storage(args), args.boot or "")
@@ -114,8 +113,15 @@ def main():
             args.paths = [args.run]
 
     if command == "run":
-        pyboard_util.check_run(args)
-        pyboard_util.run(args)
+        pyboard_util.check_run(args.paths)
+        pyboard_util.run(args, args.paths)
+
+    if run_tests:
+        for resource in synced_resources:
+            pyboard_util.check_run([resource])
+            pyboard_util.run(args, [resource], False)
+            pyboard_util.soft_reset(args, False)
+
 
 
     pyboard_util.close_pyb()

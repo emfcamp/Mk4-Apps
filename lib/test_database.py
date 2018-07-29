@@ -1,7 +1,7 @@
 """Tests for database"""
 
 ___license___      = "MIT"
-___dependencies___ = ["unittest", "database"]
+___dependencies___ = ["upip:unittest", "database"]
 
 import database, unittest
 
@@ -50,5 +50,5 @@ class TestDatabase(unittest.TestCase):
         except Exception as e:
             pass
 
-if __name__ == "__main__":
-    TestDatabase().run_standalone()
+if __name__ == '__main__':
+    unittest.main()

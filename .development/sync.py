@@ -17,11 +17,13 @@ def sync(storage, patterns, resources, verbose):
     if not patterns:
         patterns = ["*"]
 
+    synced_resources = []
     for pattern in patterns:
         found = False
         for key, resource in resources.items():
             if fnmatch.fnmatch(key, pattern):
                 found = True
+                synced_resources.append(key)
                 if verbose:
                     print("Resource %s is going to be synced" % key)
                 for path in resource['files'].keys():
@@ -55,6 +57,7 @@ def sync(storage, patterns, resources, verbose):
         print("Files copied successfully")
     else:
         print(" DONE")
+    return synced_resources
 
 def set_boot_app(storage, app_to_boot):
     path = os.path.join(storage, 'once.txt')

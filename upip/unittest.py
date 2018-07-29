@@ -7,8 +7,9 @@ class SkipTest(Exception):
 
 class AssertRaisesContext:
 
-    def __init__(self, exc):
+    def __init__(self, exc, msg = None):
         self.expected = exc
+        self.expected_msg = msg
 
     def __enter__(self):
         return self
@@ -17,6 +18,7 @@ class AssertRaisesContext:
         if exc_type is None:
             assert False, "%r not raised" % self.expected
         if issubclass(exc_type, self.expected):
+            self.exception = exc_value
             return True
         return False
 
@@ -176,35 +178,48 @@ class TestResult:
         self.failuresNum = 0
         self.skippedNum = 0
         self.testsRun = 0
+        self.failures = []
 
     def wasSuccessful(self):
         return self.errorsNum == 0 and self.failuresNum == 0
+
+    def printFailures(self):
+        for name, exception in self.failures:
+            print("-------- %s --------\n" % name)
+            sys.print_exception(exception)
 
 # TODO: Uncompliant
 def run_class(c, test_result):
     o = c()
     set_up = getattr(o, "setUp", lambda: None)
     tear_down = getattr(o, "tearDown", lambda: None)
-    for name in dir(o):
-        if name.startswith("test"):
-            print("%s (%s) ..." % (name, c.__qualname__), end="")
-            m = getattr(o, name)
-            set_up()
-            try:
-                test_result.testsRun += 1
-                m()
-                print(" ok")
-            except SkipTest as e:
-                print(" skipped:", e.args[0])
-                test_result.skippedNum += 1
-            except:
-                print(" FAIL")
-                test_result.failuresNum += 1
-                # Uncomment to investigate failure in detail
-                #raise
-                continue
-            finally:
-                tear_down()
+    set_up_class = getattr(o, "setUpClass", lambda: None)
+    tear_down_class = getattr(o, "tearDownClass", lambda: None)
+    set_up_class()
+    try:
+        for name in dir(o):
+            if name.startswith("test"):
+                full_name = "%s (%s)" % (name, c.__qualname__)
+                print("%s ..." % full_name , end="")
+                m = getattr(o, name)
+                set_up()
+                try:
+                    test_result.testsRun += 1
+                    m()
+                    print(" ok")
+                except SkipTest as e:
+                    print(" skipped:", e.args[0])
+                    test_result.skippedNum += 1
+                except Exception as e:
+                    print(" FAIL")
+                    test_result.failuresNum += 1
+                    test_result.failures.append((full_name, e))
+                    continue
+                finally:
+                    tear_down()
+    finally:
+        tear_down_class()
+
 
 
 def main(module="__main__"):
@@ -213,12 +228,12 @@ def main(module="__main__"):
             c = getattr(m, tn)
             if isinstance(c, object) and isinstance(c, type) and issubclass(c, TestCase):
                 yield c
-
     m = __import__(module)
     suite = TestSuite()
     for c in test_cases(m):
         suite.addTest(c)
     runner = TestRunner()
     result = runner.run(suite)
+    result.printFailures()
     # Terminate with non zero return code in case of failures
     sys.exit(result.failuresNum > 0)

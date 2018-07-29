@@ -1,7 +1,7 @@
 """Tests for http"""
 
 ___license___      = "MIT"
-___dependencies___ = ["unittest", "http", "wifi"]
+___dependencies___ = ["upip:unittest", "http", "wifi"]
 
 import unittest
 from http import *
@@ -44,5 +44,5 @@ class TestHttp(unittest.TestCase):
             self.assertEqual(content["json"], {"foo":"bar"})
 
 
-if __name__ == "__main__":
-    TestHttp().run_standalone()
+if __name__ == '__main__':
+    unittest.main()

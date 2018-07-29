@@ -44,17 +44,20 @@ def flush_input(pyb):
         pyb.serial.read(n)
         n = pyb.serial.inWaiting()
 
-def soft_reset(args):
+def soft_reset(args, verbose = True):
     pyb = get_pyb(args)
-    print("Soft reboot:", end="")
+    if verbose:
+        print("Soft reboot:", end="")
     write_command(pyb, b'\x04') # ctrl-D: soft reset
     #print("1")
     data = pyb.read_until(1, b'soft reboot\r\n')
     #print("2")
     if data.endswith(b'soft reboot\r\n'):
-        print(" DONE")
+        if verbose:
+            print(" DONE")
     else:
-        print(" FAIL")
+        if verbose:
+            print(" FAIL")
         raise PyboardError('could not soft reboot')
 
 def find_tty():
@@ -65,29 +68,31 @@ def find_tty():
     print("Couldn't find badge tty - Please make it's plugged in and reset it if necessary")
     sys.exit(1)
 
-def check_run(args):
-    if args.command is not None or len(args.paths):
-        for filename in args.paths:
-            with open(filename, 'r') as f:
-                pyfile = f.read()
-                compile(pyfile + '\n', filename, 'exec')
+def check_run(paths):
+    for filename in paths:
+        with open(filename, 'r') as f:
+            pyfile = f.read()
+            compile(pyfile + '\n', filename, 'exec')
 
-def run(args):
+def run(args, paths, verbose=True):
     pyb = get_pyb(args)
 
-    print("Preparing execution:", end="")
+    if verbose:
+        print("Preparing execution:", end="")
     # run any command or file(s) - this is mostly a copy from pyboard.py
-    if args.command is not None or len(args.paths):
+    if len(paths):
         # we must enter raw-REPL mode to execute commands
         # this will do a soft-reset of the board
         try:
             pyb.enter_raw_repl()
         except PyboardError as er:
-            print(" FAIL")
+            if verbose:
+                print(" FAIL")
             print(er)
             pyb.close()
             sys.exit(1)
-        print(" DONE")
+        if verbose:
+            print(" DONE")
 
         def execbuffer(buf):
             try:
@@ -105,7 +110,7 @@ def run(args):
                 sys.exit(1)
 
         # run any files
-        for filename in args.paths:
+        for filename in paths:
             with open(filename, 'rb') as f:
                 print("-------- %s --------" % filename)
                 pyfile = f.read()
