@@ -12,7 +12,6 @@ In particular, they *should*:
 They also *may*:
 
 * Display a name, returned by "homescreen.name()"
-* Display network strength "homescreen.mobile_strength()" (0-1, might return "None" if no SIM card found)
 * Display network strength "homescreen.wifi_strength()" (0-1, might return "None" if not connected)
 * Display remaining battery "homescreen.battery()" (0-1)
 """

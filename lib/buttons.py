@@ -15,6 +15,13 @@ CONFIG = {
     "BTN_B": pyb.Pin.PULL_UP
 }
 
+ROTATION_MAP = {
+    "JOY_UP": "JOY_LEFT",
+    "JOY_LEFT": "JOY_DOWN",
+    "JOY_DOWN": "JOY_RIGHT",
+    "JOY_RIGHT": "JOY_UP",
+}
+
 _tilda_pins = {}
 _tilda_interrupts = {}
 _tilda_bounce = {}
@@ -30,6 +37,11 @@ def init(buttons = CONFIG.keys()):
     for button in buttons:
         _tilda_pins[button] = pyb.Pin(button, pyb.Pin.IN)
         _tilda_pins[button].init(pyb.Pin.IN, CONFIG[button])
+
+def rotate(button):
+    """remaps names of buttons to rotated values"""
+    return ROTATION_MAP[button]
+
 
 def is_pressed(button):
     pin = _get_pin(button)
