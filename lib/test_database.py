@@ -7,7 +7,7 @@ import database, unittest
 
 class TestDatabase(unittest.TestCase):
     def setUp(self):
-        self.filename = "test/tmp.testdb.json"
+        self.filename = "tmp.testdb.json"
         self.database = database.Database(filename = self.filename)
         self._remove_test_db()
 
