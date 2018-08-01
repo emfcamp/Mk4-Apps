@@ -185,6 +185,8 @@ does basic verification:
 """
 def validate(path, resources):
     for resource in resources.values():
+        if resource['type'] == "upip":
+            continue
         _validate_resource(path, resource)
 
 def _validate_resource(path, resource):
