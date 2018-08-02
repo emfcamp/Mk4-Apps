@@ -57,6 +57,12 @@ class App:
             return self.attributes[attribute]
         return default
 
+    def uninstall(self):
+        try:
+            os.remove(self.name)
+        except Exception as e:
+            pass
+
     def __str__(self):
         return self.title
 

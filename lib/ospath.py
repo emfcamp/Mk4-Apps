@@ -61,3 +61,12 @@ def isfile(path):
         return stat.S_ISREG(mode)
     except OSError:
         return False
+
+# not normally in os.path
+def makedirs(path):
+    """recursively creates a given path"""
+    sub_path = dirname(path)
+    if sub_path and (not exists(sub_path)):
+        makedirs(sub_path)
+    if not exists(path):
+        os.mkdir(path)

@@ -6,38 +6,68 @@ To publish apps use https://badge.emfcamp.org"""
 
 ___license___      = "MIT"
 ___title___        = "Badge Store"
-___dependencies___ = ["wifi", "dialogs"]
+___dependencies___ = ["app", "badge_store", "dialogs"]
 ___categories___   = ["System"]
 ___bootstrapped___ = True
 
-import pyb
 import ugfx
 import os
-#import http_client
 import wifi
-import dialogs
-#from app import App, get_local_apps, get_public_apps, get_public_app_categories, empty_local_app_cache
-#import filesystem
-
-TEMP_FILE = ".temp_download"
+from dialogs import *
+import app
+from lib.badge_store import BadgeStore
 
 ugfx.init()
 
 ### VIEWS ###
 
+store = BadgeStore()
+title = "TiLDA Badge Store"
+
 def clear():
     ugfx.clear(ugfx.html_color(0x7c1143))
 
-def store():
+def show_categories():
+    with WaitingMessage():
+        menu_items = [{"title": c, "category": c} for c in store.get_categories()]
+
+    option = prompt_option(menu_items, none_text="Back", text="Categories", title=title)
+
+    if option:
+        show_apps(option["category"])
+    else:
+        return
+
+def show_apps(c):
+    menu_items = [{"title": a, "app": a} for a in store.get_apps(c)]
+
+    option = prompt_option(menu_items, none_text="Back", title=title)
+
+    if option:
+        show_app(option["app"])
+    else:
+        return
+
+def show_app(a):
+    with WaitingMessage():
+        app_info = store.get_app(a)
+
+    install = prompt_boolean(app_info["description"], title=a, true_text="Install", false_text="Back")
+
+    if install:
+        with WaitingMessage(title="Installing %s" % a, text="Please wait...") as message:
+            installers = store.install(a)
+            n = len(installers)
+            for i, installer in enumerate(installers):
+                message.text = "%s (%s/%s)" % (installer.path, i + 1, n)
+                installer.download()
+
+    notice("App %s has been successfully installed" % a, title=title, close_text="Back")
+
+def show_update():
     None
 
-def update():
-    None
-
-def remove():
-    None
-
-def settings():
+def show_remove():
     None
 
 def main_menu():
@@ -47,13 +77,12 @@ def main_menu():
         print()
 
         menu_items = [
-            {"title": "Install Apps", "function": store},
-            {"title": "Update", "function": update},
-            {"title": "Manage Apps", "function": remove},
-            {"title": "Settings", "function": settings}
+            {"title": "Install Apps", "function": show_categories},
+            {"title": "Update", "function": show_update},
+            {"title": "Manage Apps", "function": show_remove}
         ]
 
-        option = dialogs.prompt_option(menu_items, none_text="Exit", text="What do you want to do?", title="TiLDA App Library")
+        option = prompt_option(menu_items, none_text="Exit", text="What do you want to do?", title=title)
 
         if option:
             option["function"]()
@@ -61,10 +90,4 @@ def main_menu():
             return
 
 main_menu()
-
-#if App("home").loadable:
-#    main_menu()
-#else:
-#    for app_name in ["changename", "snake", "alistair~selectwifi", "sponsors", "home"]:
-#        install(App(app_name))
-#    pyb.hard_reset()
+#show_app("launcher")

@@ -1,11 +1,11 @@
 """Library to interact with the badge store"""
 
 ___license___      = "MIT"
-___dependencies___ = ["http", "ospath"]
+___dependencies___ = ["http", "ospath", "app"]
 
 from ospath import *
 from http import *
-import hashlib, binascii
+import hashlib, binascii, app
 
 class BadgeStore:
     def __init__(self, url = "http://badge.marekventur.com", repo="emfcamp/Mk4-Apps", ref="master"):
@@ -14,18 +14,21 @@ class BadgeStore:
         self.ref = ref
         self._apps = None
 
-    def get_apps(self):
+    def get_all_apps(self):
         if not self._apps:
             self._apps = self._call("apps")
         return self._apps
 
+    def get_apps(self, category):
+        return self.get_all_apps()[category]
+
     def get_categories(self):
-        return self.get_apps().keys()
+        return self.get_all_apps().keys()
 
     def get_app(self, app):
         return self._call("app", {"app": app})
 
-    def install(self, apps):
+    def call_install(self, apps):
         files = self._call("install", {"apps": ",".join(apps)})
         installers = []
         url = "%s/download" % (self.url)
@@ -36,6 +39,12 @@ class BadgeStore:
             installers.append(Installer(path, url, params, hash))
         return installers
 
+    def install(self, app):
+        return self.call_install(self._get_current_apps() + [app])
+
+    def update(self):
+        return self.call_install(self._get_current_apps())
+
     def _call(self, command, params = {}):
         params["repo"] = self.repo
         params["ref"] = self.ref
@@ -45,6 +54,8 @@ class BadgeStore:
     def _is_file_up_to_date(self, path, hash):
         return hash == _get_hash(path)
 
+    def _get_current_apps(self):
+        return [a.name for a in app.get_apps()]
 
 TEMP_FILE = ".tmp.download"
 
@@ -70,6 +81,8 @@ class Installer:
             os.remove(self.path)
         except OSError:
             pass
+        makedirs(dirname(self.path))
+
         os.rename(TEMP_FILE, self.path)
 
 def get_hash(path):

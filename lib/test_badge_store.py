@@ -16,15 +16,19 @@ class TestBadgeStore(unittest.TestCase):
     def tearDownClass(self):
         self._remove_download_file()
 
-    def test_apps(self):
-        response = self.store.get_apps()
+    def test_get_all_apps(self):
+        response = self.store.get_all_apps()
         self.assertEqual(response["System"], ['badge_store', 'launcher', 'settings'])
 
     def test_categories(self):
         categories = self.store.get_categories()
         self.assertEqual(set(categories), set(["System", "homescreen"]))
 
-    def test_app(self):
+    def test_get_apps(self):
+        apps = self.store.get_apps("System")
+        self.assertEqual(set(apps), set(['badge_store', 'settings', 'launcher']))
+
+    def test_get_app(self):
         response = self.store.get_app("launcher")
         self.assertEqual(response["description"], "Launcher for apps currently installed")
 
@@ -35,7 +39,7 @@ class TestBadgeStore(unittest.TestCase):
     def test_install_integration(self):
         self._remove_download_file()
         store = BadgeStore(url="http://badge.marekventur.com", repo="emfcamp/Mk4-Apps", ref="dont-delete-test-download-branch")
-        for installer in store.install(["launcher"]):
+        for installer in store.call_install(["launcher"]):
             if installer.path == "shared/test/download.txt":
                 installer.download()
 
