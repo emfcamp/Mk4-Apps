@@ -30,10 +30,10 @@ class BadgeStore:
         installers = []
         url = "%s/download" % (self.url)
         for path, hash in files.items():
-            if self._is_file_up_to_date(path, hash):
+            if hash == get_hash(path):
                 continue
             params = {"repo": self.repo, "ref": self.ref, "path": path}
-            installers.append(Installer(path, url, params))
+            installers.append(Installer(path, url, params, hash))
         return installers
 
     def _call(self, command, params = {}):
@@ -43,27 +43,44 @@ class BadgeStore:
             return response.json() # todo: error handling
 
     def _is_file_up_to_date(self, path, hash):
-        if not isfile(path):
-            return False
+        return hash == _get_hash(path)
 
-        with open(path, "rb") as file:
-            sha256 = hashlib.sha256()
-            buf = file.read(128)
-            while len(buf) > 0:
-                sha256.update(buf)
-                buf = file.read(128)
-            current = str(binascii.hexlify(sha256.digest()), "utf8")[:10]
-            return current == hash
+
+TEMP_FILE = ".tmp.download"
 
 class Installer:
-    def __init__(self, path, url, params):
+    def __init__(self, path, url, params, hash):
         self.path = path
         self.url = url
         self.params = params
+        self.hash = hash
 
     def download(self):
-        with get(self.url, params=self.params).raise_for_status() as response:
-            response.download(path)
+        count = 0
+        while get_hash(TEMP_FILE) != self.hash:
+            count += 1
+            if count > 5:
+                os.remove(TEMP_FILE)
+                raise OSError("Aborting download of %s after 5 unsuccessful attempts" % self.path)
+            try:
+                get(self.url, params=self.params).raise_for_status().download_to(TEMP_FILE)
+            except OSError:
+                pass
+        try:
+            os.remove(self.path)
+        except OSError:
+            pass
+        os.rename(TEMP_FILE, self.path)
 
+def get_hash(path):
+    if not isfile(path):
+        return None
 
+    with open(path, "rb") as file:
+        sha256 = hashlib.sha256()
+        buf = file.read(128)
+        while len(buf) > 0:
+            sha256.update(buf)
+            buf = file.read(128)
+        return str(binascii.hexlify(sha256.digest()), "utf8")[:10]
 
