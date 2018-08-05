@@ -49,9 +49,7 @@ def soft_reset(args, verbose = True):
     if verbose:
         print("Soft reboot:", end="")
     write_command(pyb, b'\x04') # ctrl-D: soft reset
-    #print("1")
     data = pyb.read_until(1, b'soft reboot\r\n')
-    #print("2")
     if data.endswith(b'soft reboot\r\n'):
         if verbose:
             print(" DONE")
@@ -109,12 +107,18 @@ def run(args, paths, verbose=True):
                 pyboard.stdout_write_bytes(ret_err)
                 sys.exit(1)
 
-        # run any files
-        for filename in paths:
-            with open(filename, 'rb') as f:
-                print("-------- %s --------" % filename)
-                pyfile = f.read()
-                execbuffer(pyfile)
+        try:
+            # run any files
+            for filename in paths:
+                with open(filename, 'rb') as f:
+                    print("-------- %s --------" % filename)
+                    pyfile = f.read()
+                    execbuffer(pyfile)
 
-        # exiting raw-REPL just drops to friendly-REPL mode
-        pyb.exit_raw_repl()
+            # exiting raw-REPL just drops to friendly-REPL mode
+            pyb.exit_raw_repl()
+        except OSError as e:
+            if "Device not configured" in str(e):
+                print("Connection to badge lost") # This can happen on a hard rest
+            else:
+                raise e

@@ -3,23 +3,21 @@
 ___name___         = "Launcher"
 ___license___      = "MIT"
 ___categories___   = ["System"]
+___dependencies___ = ["dialogs", "app"]
 ___launchable___   = False
 ___bootstrapped___ = True
 
 import ugfx
+from app import *
+from dialogs import *
 
+ugfx.init()
 ugfx.clear()
-apps = range(1, 10)
 
-cols = 4
+options = [{"title": a.title, "app": a} for a in get_apps()]
+option = prompt_option(options, none_text="Homescreen", text="Select App to start")
 
-
-for i, p in enumerate(apps):
-    logical_x = i % cols
-    logical_y = i // cols
-    x = logical_x * width
-
-
-
-
-print("launcher")
+if not option:
+    restart_to_default()
+else:
+    option["app"].boot()

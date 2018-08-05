@@ -87,7 +87,7 @@ def main_menu():
         if option:
             option["function"]()
         else:
-            return
+            app.restart_to_default()
 
 main_menu()
 #show_app("launcher")

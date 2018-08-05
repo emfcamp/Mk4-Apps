@@ -8,13 +8,39 @@ newly activated or reset.
 ___name___         = "Homescreen (Default)"
 ___license___      = "GPL"
 ___categories___   = ["homescreen"]
+___dependencies___ = ["homescreen"]
 ___launchable___   = False
 ___bootstrapped___ = True
 
-print("there")
-import ugfx, homescreen
+import ugfx
+from homescreen import *
+import time
 
-homescreen.init(color = 0xe4ffdb)
+init()
 
-ugfx.display_image(0, 0, "home_default/bg.gif")
-ugfx.text(20, 20, homescreen.name(), ugfx.BLACK)
+# title
+ugfx.set_default_font(ugfx.FONT_MEDIUM_BOLD)
+ugfx.Label(0, 20, ugfx.width(), 40, "TiLDA Mk4", justification=ugfx.Label.CENTERTOP)
+
+# name
+if name():
+    ugfx.set_default_font(ugfx.FONT_NAME)
+    ugfx.Label(0, 60, ugfx.width(), 40, name(), justification=ugfx.Label.CENTERTOP)
+else:
+    ugfx.set_default_font(ugfx.FONT_MEDIUM)
+    ugfx.Label(0, 60, ugfx.width(), 40, "Set your name in the settings app", justification=ugfx.Label.CENTERTOP)
+
+# info
+ugfx.Label(0, 200, ugfx.width(), 40, "Press MENU", justification=ugfx.Label.CENTERTOP)
+
+ugfx.set_default_font(ugfx.FONT_MEDIUM)
+status = ugfx.Label(0, 130, ugfx.width(), 40, "", justification=ugfx.Label.CENTERTOP)
+
+# update loop
+def tick():
+    status.text("wifi: %s%%\nbattery: %s%%" % (int(wifi_strength() * 100), int(battery() * 100)))
+    time.sleep_ms(500)
+
+loop(tick)
+
+

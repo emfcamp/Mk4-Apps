@@ -7,6 +7,7 @@ ___license___      = "MIT"
 ___dependencies___ = ["metadata_reader", "ospath"]
 
 from ospath import *
+import os, machine
 from metadata_reader import read_metadata
 
 class App:
@@ -63,6 +64,10 @@ class App:
         except Exception as e:
             pass
 
+    def boot(self):
+        write_launch_file(self.name)
+        machine.reset() # used to be pyb.hard_reset()
+
     def __str__(self):
         return self.title
 
@@ -102,4 +107,14 @@ def get_categories():
         for app in get_apps():
             _categories.update(app.categories)
     return _categories
+
+def write_launch_file(app, file = "once.txt"):
+    with open(file, "wt") as file:
+        file.write(app)
+        file.flush()
+    os.sync()
+
+def restart_to_default():
+    write_launch_file("")
+    machine.reset() # used to be pyb.hard_reset()
 

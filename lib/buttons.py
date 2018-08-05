@@ -42,7 +42,6 @@ def rotate(button):
     """remaps names of buttons to rotated values"""
     return ROTATION_MAP[button]
 
-
 def is_pressed(button):
     pin = _get_pin(button)
     if pin.pull() == pyb.Pin.PULL_DOWN:

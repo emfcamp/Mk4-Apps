@@ -309,7 +309,7 @@ class Pyboard:
             print(data)
             raise PyboardError('could not enter raw repl')
 
-    def exit_raw_repl(self):
+    def exit_raw_repl(self):\
         self.serial.write(b'\r\x02') # ctrl-B: enter friendly REPL
 
     def follow(self, timeout, data_consumer=None):

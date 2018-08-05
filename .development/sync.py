@@ -70,6 +70,16 @@ def set_boot_app(storage, app_to_boot):
     if app_to_boot:
         print("setting next boot to %s" % app_to_boot)
 
+def set_no_boot(storage):
+    path = os.path.join(storage, 'no_boot')
+    try:
+        os.remove(path)
+    except OSError:
+        pass
+    with open(path, 'w') as f:
+        f.write("\n")
+
+
 def get_root():
     root = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..'))
     if not os.path.isfile(os.path.join(root, "boot.py")):

@@ -16,29 +16,40 @@ They also *may*:
 * Display remaining battery "homescreen.battery()" (0-1)
 """
 
-__license___      = "MIT"
-__dependencies___ = ["database", "buttons"]
+___license___      = "MIT"
+___dependencies___ = ["database", "buttons", "random", "app"]
 
-import database, ugfx, buttons
+import database, ugfx, random, buttons, time
+from app import App
 
 def init(color = 0xFFFFFF):
     ugfx.init()
+    ugfx.orientation(90)
     ugfx.clear(ugfx.html_color(color))
+
+# A special loop that exits on menu being pressed
+def loop(func, interval = 500):
     buttons.init()
-    #buttons.enable_interrupt()
+    state = {"pressed": False} # This is a terrible hack
+    def irp(t):
+        state["pressed"] = True
+    buttons.enable_interrupt("BTN_MENU", irp, on_release = True)
+    while not state["pressed"]:
+        func()
+        time.sleep_ms(interval)
+    buttons.disable_interrupt("BTN_MENU")
+    App("launcher").boot()
+
 
 def menu():
     ugfx.clear()
 
-def name():
-    return database.get("homescreen.name", "bar")
-
-def mobile_strength():
-    return 0.75
+def name(default = None):
+    return database.get("homescreen.name", default)
 
 def wifi_strength():
-    return 0.65
+    return random.rand() / 256
 
 def battery():
-    return 0.65
+    return random.rand() / 256
 
