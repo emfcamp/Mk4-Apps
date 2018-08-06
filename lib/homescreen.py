@@ -19,30 +19,39 @@ They also *may*:
 ___license___      = "MIT"
 ___dependencies___ = ["database", "buttons", "random", "app"]
 
-import database, ugfx, random, buttons, time
+import database, ugfx, random, buttons, time, select
 from app import App
 
-def init(color = 0xFFFFFF):
+_state = None
+def init(enable_menu_button = True):
+    global _state
+    _state = {"menu": False}
     ugfx.init()
     ugfx.orientation(90)
-    ugfx.clear(ugfx.html_color(color))
-
-# A special loop that exits on menu being pressed
-def loop(func, interval = 500):
-    buttons.init()
-    state = {"pressed": False} # This is a terrible hack
-    def irp(t):
-        state["pressed"] = True
-    buttons.enable_interrupt("BTN_MENU", irp, on_release = True)
-    while not state["pressed"]:
-        func()
-        time.sleep_ms(interval)
-    buttons.disable_interrupt("BTN_MENU")
-    App("launcher").boot()
 
 
-def menu():
-    ugfx.clear()
+
+    if enable_menu_button:
+        buttons.init()
+        buttons.enable_interrupt("BTN_MENU", lambda t: set_state("menu"), on_release = True)
+
+def set_state(key, value = True):
+    global _state
+    _state[key] = value
+
+def clean_up():
+    buttons.disable_all_interrupt()
+
+def check():
+    global _state
+    if _state["menu"]:
+        clean_up()
+        App("launcher").boot()
+
+def sleep(interval = 500):
+    check()
+    time.sleep_ms(interval) # todo: deep sleep
+    check()
 
 def name(default = None):
     return database.get("homescreen.name", default)

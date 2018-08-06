@@ -37,10 +37,8 @@ ugfx.set_default_font(ugfx.FONT_MEDIUM)
 status = ugfx.Label(0, 130, ugfx.width(), 40, "", justification=ugfx.Label.CENTERTOP)
 
 # update loop
-def tick():
+while True:
     status.text("wifi: %s%%\nbattery: %s%%" % (int(wifi_strength() * 100), int(battery() * 100)))
-    time.sleep_ms(500)
-
-loop(tick)
+    sleep(500)
 
 
