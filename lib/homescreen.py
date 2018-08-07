@@ -36,6 +36,8 @@ def init(enable_menu_button = True):
         buttons.enable_interrupt("BTN_MENU", lambda t: set_state("menu"), on_release = True)
 
 def set_state(key, value = True):
+    # we can't allocate memory in interrupts, so make sure all keys are set beforehand and
+    # you're only using numbers and booleans
     global _state
     _state[key] = value
 
@@ -57,8 +59,8 @@ def name(default = None):
     return database.get("homescreen.name", default)
 
 def wifi_strength():
-    return random.rand() / 256
+    return random.random()
 
 def battery():
-    return random.rand() / 256
+    return random.random()
 
