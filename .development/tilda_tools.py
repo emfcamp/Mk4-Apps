@@ -51,7 +51,7 @@ Common parameters
 """
 
 import sys, glob
-import sync, pyboard_util, wifi
+import sync, firmware_update, wifi, pyboard_util
 from resources import *
 
 def main():
@@ -73,8 +73,7 @@ def main():
     run_tests = command == "test"
 
     if command == "firmware-update":
-        import pydfu_util # to avoid having a "usb" dependency for other calls
-        pydfu_util.firmware_update(args.verbose)
+        firmware_update.firmware_update(args.verbose)
 
     if command == "wifi":
         wifi.select_wifi()
