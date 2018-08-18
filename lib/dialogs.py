@@ -1,11 +1,9 @@
 """Some basic UGFX powered dialogs"""
 
 ___license___ = "MIT"
-___dependencies___ = ["buttons"]
+___dependencies___ = ["buttons", "sleep"]
 
-import ugfx
-import buttons
-import pyb
+import ugfx, buttons, sleep
 
 default_style_badge = ugfx.Style()
 default_style_badge.set_focus(ugfx.RED)
@@ -18,11 +16,13 @@ default_style_dialog.set_background(ugfx.html_color(0xFFFFFF))
 
 
 TILDA_COLOR = ugfx.html_color(0x7c1143);
+FONT_SMALL = 0 #todo: find correct values
+FONT_MEDIUM_BOLD = 0
 
-def notice(text, title="TiLDA", close_text="Close", width = 260, height = 180, font=ugfx.FONT_SMALL, style=None):
+def notice(text, title="TiLDA", close_text="Close", width = 260, height = 180, font=FONT_SMALL, style=None):
     prompt_boolean(text, title = title, true_text = close_text, false_text = None, width = width, height = height, font=font, style=style)
 
-def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width = 260, height = 180, font=ugfx.FONT_SMALL, style=None):
+def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width = 260, height = 180, font=FONT_SMALL, style=None):
     """A simple one and two-options dialog
 
     if 'false_text' is set to None only one button is displayed.
@@ -31,7 +31,7 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width 
     global default_style_dialog
     if style == None:
         style = default_style_dialog
-    ugfx.set_default_font(ugfx.FONT_MEDIUM_BOLD)
+    ugfx.set_default_font(FONT_MEDIUM_BOLD)
     window = ugfx.Container((ugfx.width() - width) // 2, (ugfx.height() - height) // 2,  width, height, style=style)
     window.show()
     ugfx.set_default_font(font)
@@ -44,7 +44,7 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width 
 
     ugfx.set_default_font(font)
     label = ugfx.Label(5, 30, width - 10, height - 80, text = text, parent=window)
-    ugfx.set_default_font(ugfx.FONT_MEDIUM_BOLD)
+    ugfx.set_default_font(FONT_MEDIUM_BOLD)
     button_yes = ugfx.Button(5, height - 40, width // 2 - 15 if false_text else width - 15, 30 , true_text, parent=window)
     button_no = ugfx.Button(width // 2 + 5, height - 40, width // 2 - 15, 30 , false_text, parent=window) if false_text else None
 
@@ -57,7 +57,7 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width 
         window.show()
 
         while True:
-            pyb.wfi()
+            sleep.wfi()
             if buttons.is_triggered("BTN_A"): return True
             if buttons.is_triggered("BTN_B"): return False
 
@@ -68,7 +68,7 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width 
         if button_no: button_no.destroy()
         label.destroy()
 
-def prompt_text(description, init_text = "", true_text="OK", false_text="Back", width = 300, height = 200, font=ugfx.FONT_MEDIUM_BOLD, style=default_style_badge):
+def prompt_text(description, init_text = "", true_text="OK", false_text="Back", width = 300, height = 200, font=FONT_MEDIUM_BOLD, style=default_style_badge):
     """Shows a dialog and keyboard that allows the user to input/change a string
 
     Returns None if user aborts with button B
@@ -86,7 +86,7 @@ def prompt_text(description, init_text = "", true_text="OK", false_text="Back", 
     ugfx.set_default_font(ugfx.FONT_MEDIUM)
     kb = ugfx.Keyboard(0, int(height/2), width, int(height/2), parent=window)
     edit = ugfx.Textbox(5, int(height/2)-30, int(width*4/5)-10, 25, text = init_text, parent=window)
-    ugfx.set_default_font(ugfx.FONT_SMALL)
+    ugfx.set_default_font(FONT_SMALL)
     button_yes = ugfx.Button(int(width*4/5), int(height/2)-30, int(width*1/5)-3, 25 , true_text, parent=window)
     button_no = ugfx.Button(int(width*4/5), int(height/2)-30-30, int(width/5)-3, 25 , false_text, parent=window) if false_text else None
     ugfx.set_default_font(font)
@@ -101,7 +101,7 @@ def prompt_text(description, init_text = "", true_text="OK", false_text="Back", 
         window.show()
         edit.set_focus()
         while True:
-            pyb.wfi()
+            sleep.wfi()
             ugfx.poll()
             #if buttons.is_triggered("BTN_A"): return edit.text()
             if buttons.is_triggered("BTN_B"): return None
@@ -123,7 +123,7 @@ def prompt_option(options, index=0, text = "Please select one of the following:"
     If none_text is specified the user can use the B or Menu button to skip the selection
     if title is specified a blue title will be displayed about the text
     """
-    ugfx.set_default_font(ugfx.FONT_SMALL)
+    ugfx.set_default_font(FONT_SMALL)
     window = ugfx.Container(5, 5, ugfx.width() - 10, ugfx.height() - 10)
     window.show()
 
@@ -156,7 +156,7 @@ def prompt_option(options, index=0, text = "Please select one of the following:"
         buttons.init()
 
         while True:
-            pyb.wfi()
+            sleep.wfi()
             ugfx.poll()
             if buttons.is_triggered("BTN_A"): return options[options_list.selected_index()]
             if button_none and buttons.is_triggered("BTN_B"): return None
@@ -180,15 +180,16 @@ class WaitingMessage:
         self.label = ugfx.Label(5, 40, self.window.width() - 10, ugfx.height() - 40, text = text, parent=self.window)
 
         # Indicator to show something is going on
-        self.indicator = ugfx.Label(ugfx.width() - 100, 0, 20, 20, text = "...", parent=self.window)
-        self.timer = pyb.Timer(3)
-        self.timer.init(freq=3)
-        self.timer.callback(lambda t: self.indicator.visible(not self.indicator.visible()))
+        #self.indicator = ugfx.Label(ugfx.width() - 100, 0, 20, 20, text = "...", parent=self.window)
+        #self.timer = machine.Timer(3)
+        #self.timer.init(freq=3)
+        #self.timer.callback(lambda t: self.indicator.visible(not self.indicator.visible()))
+        # todo: enable this once we have a timer somewhere
 
     def destroy(self):
-        self.timer.deinit()
+        #self.timer.deinit()
         self.label.destroy()
-        self.indicator.destroy()
+        #self.indicator.destroy()
         self.window.destroy()
 
     @property

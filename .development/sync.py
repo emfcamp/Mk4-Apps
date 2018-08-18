@@ -1,7 +1,7 @@
 import os, shutil, sys, fnmatch
 
 def sync(storage, patterns, resources, verbose):
-    root = get_root()
+    root = get_root(verbose)
 
     # Add all paths that are already files
     paths = set([p for p in (patterns or []) if os.path.isfile(os.path.join(root, p))])
@@ -30,7 +30,6 @@ def sync(storage, patterns, resources, verbose):
                     paths.add(path)
         if not found:
             print("WARN: No resources to copy found for pattern %s" % patterns)
-
     if not verbose:
         print("Copying %s files: " % len(paths), end="")
     for path in paths:
@@ -46,9 +45,7 @@ def sync(storage, patterns, resources, verbose):
 
         target = os.path.join(storage, rel_path)
         target_dir = os.path.dirname(target)
-        if os.path.isfile(target_dir):
-            # micropython has the tendency to sometimes corrupt directories into files
-            os.remove(target_dir)
+        ensure_dir(target_dir, storage)
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
         shutil.copy2(path, target)
@@ -58,6 +55,14 @@ def sync(storage, patterns, resources, verbose):
     else:
         print(" DONE")
     return synced_resources
+
+def ensure_dir(path, storage):
+    # micropython has a tendecy
+    if not path or path == storage:
+        return
+    if os.path.isfile(path):
+        os.remove(path)
+    ensure_dir(os.path.dirname(path), storage)
 
 def set_boot_app(storage, app_to_boot):
     path = os.path.join(storage, 'once.txt')
@@ -79,8 +84,7 @@ def set_no_boot(storage):
     with open(path, 'w') as f:
         f.write("\n")
 
-
-def get_root():
+def get_root(verbose=False):
     root = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..'))
     if not os.path.isfile(os.path.join(root, "boot.py")):
         print("Path %s doesn't contain a boot.py, aborting. Something is probably wrong with your setup.")

@@ -5,6 +5,7 @@ Warning! Don't use this for anything important, it's probably biased
 
 ___license___ = "MIT"
 
+# todo: simplify this by using "urandom"
 import os
 
 _bigrand_bytes = 10

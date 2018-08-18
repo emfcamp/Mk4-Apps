@@ -6,7 +6,7 @@ In particular, they *should*:
 
 * Call "homescreen.init()" at the beginning. This will initiate ugfx, clear the screen and
   initiate button handline.
-* Use "pyb.wfi()" as much as possible to avoid draining the battery.
+* Use "sleep.wfi()" as much as possible to avoid draining the battery.
 * Not use
 
 They also *may*:
@@ -17,9 +17,9 @@ They also *may*:
 """
 
 ___license___      = "MIT"
-___dependencies___ = ["database", "buttons", "random", "app"]
+___dependencies___ = ["database", "buttons", "random", "app", "sleep"]
 
-import database, ugfx, random, buttons, time, select
+import database, ugfx, random, select, buttons
 from app import App
 
 _state = None
@@ -27,13 +27,10 @@ def init(enable_menu_button = True):
     global _state
     _state = {"menu": False}
     ugfx.init()
-    ugfx.orientation(90)
-
-
 
     if enable_menu_button:
         buttons.init()
-        buttons.enable_interrupt("BTN_MENU", lambda t: set_state("menu"), on_release = True)
+        #buttons.enable_interrupt("BTN_MENU", lambda t: set_state("menu"), on_release = True)
 
 def set_state(key, value = True):
     # we can't allocate memory in interrupts, so make sure all keys are set beforehand and
@@ -42,18 +39,13 @@ def set_state(key, value = True):
     _state[key] = value
 
 def clean_up():
-    buttons.disable_all_interrupt()
+    pass
 
-def check():
-    global _state
-    if _state["menu"]:
+def sleep(interval = 500):
+    if button.is_triggered("BTN_MENU", interval=interval):
         clean_up()
         App("launcher").boot()
 
-def sleep(interval = 500):
-    check()
-    time.sleep_ms(interval) # todo: deep sleep
-    check()
 
 def name(default = None):
     return database.get("homescreen.name", default)

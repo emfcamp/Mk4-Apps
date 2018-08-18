@@ -8,7 +8,7 @@ Current known issues:
 """
 
 ___license___ = "MIT"
-___dependencies___ = ["urlencode"]
+___dependencies___ = ["urlencode", "wifi"]
 
 import usocket, ujson, os, time, gc, wifi
 from urlencode import urlencode
@@ -144,6 +144,7 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, data=No
     if proto == 'http:':
         port = 80
     elif proto == 'https:':
+        #todo make this work
         raise OSError("HTTPS is currently not supported")
         port = 443
     else:

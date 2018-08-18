@@ -138,7 +138,7 @@ def main():
 
 def find_storage():
     # todo: find solution for windows and linux
-    for pattern in ['/Volumes/PYBFLASH', '/Volumes/NO NAME']:
+    for pattern in ['/Volumes/TILDAMK4', '/Volumes/PYBFLASH', '/Volumes/NO NAME']:
         for path in glob.glob(pattern):
             return path
     print("Couldn't find badge storage - Please make it's plugged in and reset it if necessary")

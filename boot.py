@@ -1,8 +1,6 @@
-import pyb, os, micropython, sys
+import os, micropython, sys
 
-micropython.alloc_emergency_exception_buf(100)
-
-sys.path.append('/flash/upip')
+# micropython.alloc_emergency_exception_buf(100) # doesn't exist in TiLDA Mk4 yet
 
 os.sync()
 root = os.listdir()
@@ -34,4 +32,4 @@ else:
         start = "main.py"
     start = file("once.txt", True) or file("default_app.txt", False) or any_home() or "bootstrap.py"
 
-    pyb.main(start)
+    #todo: something like tilda.main(start)

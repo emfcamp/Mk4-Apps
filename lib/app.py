@@ -66,7 +66,7 @@ class App:
 
     def boot(self):
         write_launch_file(self.name)
-        machine.reset() # used to be pyb.hard_reset()
+        machine.reset()
 
     def __str__(self):
         return self.title
@@ -116,5 +116,5 @@ def write_launch_file(app, file = "once.txt"):
 
 def restart_to_default():
     write_launch_file("")
-    machine.reset() # used to be pyb.hard_reset()
+    machine.reset()
 

@@ -1,20 +1,17 @@
 """Handles connecting to a wifi access point based on a valid wifi.json file"""
 
 ___license___      = "MIT"
-___dependencies___ = ["dialogs"]
+___dependencies___ = ["dialogs", "sleep"]
 
-import network
-import os
-import json
-import pyb
-import dialogs
+import network, os, json, dialogs, sleep, time
 
 _nic = None
 
 def nic():
     global _nic
     if not _nic:
-        _nic = network.CC3100()
+        _nic = network.WLAN()
+        _nic.active(True)
     return _nic
 
 def connection_details():
@@ -37,7 +34,7 @@ def connect(wait=True, timeout=10, show_wait_message=False, prompt_on_fail=True,
     retry_connect = True
 
     while retry_connect:
-        if nic().is_connected():
+        if nic().isconnected():
             return
 
         details = connection_details()
@@ -68,25 +65,27 @@ def connect(wait=True, timeout=10, show_wait_message=False, prompt_on_fail=True,
                     if not retry_connect:
                         os.remove('wifi.json')
                         os.sync()
-                        # We would rather let you choose a new network here, but
-                        # scanning doesn't work after a connect at the moment
-                        pyb.hard_reset()
+
                 else:
                     raise
 
 def connect_wifi(details, timeout, wait=False):
     if 'pw' in details:
-        nic().connect(details['ssid'], details['pw'], timeout=timeout)
+        nic().connect(details['ssid'], details['pw'])
     else:
-        nic().connect(details['ssid'], timeout=timeout)
+        nic().connect(details['ssid'])
 
     if wait:
-        while not nic().is_connected():
-            nic().update()
-            pyb.delay(100)
+        wait_until = time.ticks_ms() + 2000
+        while not nic().isconnected():
+            #nic().update() # todo: do we need this?
+            if (time.ticks_ms() > wait_until):
+                raise Exception("Timeout while trying to connect to wifi")
+            sleep.sleep_ms(100)
+
 
 def is_connected():
-    return nic().is_connected()
+    return nic().isconnected()
 
 def get_security_level(ap):
     n = nic()
@@ -149,5 +148,4 @@ def choose_wifi(dialog_title='TiLDA'):
 
             file.write(json.dumps(conn_details))
         os.sync()
-        # We can't connect after scanning for some bizarre reason, so we reset instead
-        pyb.hard_reset()
+        # todo: last time we had to hard reset here, is that still the case?

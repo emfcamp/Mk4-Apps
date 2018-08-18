@@ -10,10 +10,10 @@ import os
 
 sep = "/"
 
-R_OK = const(4)
-W_OK = const(2)
-X_OK = const(1)
-F_OK = const(0)
+R_OK = 4
+W_OK = 2
+X_OK = 1
+F_OK = 0
 
 def join(*args):
     # TODO: this is non-compliant
