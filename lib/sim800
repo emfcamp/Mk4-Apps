@@ -1,0 +1,223 @@
+import machine
+import time
+
+uart_port = 1
+uart_default_baud = 115200
+uart_timeout = 28
+default_responce_timeout = 8000
+
+status_pin = Pin(6, Pin.IN)
+ringer_pin = Pin(8, Pin.IN)
+pwr_key_pin = Pin(23, Pin.OUT)
+
+# Open the UART
+uart = machine.UART(uart_port, uart_default_baud, mode=UART.BINARY, timeout=uart_timeout)
+dirtybuffer = False # Flag if the buffer could have residual end of responces line in it?
+
+# Check if the SIM800 is powered up
+def ison():
+    return status_pin.value()==1
+
+# Check if the SIM800 is ringing
+def isringing():
+    return ringer_pin.value()==0
+
+# Identify if this was a positive responce
+def ispositive(responce):
+    return (responce=="OK") or responce.startswith("CONNECT")
+
+# Identify if this was a negative responce
+def isnegative(responce):
+    return (responce=="NO CARRIER") or (responce=="ERROR") or (responce=="NO DIALTONE") or (responce=="BUSY") or (responce=="NO ANSWER")
+
+# Extract the [first] parameter from a responce 
+def extractval(parameter, responce, default=""):
+    for entry in responce:
+        if entry.startswith(parameter):
+            return (entry[len(parameter):]).strip()
+    return default
+
+# Read a lines of responce from the UART
+def readline():
+    stringin = ""
+    while (True):
+        charin = uart.read(1)
+        # If we time out we are at the end of a line
+        if charin is None:
+            return stringin
+        # Look for all EOL chars just in case settigns were changed
+        elif (charin == b'\n') or (charin == b'\r'):
+            if (stringin!=""):
+                return stringin
+        # This will be part of the string then
+        else:
+            stringin += str(charin, "ASCII")
+
+# Execute a command on the module
+# command is the AT command without the AT or CR/LF, responce_timeout (in ms) is how long to wait for completion, custom_endofdata is to wait for a non standard bit of 
+def command(command="", responce_timeout=default_responce_timeout, custom_endofdata=None):
+    # Empty the buffer
+    uart.read()
+    # Send the command
+    uart.write("AT" + command + "\r\n")
+    # Read the results
+    result = []
+    complete = False
+    customcomplete = custom_endofdata is None
+    timeouttime = time.time()+(responce_timeout/1000)
+    while (time.time()<timeouttime):
+        line = readline()
+        # Remember the line if not empty
+        if (len(line)>0):
+            result.append(line)
+        # Check if we have a standard end of responce
+        if (ispositive(line)) or (isnegative(line)):
+            complete = True
+        # Check if we have the data we are looking for
+        if (custom_endofdata is not None) and (line.startswith(custom_endofdata)):
+            customcomplete = True
+        # Check if we are done
+        if complete and customcomplete:
+            return result
+    # We ran out of time
+    # set the dirty buffer flag is an out of date end of responcs cound end up in the buffer
+    if custom_endofdata is None:
+        global dirtybuffer
+        dirtybuffer = True
+    result.append("TIMEOUT")
+    return result
+
+# Power on the SIN800
+def poweron():
+	# Only power on if we are off
+    if not ison():
+		# Check that the power pin has not beel left high
+        if (pwr_key_pin.value()):
+            pwr_key_pin.off()
+            time.sleep(1)
+        pwr_key_pin.on()
+        time.sleep(3)
+        pwr_key_pin.off()
+		# Send a command to autonigotiate UART speed        
+        command()
+        time.sleep(2)
+        uart.read() # Empty the buffer
+
+# Power off the SIN800
+def poweroff():
+	# Only power off if we are on
+    if (status_pin.value()):
+		# Check that the power pin has not beel left high
+        if (pwr_key_pin.value()):
+            pwr_key_pin.off()
+            time.sleep(1)
+        pwr_key_pin.on()
+        time.sleep(3)
+        pwr_key_pin.off()
+        uart.read() # Empty the buffer
+        dirtybuffer = False
+
+# Change the speed on the communication
+def uartspeed(newbaud):
+    global uart
+    command("+IPR=" + str(newbaud))
+    uart.deinit()
+    if (newbaud==0):
+        uart = machine.UART(uart_port, uart_default_baud, mode=UART.BINARY, timeout=uart_timeout)
+    else:
+        uart = machine.UART(uart_port, newbaud, mode=UART.BINARY, timeout=uart_timeout)
+
+# Make a voice call
+def call(number):
+    command("D" + str(newbaud) + ";")
+
+# Answer a voice call
+def answer(number):
+    command("A")
+
+# End a voice call
+def handup():
+    command("H")
+
+# Get/Set ringer volume (0-100)
+def ringervolume(level=None):
+    # Set the new leve if we have one to set
+    if level is not None:
+        command("+CRSL=" + str(level))
+    # Retieve the set level to report back
+    responce = command("+CRSL?")
+    return int(extractval("+CRSL:", responce, 0))
+
+# Get/Set speaker volume (0-100)
+def speakervolume(level=None):
+    # Set the new leve if we have one to set
+    if level is not None:
+        command("+CLVL=" + str(level))
+    # Retieve the set level to report back
+    responce = command("+CLVL?")
+    return int(extractval("+CLVL:", responce, 0))
+
+# Is the battery charging (0=no, 1=yes, 2=full)
+def batterycharging():
+    responce = command("+CBC")
+    vals = extractval("+CBC:", responce, "0,0,0").split(",")
+    return int(vals[0])
+
+# How full is the battery (1-100)
+def batterycharge():
+    responce = command("+CBC")
+    vals = extractval("+CBC:", responce, "0,0,0").split(",")
+    return int(vals[1])
+
+# List the available operator (returns list of [0=?,1=available,2=current,3=forbidden], 0=long name, 1=short name, 2=GSMLAI )
+def listoperators(available_only=True):
+    delim = "||||"
+    responce = command("+COPS=?", 45000)
+    responcedata = extractval("+COPS:", responce, "").split(",,")[0]
+    responcelist = responcedata.replace("),(",delim)[1:-1].split(delim)
+    results = []
+    for entry in responcelist:
+        subresults = []
+        for subentry in entry.split(","):
+            subresults.append(subentry.strip("\""))
+        if (not available_only) or (subresults[0]=="1") or (subresults[0]=="2"):
+            results.append(subresults)
+    return results
+
+# Get the current operator (format 0=long name, 1=short name, 2=GSMLAI)
+def currentoperator(format=0):
+    command("+COPS=3," + str(format))
+    responce = command("+COPS?")
+    responcedata = extractval("+COPS:", responce, "").split(",")
+    if (len(responcedata)>=3):
+        return responcedata[2].strip("\"")
+    else:
+        return ""
+
+# Set the operator selection ([0=automatic,2=deregister])
+def soperator(mode, format=None, operator=None):
+    params = ""
+    if format is not None:
+        params += "," + str(format)
+        if operator is not None:
+            params += "," + str(operator)
+    command("+COPS=" + str(mode) + params, 120000)
+
+# Get the activity status (returns 0=ready, 2=unknown, 3=ringing, 4=call in progress)
+def getstatus():
+    responce = command("+CPAS")
+    vals = extractval("+CPAS:", responce, "2")
+    return int(extractval("+CPAS:", responce, "2"))
+
+# Get my number
+def getmynumber():
+    responce = command("+CUSD=1,\"*#100#\"", 8000, "+CUSD:")
+    responcedata = extractval("+CUSD:", responce, "").split(",")
+    if (len(responcedata)>=2):
+        return responcedata[1].strip().strip("\"")
+    else:
+        return ""
+
+
+# Turn on the SIM800
+poweron()
