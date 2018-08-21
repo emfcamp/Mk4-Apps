@@ -87,9 +87,10 @@ def get_resources(path):
                 if upip_lib.startswith(".") or upip_lib == "__pycache__":
                     continue
                 full_lib_path = os.path.join(full_path, upip_lib)
+                rel_lib_path = os.path.join(sub_path, upip_lib)
                 files = {}
                 if os.path.isfile(full_lib_path):
-                    files = {full_lib_path: None}
+                    files = {rel_lib_path: None}
                     upip_lib = upip_lib.rsplit('.', 1)[0]
                 else:
                     for rel_path in _scan_files(full_lib_path, os.path.join(sub_path, upip_lib)):
