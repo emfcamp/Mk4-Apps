@@ -6,7 +6,7 @@ _pyb = None
 def get_pyb(args):
     global _pyb
     if not _pyb:
-        print("Connected to badge:", end="")
+        print("Connected to badge:", end="", flush=True)
         if not args.device:
             args.device = find_tty()
 
@@ -27,11 +27,9 @@ def close_pyb():
 
 def stop_badge(args, verbose):
     pyb = get_pyb(args)
-    if verbose:
-        print("Stopping running app:", end="")
+    print("Stopping running app:", end="", flush=True)
     write_command(pyb, b'\r\x03\x03') # ctrl-C twice: interrupt any running program
-    if verbose:
-        print(" DONE")
+    print(" DONE")
 
 def write_command(pyb, command):
     flush_input(pyb)
@@ -47,7 +45,7 @@ def flush_input(pyb):
 def soft_reset(args, verbose = True):
     pyb = get_pyb(args)
     if verbose:
-        print("Soft reboot:", end="")
+        print("Soft reboot:", end="", flush=True)
     write_command(pyb, b'\x04') # ctrl-D: soft reset
     data = pyb.read_until(1, b'soft reboot\r\n')
     if data.endswith(b'soft reboot\r\n'):
@@ -76,7 +74,7 @@ def run(args, paths, verbose=True):
     pyb = get_pyb(args)
 
     if verbose:
-        print("Preparing execution:", end="")
+        print("Preparing execution:", end=" ", flush=True)
     # run any command or file(s) - this is mostly a copy from pyboard.py
     if len(paths):
         # we must enter raw-REPL mode to execute commands

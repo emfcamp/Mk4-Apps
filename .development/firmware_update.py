@@ -20,7 +20,8 @@ def firmware_update(verbose):
             print("We couldn't find a DFU enabled badge. Please check the following:")
             print("")
             print("1) Your badge is plugged into this computer via USB")
-            print("2) Your badge is in DFU mode. You can tell by a small, red flashing light at the back")
+            print("2) The switch underneath the screen at the back of the badge is set to 'on'")
+            print("3) Your badge is in DFU mode. You can tell by a small, red flashing light at the back")
             print("")
             print("To put your badge into DFU mode (or if you're unsure whether it really is) you need to")
             print("press the joystick to the right while pressing the reset button at the back.")
@@ -28,7 +29,7 @@ def firmware_update(verbose):
             print("After that, please try this script again.")
             return
 
-        print("Downloading newest firmware: ", end="")
+        print("Downloading newest firmware: ", end="", flush=True)
         with urllib.request.urlopen(url) as response:
             with open(temp_path, 'wb') as tmp_file:
                 shutil.copyfileobj(response, tmp_file)

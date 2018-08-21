@@ -6,20 +6,20 @@ To publish apps use https://badge.emfcamp.org"""
 
 ___license___      = "MIT"
 ___title___        = "Badge Store"
-___dependencies___ = ["app", "badge_store", "dialogs"]
+___dependencies___ = ["app", "badge_store", "dialogs", "ugfx_helper"]
 ___categories___   = ["System"]
 ___bootstrapped___ = True
 
-import ugfx
+import ugfx_helper
 import os
 import wifi
 from dialogs import *
 import app
 from lib.badge_store import BadgeStore
 
-ugfx.init()
-
 ### VIEWS ###
+
+ugfx_helper.init()
 
 store = BadgeStore()
 title = "TiLDA Badge Store"
@@ -89,5 +89,6 @@ def main_menu():
         else:
             app.restart_to_default()
 
+wifi.connect(show_wait_message=True)
 main_menu()
 #show_app("launcher")

@@ -240,7 +240,7 @@ class Pyboard:
             delayed = False
             for attempt in range(wait + 1):
                 try:
-                    self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
+                    self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1, timeout=1, write_timeout=1)
                     break
                 except (OSError, IOError): # Py2 and Py3 have different errors
                     if wait == 0:
@@ -282,9 +282,8 @@ class Pyboard:
                 time.sleep(0.01)
         return data
 
-    def enter_raw_repl(self):
+    def enter_raw_repl(self, retry_count = 2):
         self.serial.write(b'\r\x03\x03') # ctrl-C twice: interrupt any running program
-
         # flush input (without relying on serial.flushInput())
         n = self.serial.inWaiting()
         while n > 0:
@@ -295,6 +294,8 @@ class Pyboard:
         data = self.read_until(1, b'raw REPL; CTRL-B to exit\r\n>')
         if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
             print(data)
+            if retry_count:
+                self.enter_raw_repl(retry_count - 1)
             raise PyboardError('could not enter raw repl')
 
         self.serial.write(b'\x04') # ctrl-D: soft reset

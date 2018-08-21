@@ -32,7 +32,7 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width 
     if style == None:
         style = default_style_dialog
     ugfx.set_default_font(FONT_MEDIUM_BOLD)
-    window = ugfx.Container((ugfx.width() - width) // 2, (ugfx.height() - height) // 2,  width, height, style=style)
+    window = ugfx.Container((ugfx.width() - width) // 2, (ugfx.height() - height) // 2,  width, height)
     window.show()
     ugfx.set_default_font(font)
     window.text(5, 10, title, TILDA_COLOR)
@@ -49,17 +49,15 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width 
     button_no = ugfx.Button(width // 2 + 5, height - 40, width // 2 - 15, 30 , false_text, parent=window) if false_text else None
 
     try:
-        buttons.init()
-
-        button_yes.attach_input(ugfx.BTN_A,0)
-        if button_no: button_no.attach_input(ugfx.BTN_B,0)
+        #button_yes.attach_input(ugfx.BTN_A,0) # todo: re-enable once working
+        #if button_no: button_no.attach_input(ugfx.BTN_B,0)
 
         window.show()
 
         while True:
             sleep.wfi()
-            if buttons.is_triggered("BTN_A"): return True
-            if buttons.is_triggered("BTN_B"): return False
+            if buttons.is_triggered(buttons.Buttons.BTN_A): return True
+            if buttons.is_triggered(buttons.Buttons.BTN_B): return False
 
     finally:
         window.hide()
@@ -68,13 +66,13 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width 
         if button_no: button_no.destroy()
         label.destroy()
 
-def prompt_text(description, init_text = "", true_text="OK", false_text="Back", width = 300, height = 200, font=FONT_MEDIUM_BOLD, style=default_style_badge):
+def prompt_text(description, init_text = "", true_text="OK", false_text="Back", font=FONT_MEDIUM_BOLD, style=default_style_badge):
     """Shows a dialog and keyboard that allows the user to input/change a string
 
     Returns None if user aborts with button B
     """
 
-    window = ugfx.Container(int((ugfx.width()-width)/2), int((ugfx.height()-height)/2), width, height, style=style)
+    window = ugfx.Container(0, 0, ugfx.width(), ugfx.height())
 
     if false_text:
         true_text = "M: " + true_text
@@ -83,29 +81,27 @@ def prompt_text(description, init_text = "", true_text="OK", false_text="Back", 
     if buttons.has_interrupt("BTN_MENU"):
         buttons.disable_interrupt("BTN_MENU")
 
-    ugfx.set_default_font(ugfx.FONT_MEDIUM)
-    kb = ugfx.Keyboard(0, int(height/2), width, int(height/2), parent=window)
-    edit = ugfx.Textbox(5, int(height/2)-30, int(width*4/5)-10, 25, text = init_text, parent=window)
+    ugfx.set_default_font(FONT_MEDIUM_BOLD)
+    kb = ugfx.Keyboard(0, ugfx.height()//2, ugfx.width(), ugfx.height()//2, parent=window)
+    edit = ugfx.Textbox(2, ugfx.height()//2-60, ugfx.width()-7, 25, text = init_text, parent=window)
     ugfx.set_default_font(FONT_SMALL)
-    button_yes = ugfx.Button(int(width*4/5), int(height/2)-30, int(width*1/5)-3, 25 , true_text, parent=window)
-    button_no = ugfx.Button(int(width*4/5), int(height/2)-30-30, int(width/5)-3, 25 , false_text, parent=window) if false_text else None
+    button_yes = ugfx.Button(2, ugfx.height()//2-30, ugfx.width()//2-6, 25 , true_text, parent=window)
+    button_no = ugfx.Button(ugfx.width()//2+2, ugfx.height()//2-30, ugfx.width()//2-6, 25 , false_text, parent=window) if false_text else None
     ugfx.set_default_font(font)
-    label = ugfx.Label(int(width/10), int(height/10), int(width*4/5), int(height*2/5)-60, description, parent=window)
+    label = ugfx.Label(ugfx.width()//10, ugfx.height()//10, ugfx.width()*4//5, ugfx.height()*2//5-90, description, parent=window)
 
     try:
-        buttons.init()
-
-        button_yes.attach_input(ugfx.BTN_MENU,0)
-        if button_no: button_no.attach_input(ugfx.BTN_B,0)
+        #button_yes.attach_input(ugfx.BTN_MENU,0) # todo: re-enable this
+        #if button_no: button_no.attach_input(ugfx.BTN_B,0)
 
         window.show()
-        edit.set_focus()
+        # edit.set_focus() todo: do we need this?
         while True:
             sleep.wfi()
             ugfx.poll()
-            #if buttons.is_triggered("BTN_A"): return edit.text()
-            if buttons.is_triggered("BTN_B"): return None
-            if buttons.is_triggered("BTN_MENU"): return edit.text()
+            #if buttons.is_triggered(buttons.Buttons.BTN_A): return edit.text()
+            if buttons.is_triggered(buttons.Buttons.BTN_B): return None
+            if buttons.is_triggered(buttons.Buttons.BTN_Menu): return edit.text()
 
     finally:
         window.hide()
@@ -143,7 +139,7 @@ def prompt_option(options, index=0, text = "Please select one of the following:"
             options_list.add_item(option["title"])
         else:
             options_list.add_item(str(option))
-    options_list.selected_index(index)
+    options_list.set_selected_index(index)
 
     select_text = "A: " + select_text
     if none_text:
@@ -153,14 +149,20 @@ def prompt_option(options, index=0, text = "Please select one of the following:"
     button_none = ugfx.Button(ugfx.width() - 160, ugfx.height() - 50, 140, 30 , none_text, parent=window) if none_text else None
 
     try:
-        buttons.init()
-
         while True:
             sleep.wfi()
             ugfx.poll()
-            if buttons.is_triggered("BTN_A"): return options[options_list.selected_index()]
-            if button_none and buttons.is_triggered("BTN_B"): return None
-            if button_none and buttons.is_triggered("BTN_MENU"): return None
+            # todo: temporary hack
+            if (buttons.is_triggered(buttons.Buttons.JOY_Up)):
+                index = max(index - 1, 0)
+                options_list.set_selected_index(index)
+            if (buttons.is_triggered(buttons.Buttons.JOY_Down)):
+                index = min(index + 1, len(options) - 1)
+                options_list.set_selected_index(index)
+
+            if buttons.is_triggered(buttons.Buttons.BTN_A): return options[options_list.get_selected_index()]
+            if button_none and buttons.is_triggered(buttons.Buttons.BTN_B): return None
+            if button_none and buttons.is_triggered(buttons.Buttons.BTN_Menu): return None
 
     finally:
         window.hide()

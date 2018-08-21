@@ -70,12 +70,19 @@ class Installer:
         count = 0
         while get_hash(TEMP_FILE) != self.hash:
             count += 1
+            print(count)
             if count > 5:
-                os.remove(TEMP_FILE)
+                try:
+                    os.remove(TEMP_FILE)
+                except:
+                    pass
                 raise OSError("Aborting download of %s after 5 unsuccessful attempts" % self.path)
             try:
+                print("download ", self.url, self.params)
                 get(self.url, params=self.params).raise_for_status().download_to(TEMP_FILE)
-            except OSError:
+            except OSError as e:
+                if "404" in str(e):
+                    raise e
                 pass
         try:
             os.remove(self.path)

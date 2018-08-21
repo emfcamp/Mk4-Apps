@@ -168,11 +168,7 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, data=No
         content = None
 
     # ToDo: Handle IPv6 addresses
-    if is_ipv4_address(host):
-        addr = (host, port)
-    else:
-        ai = usocket.getaddrinfo(host, port)
-        addr = ai[0][4]
+    addr = get_address_info(host, port)
 
     sock = None
     if proto == 'https:':
@@ -202,6 +198,21 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, data=No
         sock.send('\r\n')
 
     return sock
+
+def get_address_info(host, port, retries_left = 20):
+    try:
+        if is_ipv4_address(host):
+            addr = (host, port)
+        else:
+            return usocket.getaddrinfo(host, port)[0][4]
+    except OSError as e:
+        if ("-15" in str(e)) and retries_left:
+            # [addrinfo error -15]
+            # This tends to happen after startup and goes away after a while
+            time.sleep_ms(200)
+            return get_address_info(host, port, retries_left - 1)
+        else:
+            raise e
 
 # Adapted from upip
 def request(method, url, json=None, timeout=None, headers=None, data=None, params=None):

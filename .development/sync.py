@@ -31,7 +31,7 @@ def sync(storage, patterns, resources, verbose):
         if not found:
             print("WARN: No resources to copy found for pattern %s" % patterns)
     if not verbose:
-        print("Copying %s files: " % len(paths), end="")
+        print("Copying %s files: " % len(paths), end="", flush=True)
     for path in paths:
         if not path:
             continue
@@ -41,7 +41,7 @@ def sync(storage, patterns, resources, verbose):
         if verbose:
             print("Copying %s..." % rel_path)
         else:
-            print(".", end="")
+            print(".", end="", flush=True)
 
         target = os.path.join(storage, rel_path)
         target_dir = os.path.dirname(target)

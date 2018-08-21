@@ -1,41 +1,24 @@
-"""Convenience methods for dealing with the TiLDA buttons"""
+"""Convenience methods for dealing with the TiLDA buttons
+
+Pins are decined in tilda.Buttons.BTN_XYZ:
+BTN_0 - BTN_9, BTN_Hash, BTN_Star
+BTN_A, BTN_B
+BTN_Call, BTN_End
+BTN_Menu
+JOY_Center, JOY_Down, JOY_Left, JOY_Right, JOY_Up
+"""
 
 ___license___ = "MIT"
 
-import machine, time
+import machine, time, tilda
 
-CONFIG = {
-    "JOY_UP": [1, machine.Pin.PULL_DOWN],
-    "JOY_DOWN": [2, machine.Pin.PULL_DOWN],
-    "JOY_RIGHT": [4, machine.Pin.PULL_DOWN],
-    "JOY_LEFT": [3, machine.Pin.PULL_DOWN],
-    "JOY_CENTER": [0, machine.Pin.PULL_DOWN],
-    "BTN_MENU": [5, machine.Pin.PULL_UP]
-}
-# todo: port expander
+# Convenience
+Buttons = tilda.Buttons
 
-_tilda_pins = {}
-_tilda_interrupts = {}
 _tilda_bounce = {}
 
-def _get_pin(button):
-    if button not in _tilda_pins:
-        raise ValueError("Please call button.init() first before using any other button functions")
-    return _tilda_pins[button]
-
-def init(buttons = CONFIG.keys()):
-    """Inits all pins used by the TiLDA badge"""
-    global _tilda_pins
-    for button in buttons:
-        _tilda_pins[button] = machine.Pin(CONFIG[button][0], machine.Pin.IN)
-        _tilda_pins[button].init(machine.Pin.IN, CONFIG[button][1])
-
 def is_pressed(button):
-    pin = _get_pin(button)
-    if pin.pull() == machine.Pin.PULL_DOWN:
-        return pin.value() > 0
-    else:
-        return pin.value() == 0
+    return tilda.Buttons.is_pressed(button)
 
 def is_triggered(button, interval = 30):
     """Use this function if you want buttons as a trigger for something in a loop
@@ -52,22 +35,30 @@ def is_triggered(button, interval = 30):
                 return False # The button might have bounced back to high
 
         # Wait for a while to avoid bounces to low
-        machine.sleep_ms(interval)
+        time.sleep_ms(interval)
 
         # Wait until button is released again
         while is_pressed(button):
-            machine.sleep_ms(1)
+            time.sleep_ms(1)
 
         _tilda_bounce[button] = time.ticks_ms() + interval
         return True
 
+
+
+# The following functions might not work
+
+
 def has_interrupt(button):
-    global _tilda_interrupts
-    _get_pin(button)
-    if button in _tilda_interrupts:
-        return True
-    else:
-        return False
+    return False;
+
+    # todo: re-enable
+    #global _tilda_interrupts
+    #_get_pin(button)
+    #if button in _tilda_interrupts:
+    #    return True
+    #else:
+    #    return False
 
 
 def enable_interrupt(button, interrupt, on_press = True, on_release = False):

@@ -3,9 +3,9 @@
 Very limited at the moment since we can't test the main input dialogs"""
 
 ___license___      = "MIT"
-___dependencies___ = ["upip:unittest", "dialogs", "sleep"]
+___dependencies___ = ["upip:unittest", "dialogs", "sleep", "ugfx_helper"]
 
-import unittest, ugfx
+import unittest, ugfx, ugfx_helper
 from machine import Pin
 from dialogs import *
 from sleep import *
@@ -13,20 +13,21 @@ from sleep import *
 class TestDialogs(unittest.TestCase):
 
     def setUpClass(self):
-        ugfx.init()
-        Pin(Pin.PWM_LCD_BLIGHT).on()
+        ugfx_helper.init()
 
     def tearDownClass(self):
-        Pin(Pin.PWM_LCD_BLIGHT).off()
+        ugfx_helper.deinit()
 
-    def test_app_object(self):
-        count_max = 10
-        with WaitingMessage("Testing...", "Foo") as c:
-            for i in range(1, count_max):
-                sleep_ms(100)
-                c.text = "%d/%d" % (i, count_max)
+#    def test_waiting(self):
+#        count_max = 3
+#        with WaitingMessage("Testing...", "Foo") as c:
+#            for i in range(1, count_max):
+#                c.text = "%d/%d" % (i, count_max)
+#
+#        print("done")
 
-        print("done")
+    def test_(self):
+        prompt_text("description")
 
 
 

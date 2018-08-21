@@ -31,9 +31,7 @@ def ssid():
     return connection_details()["ssid"]
 
 def connect(wait=True, timeout=10, show_wait_message=False, prompt_on_fail=True, dialog_title='TiLDA'):
-    retry_connect = True
-
-    while retry_connect:
+    while True:
         if nic().isconnected():
             return
 
@@ -60,7 +58,7 @@ def connect(wait=True, timeout=10, show_wait_message=False, prompt_on_fail=True,
                         text="Failed to connect to '%s'" % details['ssid'],
                         title=dialog_title,
                         true_text="Try again",
-                        false_text="Forget it",
+                        false_text="Change it",
                     )
                     if not retry_connect:
                         os.remove('wifi.json')
@@ -76,11 +74,11 @@ def connect_wifi(details, timeout, wait=False):
         nic().connect(details['ssid'])
 
     if wait:
-        wait_until = time.ticks_ms() + 2000
+        wait_until = time.ticks_ms() + timeout * 1000
         while not nic().isconnected():
             #nic().update() # todo: do we need this?
             if (time.ticks_ms() > wait_until):
-                raise Exception("Timeout while trying to connect to wifi")
+                raise OSError("Timeout while trying to connect to wifi")
             sleep.sleep_ms(100)
 
 
@@ -88,6 +86,7 @@ def is_connected():
     return nic().isconnected()
 
 def get_security_level(ap):
+    #todo: fix this
     n = nic()
     levels = {}
     try:
@@ -106,22 +105,30 @@ def get_security_level(ap):
 def choose_wifi(dialog_title='TiLDA'):
     filtered_aps = []
     with dialogs.WaitingMessage(text='Scanning for networks...', title=dialog_title):
-        visible_aps = nic().list_aps()
-        visible_aps.sort(key=lambda x:x['rssi'], reverse=True)
+        visible_aps = None
+        while not visible_aps:
+            visible_aps = nic().scan()
+            print(visible_aps)
+            sleep.sleep_ms(300)
+            #todo: timeout
+        print(visible_aps)
+        visible_aps.sort(key=lambda x:x[3], reverse=True)
+        print(visible_aps)
         # We'll get one result for each AP, so filter dupes
         for ap in visible_aps:
-            title = ap['ssid']
-            security = get_security_level(ap)
+            title = ap[0]
+            security = "?" # todo: re-add get_security_level(ap)
             if security:
                 title = title + ' (%s)' % security
             ap = {
                 'title': title,
-                'ssid': ap['ssid'],
-                'security': security,
+                'ssid': ap[0],
+                'security': ap[4],
             }
             if ap['ssid'] not in [ a['ssid'] for a in filtered_aps ]:
                 filtered_aps.append(ap)
         del visible_aps
+    print(filtered_aps)
 
     ap = dialogs.prompt_option(
         filtered_aps,
