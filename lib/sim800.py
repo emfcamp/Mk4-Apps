@@ -179,6 +179,9 @@ def sendsms(number, message):
 # List the summery of SMS messages (0=unread,1=read,2=saved unread,3=saved sent, 4=all)
 def listsms(stat=0):
     statvals = ["REC UNREAD", "REC READ", "STO UNSENT", "STO SENT", "ALL"]
+    # Swith to text mode
+    command("AT+CMGF=1")
+    # Retrieve the list
     return extractvals("+CMGL:", command("AT+CMGL=\"" + statvals[stat] + "\",1", 8000))
     
 # Check if we have recived a new unread SMS message
@@ -187,6 +190,11 @@ def newsms():
 
 # Read an SMS message
 def readsms(index, leaveunread=False):
+    # Swith to text mode
+    command("AT+CMGF=1")
+    # Switch to ASCII(ish)
+    command("AT+CSCS=\"8859-1\"")
+    # Retrieve the message
     responce = command("AT+CMGR=" + str(index) + "," + str(int(leaveunread)), 5000)
     if (len(responce)>=3):
         return responce[-2]
