@@ -291,8 +291,8 @@ def currentoperator(format=0):
     else:
         return ""
 
-# Set the operator selection ([0=automatic,2=deregister])
-def soperator(mode, format=None, operator=None):
+# Set the operator selection ([0=automatic,1=Manual,2=deregister,4=try manual then automatic])
+def setoperator(mode, format=None, operator=None):
     params = ""
     if format is not None:
         params += "," + str(format)
