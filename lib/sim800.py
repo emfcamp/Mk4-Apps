@@ -30,12 +30,20 @@ def ispositive(responce):
 def isnegative(responce):
     return (responce=="NO CARRIER") or (responce=="ERROR") or (responce=="NO DIALTONE") or (responce=="BUSY") or (responce=="NO ANSWER")
 
-# Extract the [first] parameter from a responce 
+# Extract the [first/only] parameter from a responce 
 def extractval(parameter, responce, default=""):
     for entry in responce:
         if entry.startswith(parameter):
             return (entry[len(parameter):]).strip()
     return default
+
+# Extract all parameter from a responce 
+def extractvals(parameter, responce):
+    result = []
+    for entry in responce:
+        if entry.startswith(parameter):
+            result.append((entry[len(parameter):]).strip())
+    return result
 
 # Read a lines of responce from the UART
 def readline():
@@ -168,11 +176,32 @@ def sendsms(number, message):
     command("AT+CMGS=\"" + str(number) + "\"")
     return command(message + "\x1a", 60000)
 
+# List the summery of SMS messages (0=unread,1=read,2=saved unread,3=saved sent, 4=all)
+def listsms(stat=0):
+    statvals = ["REC UNREAD", "REC READ", "STO UNSENT", "STO SENT", "ALL"]
+    return extractvals("+CMGL:", command("AT+CMGL=\"" + statvals[stat] + "\",1", 8000))
+    
+# Check if we have recived a new unread SMS message
+def newsms():
+    return len(listsms(stat=0))>0
+
+# Read an SMS message
+def readsms(index, leaveunread=False):
+    responce = command("AT+CMGR=" + str(index) + "," + str(int(leaveunread)), 5000)
+    if (len(responce)>=3):
+        return responce[-2]
+    else:
+        return ""
+
+# Delete an SMS message
+def deletesms(index):
+    command("AT+CMGD=" + str(index), 5000)
+
 # Get the IMEI number of the SIM800
 def imei():
     responce = command("AT+GSN")
     if (len(responce)>=2):
-        return responce[len(responce)-2]
+        return responce[-2]
     else:
         return ""
 
@@ -194,6 +223,29 @@ def speakervolume(level=None):
     responce = command("AT+CLVL?")
     return int(extractval("+CLVL:", responce, 0))
 
+# Get/Set/Preview and set the ringtone (alert is 0-19)
+def ringtone(alert=None,preview=False):
+    # Set/preview the new ringtone if we have one to set
+    if alert is not None:
+        command("AT+CALS=" + str(alert) + "," + str(int(preview)))
+    # Retieve the current/new setting
+    responce = command("AT+CALS?")
+    current = extractval("+CALS:", responce, 0).split(",")[0]
+    # Stop the preview unless we started it
+    if alert is None:
+        command("AT+CALS=" + current + ",0")
+    # Return the surrent setting
+    return int(current)
+
+# play a tone though the SIM800 (MHz and ms)
+def playtone(freq=0,duration=2000,async=True):
+    if freq>0:
+        command("AT+SIMTONE=1," + str(freq) + "," + str(duration) + ",0," + str(duration))
+        if not async:
+            time.sleep(duration/1000)
+    else:
+        command("AT+SIMTONE=0")
+
 # Is the battery charging (0=no, 1=yes, 2=full)
 def batterycharging():
     responce = command("AT+CBC")
@@ -205,7 +257,7 @@ def batterycharge():
     responce = command("AT+CBC")
     vals = extractval("+CBC:", responce, "0,0,0").split(",")
     return int(vals[1])
-
+    
 # List the available operator (returns list of [0=?,1=available,2=current,3=forbidden], 0=long name, 1=short name, 2=GSMLAI )
 def listoperators(available_only=True):
     delim = "||||"
