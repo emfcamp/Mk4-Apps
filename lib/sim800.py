@@ -295,7 +295,6 @@ def soperator(mode, format=None, operator=None):
 # Get the activity status (returns 0=ready, 2=unknown, 3=ringing, 4=call in progress)
 def getstatus():
     responce = command("AT+CPAS")
-    vals = extractval("+CPAS:", responce, "2")
     return int(extractval("+CPAS:", responce, "2"))
     
 # Request Unstructured Supplementary Service Data from network
@@ -311,10 +310,45 @@ def getmynumber():
     else:
         return ""
 
+# Turn on or off Bluetooth
+def btpower(onoroff=True):
+    command("AT+BTPOWER=" + str(int(onoroff)), 8000)
 
+# Turn on Bluetooth
+def btpoweron():
+    btpower(True);
 
+# Turn off Bluetooth
+def btpoweroff():
+    btpower(False);
 
+# Get the current status of Bluetooth (0=off,5=idel, other values docuemtned for "AT+BTSTATUS")
+def btstatus():
+    responce = command("AT+BTSTATUS?")
+    return int(extractval("+BTSTATUS:", responce, "0"))
 
+# Is Bluetooth on?
+def btison():
+    return btstatus()>=5
+
+# Get/Set the Bluetooth host device name
+def btname(name=None):
+    if name is not None:
+        responce = command("AT+BTHOST=" + str(name))
+    # Retrieve the current name
+    responce = command("AT+BTHOST?")
+    responcedata = extractval("+BTHOST:", responce, "").split(",")
+    return responcedata[0]
+
+# Get the Bluetooth address
+def btaddress():
+    responce = command("AT+BTHOST?")
+    responcedata = extractval("+BTHOST:", responce, "").split(",")
+    if (len(responcedata)>=2):
+        return responcedata[-1]
+    else:
+        return ""
+    
 # Start turning on the SIM800
 poweron(True)
 
