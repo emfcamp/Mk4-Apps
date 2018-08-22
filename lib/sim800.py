@@ -297,6 +297,14 @@ def getstatus():
     responce = command("AT+CPAS")
     return int(extractval("+CPAS:", responce, "2"))
     
+# Get the firmware revision
+def getfirmwarever():
+    responce = command("AT+CGMR")
+    if (len(responce)>=3):
+        return responce[-2]
+    else:
+        return ""
+
 # Request Unstructured Supplementary Service Data from network
 def ussd(ussdstring, timeout=8000):
     responce = command("AT+CUSD=1,\"" + ussdstring + "\"", timeout, "+CUSD:")
