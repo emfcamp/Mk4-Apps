@@ -16,8 +16,8 @@ class TestWifi(unittest.TestCase):
         Pin(Pin.PWM_LCD_BLIGHT).off()
 
     def test_connect(self):
-        wifi.connect()
-        self.assertTrue(wifi.is_connected(show_wait_message=True))
+        wifi.connect(show_wait_message=True)
+        self.assertTrue(wifi.is_connected())
 
 if __name__ == '__main__':
     unittest.main()
