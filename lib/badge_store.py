@@ -1,11 +1,11 @@
 """Library to interact with the badge store"""
 
 ___license___      = "MIT"
-___dependencies___ = ["http", "ospath", "app"]
+___dependencies___ = ["http", "ospath"]
 
 from ospath import *
 from http import *
-import hashlib, binascii, app
+import hashlib, binascii
 
 class BadgeStore:
     def __init__(self, url = "http://badge.marekventur.com", repo="emfcamp/Mk4-Apps", ref="master"):
@@ -28,8 +28,19 @@ class BadgeStore:
     def get_app(self, app):
         return self._call("app", {"app": app})
 
-    def call_install(self, apps):
-        files = self._call("install", {"apps": ",".join(apps)})
+    def install(self, apps):
+        return self._create_installers(self._call("install", {"apps": ",".join(apps)}))
+
+    def bootstrap(self):
+        return self._create_installers(self._call("bootstrap"))
+
+    def _call(self, command, params = {}):
+        params["repo"] = self.repo
+        params["ref"] = self.ref
+        with get("%s/%s" % (self.url, command), params=params).raise_for_status() as response:
+            return response.json() # todo: error handling
+
+    def _create_installers(self, files):
         installers = []
         url = "%s/download" % (self.url)
         for path, hash in files.items():
@@ -39,23 +50,8 @@ class BadgeStore:
             installers.append(Installer(path, url, params, hash))
         return installers
 
-    def install(self, app):
-        return self.call_install(self._get_current_apps() + [app])
-
-    def update(self):
-        return self.call_install(self._get_current_apps())
-
-    def _call(self, command, params = {}):
-        params["repo"] = self.repo
-        params["ref"] = self.ref
-        with get("%s/%s" % (self.url, command), params=params).raise_for_status() as response:
-            return response.json() # todo: error handling
-
     def _is_file_up_to_date(self, path, hash):
         return hash == _get_hash(path)
-
-    def _get_current_apps(self):
-        return [a.name for a in app.get_apps()]
 
 TEMP_FILE = ".tmp.download"
 
@@ -70,7 +66,6 @@ class Installer:
         count = 0
         while get_hash(TEMP_FILE) != self.hash:
             count += 1
-            print(count)
             if count > 5:
                 try:
                     os.remove(TEMP_FILE)
@@ -78,7 +73,6 @@ class Installer:
                     pass
                 raise OSError("Aborting download of %s after 5 unsuccessful attempts" % self.path)
             try:
-                print("download ", self.url, self.params)
                 get(self.url, params=self.params).raise_for_status().download_to(TEMP_FILE)
             except OSError as e:
                 if "404" in str(e):

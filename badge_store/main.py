@@ -6,7 +6,7 @@ To publish apps use https://badge.emfcamp.org"""
 
 ___license___      = "MIT"
 ___title___        = "Badge Store"
-___dependencies___ = ["app", "badge_store", "dialogs", "ugfx_helper"]
+___dependencies___ = ["app", "badge_store", "dialogs", "ugfx_helper", "app"]
 ___categories___   = ["System"]
 ___bootstrapped___ = True
 
@@ -56,7 +56,7 @@ def show_app(a):
 
     if install:
         with WaitingMessage(title="Installing %s" % a, text="Please wait...") as message:
-            installers = store.install(a)
+            installers = store.install(_get_current_apps + [a])
             n = len(installers)
             for i, installer in enumerate(installers):
                 message.text = "%s (%s/%s)" % (installer.path, i + 1, n)
@@ -88,6 +88,9 @@ def main_menu():
             option["function"]()
         else:
             app.restart_to_default()
+
+def _get_current_apps():
+    return [a.name for a in app.get_apps()]
 
 wifi.connect(show_wait_message=True)
 main_menu()
