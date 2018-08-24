@@ -6,12 +6,12 @@ uart_default_baud = 115200
 uart_timeout = 28
 default_responce_timeout = 2000
 
-status_pin = Pin(6, Pin.IN)
-ringer_pin = Pin(8, Pin.IN)
-pwr_key_pin = Pin(23, Pin.OUT)
+status_pin = machine.Pin(6, machine.Pin.IN)
+ringer_pin = machine.Pin(8, machine.Pin.IN)
+pwr_key_pin = machine.Pin(23, machine.Pin.OUT)
 
 # Open the UART
-uart = machine.UART(uart_port, uart_default_baud, mode=UART.BINARY, timeout=uart_timeout)
+uart = machine.UART(uart_port, uart_default_baud, mode=machine.UART.BINARY, timeout=uart_timeout)
 dirtybuffer = False # Flag if the buffer could have residual end of responces line in it?
 
 # Check if the SIM800 is powered up
@@ -372,7 +372,11 @@ def btaddress():
         return responcedata[-1]
     else:
         return ""
-    
+
+# Get the Bluetooth address (timeout from 10000 to 60000, returnd device ID, name, address, rssi)
+def btscan(timeout=30000):
+    responce = command("AT+BTSCAN=1," + str(int(timeout/1000)), timeout+8000, "+BTSCAN: 1")
+    return extractvals("+BTSCAN: 0,", responce)
+
 # Start turning on the SIM800
 poweron(True)
-
