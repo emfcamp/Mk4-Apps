@@ -213,6 +213,14 @@ def imei():
     else:
         return ""
 
+# Get the IMSI number of the Sim Card
+def imsi():
+    responce = command("AT+CIMI")
+    if (len(responce)>=2):
+        return responce[-2]
+    else:
+        return ""
+
 # Get/Set ringer volume (0-100)
 def ringervolume(level=None):
     # Set the new leve if we have one to set
