@@ -3,8 +3,10 @@
 ___license___      = "MIT"
 ___dependencies___ = ["upip:unittest", "speaker", "sleep"]
 
-import unittest, speaker
+import unittest, speaker, ugfx_helper
 from sleep import *
+
+ugfx_helper.init()
 
 class TestSpeaker(unittest.TestCase):
 

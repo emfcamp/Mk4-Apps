@@ -7,3 +7,16 @@ TiLDA Mk4 App Library
 * How to make your own changes
 * How to run tests
 * How to send a PR
+
+Please use one of these categories:
+* System
+* Homescreens
+* Games
+* Sound
+* EMF
+* Villages
+* Phone
+* LEDs
+* Sensors
+* Demo
+* Other

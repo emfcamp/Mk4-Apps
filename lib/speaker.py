@@ -36,12 +36,13 @@ def frequency(value = None):
         return _frequency
     _frequency = value
     _set_amp()
-    speaker_pwm().init(duty=50, freq=_frequency)
+    speaker_pwm().init(duty=1, freq=_frequency)
 
 def stop():
     global _frequency
     # todo: maybe we should deinit the PWM?
     _frequency = None
+    _set_amp()
     speaker_pwm().duty(0)
 
 # Music

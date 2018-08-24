@@ -1,4 +1,4 @@
-import os, micropython, sys
+import os, tilda
 
 # micropython.alloc_emergency_exception_buf(100) # doesn't exist in TiLDA Mk4 yet
 
@@ -10,7 +10,6 @@ def app(a):
         return a + "/main.py"
 
 def file(file, remove):
-    print(file)
     try:
         a = None
         with open(file, 'r') as f:
@@ -19,7 +18,7 @@ def file(file, remove):
             os.remove(file)
         return app(a)
     except Exception as e:
-        print(e)
+        print(str(e))
 
 def any_home():
     return app(next(a for a in root if a.startswith("home")))
@@ -31,5 +30,5 @@ else:
     if "main.py" in root:
         start = "main.py"
     start = file("once.txt", True) or file("default_app.txt", False) or any_home() or "bootstrap.py"
-
-    #todo: something like tilda.main(start)
+    print(start)
+    #tilda.main(start)

@@ -19,7 +19,7 @@ They also *may*:
 ___license___      = "MIT"
 ___dependencies___ = ["database", "buttons", "random", "app", "sleep"]
 
-import database, ugfx, random, select, buttons
+import database, ugfx, random, buttons, tilda, sleep
 from app import App
 
 _state = None
@@ -29,7 +29,7 @@ def init(enable_menu_button = True):
     ugfx.init()
 
     if enable_menu_button:
-        buttons.init()
+        pass
         #buttons.enable_interrupt("BTN_MENU", lambda t: set_state("menu"), on_release = True)
 
 def set_state(key, value = True):
@@ -41,10 +41,12 @@ def set_state(key, value = True):
 def clean_up():
     pass
 
-def sleep(interval = 500):
-    if button.is_triggered("BTN_MENU", interval=interval):
+def sleep_or_exit(interval = 0.5):
+    # todo: do this better - check button multiple times and sleep for only a short while
+    if buttons.is_triggered(tilda.Buttons.BTN_Menu):
         clean_up()
         App("launcher").boot()
+    sleep.sleep(interval)
 
 
 def name(default = None):
