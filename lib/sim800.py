@@ -378,5 +378,45 @@ def btscan(timeout=30000):
     responce = command("AT+BTSCAN=1," + str(int(timeout/1000)), timeout+8000, "+BTSCAN: 1")
     return extractvals("+BTSCAN: 0,", responce)
 
+# Pair a Bluetooth device
+def btpair(device):
+    return command("AT+BTPAIR=0," + str(device), 8000)
+
+# Confirm the pairing of a Bluetooth device
+def btpairconfirm(passkey=None):
+    if passkey is None:
+        return command("AT+BTPAIR=1,1", 8000)
+    else:
+        return command("AT+BTPAIR=2," + str(passkey), 8000)
+
+# Cancel/reject the pairing of a Bluetooth device
+def btpairreject():
+    return command("AT+BTPAIR=1,0", 8000)
+
+# Unpair a Bluetooth device (unpair everything when device is 0)
+def btunpair(device=0):
+    return command("AT+BTUNPAIR=" + str(device), 8000)
+
+# List the paired Bluetooth devices
+def btpaired():
+    responce = command("AT+BTSTATUS?")
+    return extractvals("P:", responce)
+
+# Connect a Bluetooth device
+def btconnect(device, profile):
+    responce = command("AT+BTCONNECT=" + str(device) + "," + str(profile), 8000)
+    return extractvals("+BTCONNECT:", responce)
+
+# Connect a Bluetooth device
+def btdisconnect(device):
+    responce = command("AT+BTCONNECT=" + str(device), 8000)
+    return extractvals("+BTDISCONN:", responce)
+
+# List the Bluetooth connections
+def btconnected():
+    responce = command("AT+BTSTATUS?")
+    return extractvals("C:", responce)
+
+
 # Start turning on the SIM800
 poweron(True)
