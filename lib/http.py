@@ -10,7 +10,7 @@ Current known issues:
 ___license___ = "MIT"
 ___dependencies___ = ["urlencode", "wifi"]
 
-import usocket, ujson, os, time, gc, wifi
+import usocket, ujson, os, time, gc, wifi, ussl
 from urlencode import urlencode
 
 """Usage
@@ -144,8 +144,6 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, data=No
     if proto == 'http:':
         port = 80
     elif proto == 'https:':
-        #todo make this work
-        raise OSError("HTTPS is currently not supported")
         port = 443
     else:
         raise OSError('Unsupported protocol: %s' % proto[:-1])
@@ -170,11 +168,11 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, data=No
     # ToDo: Handle IPv6 addresses
     addr = get_address_info(host, port)
 
-    sock = None
+    sock = usocket.socket(usocket.AF_INET, usocket.SOCK_STREAM)
+
     if proto == 'https:':
-        sock = usocket.socket(usocket.AF_INET, usocket.SOCK_STREAM, usocket.SEC_SOCKET)
-    else:
-        sock = usocket.socket()
+        # todo: fix this
+        sock = ussl.wrap_socket(sock, ca_certs="DST Root CA X3", cert_reqs=ussl.CERT_OPTIONAL) # ,
 
     if params:
         urlpath += "?" + urlencode(params)

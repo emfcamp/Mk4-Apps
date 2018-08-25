@@ -35,7 +35,7 @@ def mode_buttons():
     ugfx.clear()
     ugfx.text(5, 5, "Synth", ugfx.BLACK)
     ugfx.text(5, 30, "Use the buttons >", ugfx.BLACK)
-    ugfx.text(5, 80, "Octave: 4", ugfx.BLUE) # Make this adjustable
+    ugfx.text(5, 80, "Octave: 4", ugfx.BLUE) # Allow the octave to be changed
 
     alive = True
     while alive:
@@ -49,4 +49,4 @@ def mode_buttons():
         else:
             speaker.stop()
 
-mode_buttons()
+mode_buttons() # Todo: Allow different modes and allow users to switch between them via joystick or something

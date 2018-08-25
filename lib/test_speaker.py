@@ -6,8 +6,6 @@ ___dependencies___ = ["upip:unittest", "speaker", "sleep"]
 import unittest, speaker, ugfx_helper
 from sleep import *
 
-ugfx_helper.init()
-
 class TestSpeaker(unittest.TestCase):
 
     def tearDown(self):
