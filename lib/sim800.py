@@ -149,7 +149,7 @@ def call(number):
 def answer():
     command("ATA", 20000)
 
-# End a voice call
+# End/reject a voice call
 def hangup():
     command("ATH")
 
@@ -373,6 +373,15 @@ def btaddress():
     else:
         return ""
 
+# Get/Set Bluetooth visibility
+def btvisible(visible=None):
+    # Set the new leve if we have one to set
+    if visible is not None:
+        command("AT+BTVIS=" + str(visible))
+    # Retieve the set gain to report back
+    responce = command("AT+BTVIS?")
+    return int(extractval("+BTVIS:", responce, 0))
+
 # Get the Bluetooth address (timeout from 10000 to 60000, returnd device ID, name, address, rssi)
 def btscan(timeout=30000):
     responce = command("AT+BTSCAN=1," + str(int(timeout/1000)), timeout+8000, "+BTSCAN: 1")
@@ -380,7 +389,8 @@ def btscan(timeout=30000):
 
 # Pair a Bluetooth device
 def btpair(device):
-    return command("AT+BTPAIR=0," + str(device), 8000)
+    responce = command("AT+BTPAIR=0," + str(device), 8000, "+BTPAIRING:")
+    return extractval("+BTPAIRING:", responce, "").split(",")
 
 # Confirm the pairing of a Bluetooth device
 def btpairconfirm(passkey=None):
@@ -402,14 +412,26 @@ def btpaired():
     responce = command("AT+BTSTATUS?")
     return extractvals("P:", responce)
 
+# List profiles supported by a paired device
+def btgetprofiles(device):
+    responce = command("AT+BTGETPROF=" + str(device), 8000)
+    responcelist = extractvals("+BTGETPROF:", responce)
+    results = []
+    for entry in responcelist:
+        subresults = []
+        for subentry in entry.split(","):
+            subresults.append(subentry.strip("\""))
+        results.append(subresults)
+    return results
+		
 # Connect a Bluetooth device
 def btconnect(device, profile):
-    responce = command("AT+BTCONNECT=" + str(device) + "," + str(profile), 8000)
+    responce = command("AT+BTCONNECT=" + str(device) + "," + str(profile), 8000, "+BTCONNECT:")
     return extractvals("+BTCONNECT:", responce)
 
-# Connect a Bluetooth device
+# Disconnect a Bluetooth device
 def btdisconnect(device):
-    responce = command("AT+BTCONNECT=" + str(device), 8000)
+    responce = command("AT+BTDISCONN=" + str(device), 8000, "+BTDISCONN:")
     return extractvals("+BTDISCONN:", responce)
 
 # List the Bluetooth connections
@@ -417,6 +439,54 @@ def btconnected():
     responce = command("AT+BTSTATUS?")
     return extractvals("C:", responce)
 
+# Make a voice call
+def btcall(number):
+    command("AT+BTATD" + str(number), 20000)
 
+# Answer a voice call
+def btanswer():
+    command("AT+BTATA", 20000)
+
+# End a voice call
+def bthangup():
+    command("AT+BTATH")
+
+# Redial the last number
+def btredial():
+    command("AT+BTATDL")
+
+# Play DTMF tone(s) on a Bluetooth call
+def btdtmf(number):
+    validdigits = '1234567890#*ABCD'
+    for digit in str(number).upper():
+        if (digit in validdigits):
+            command("AT+BTVTS=" + digit)
+        elif (digit==','):
+            time.sleep(1)
+
+# Get/Set Bluetooth voice gain (0-15)
+def btvoicevolume(gain=None):
+    # Set the new leve if we have one to set
+    if gain is not None:
+        command("AT+BTVGS=" + str(gain))
+    # Retieve the set gain to report back
+    responce = command("AT+BTVGS?")
+    return int(extractval("+BTVGS:", responce, 0))
+
+# Get/Set microphone gain volume (0-15)
+def btvoicevolume(gain=None):
+    # Set the new leve if we have one to set
+    if gain is not None:
+        command("AT+BTVGM=" + str(gain))
+    # Retieve the set gain to report back
+    responce = command("AT+BTVGM?")
+    return int(extractval("+BTVGM:", responce, 0))
+
+# Get the Bluetooth signal quality for a device (-127-0)
+def btrssi(device):
+    responce = command("AT+BTRSSI=" + str(device))
+    return int(extractval("+BTRSSI:", responce, 0))
+
+    
 # Start turning on the SIM800
 poweron(True)
