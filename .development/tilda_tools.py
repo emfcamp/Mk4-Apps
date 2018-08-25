@@ -49,8 +49,14 @@ Common parameters
 -s --storage : path to flash storage
 
 """
+import sys
+try:
+    import serial
+except Exception as e:
+    print("Please install pyserial first: https://pyserial.readthedocs.io/en/latest/pyserial.html")
+    sys.exit(1)
 
-import sys, glob
+import glob
 import sync, firmware_update, wifi, pyboard_util
 from resources import *
 
