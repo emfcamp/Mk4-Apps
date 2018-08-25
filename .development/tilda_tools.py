@@ -49,15 +49,9 @@ Common parameters
 -s --storage : path to flash storage
 
 """
-import sys
-try:
-    import serial
-except Exception as e:
-    print("Please install pyserial first: https://pyserial.readthedocs.io/en/latest/pyserial.html")
-    sys.exit(1)
 
 import glob
-import sync, firmware_update, wifi, pyboard_util
+import sync, firmware_update, wifi, pyboard_util, sys
 from resources import *
 
 def main():
@@ -77,6 +71,13 @@ def main():
     command = args.command[0]
     path = sync.get_root()
     run_tests = command == "test"
+
+    if command not in ["validate"]:
+        try:
+            import serial
+        except Exception as e:
+            print("Please install pyserial first: https://pyserial.readthedocs.io/en/latest/pyserial.html")
+            sys.exit(1)
 
     if command == "firmware-update":
         firmware_update.firmware_update(args.verbose)
