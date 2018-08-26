@@ -10,6 +10,7 @@ import micropython
 CALLER_CALLBACK = 1
 CLI_CALLBACK = 2
 NEWSMS_CALLBACK = 3
+RECORD_CALLBACK = 4
 
 uart_port = 1
 uart_default_baud = 115200
@@ -346,7 +347,7 @@ def ringtone(alert=None,preview=False):
     # Return the surrent setting
     return int(current)
 
-# play a tone though the SIM800 (MHz and ms)
+# Play a tone though the SIM800 (MHz and ms)
 def playtone(freq=0,duration=2000,async=True):
     if freq>0:
         command("AT+SIMTONE=1," + str(freq) + "," + str(duration) + ",0," + str(duration))
@@ -354,6 +355,39 @@ def playtone(freq=0,duration=2000,async=True):
             time.sleep(duration/1000)
     else:
         command("AT+SIMTONE=0")
+
+# Record audio (id=1-10)
+def startrecording(id=1, length=None):
+    if length is None:
+        return ispositive(command("AT+CREC=1," + str(id) + ",0")[-1])
+    else:
+        return ispositive(command("AT+CREC=1," + str(id) + ",0," + str(int(length/1000)))[-1])
+
+# Stop recording audio
+def stoprecording():
+    return ispositive(command("AT+CREC=2")[-1])
+
+# Delete recording
+def deleterecording(id=1):
+    return ispositive(command("AT+CREC=3," + str(id))[-1])
+
+# Play recording
+def startplayback(id=1, channel=0, level=100, repeat=False):
+    return ispositive(command("AT+CREC=4," + str(id) + "," + str(channel) + "," + str(level) + "," + str(int(repeat)))[-1])
+
+# Stop playback
+def stopplayback():
+    return ispositive(command("AT+CREC=5")[-1])
+
+# List recordings (returns a list of ids and size)
+def listrecordings():
+    response = command("AT+CREC=7")
+    responselist = extractvals("+CREC:", response)
+    result = []
+    for entry in responselist:
+        splitentry = entry.split(",")
+        result.append([splitentry[1], splitentry[2]])
+    return result
 
 # Is the battery charging (0=no, 1=yes, 2=full)
 def batterycharging():
@@ -611,20 +645,46 @@ def fsrmdir(directory):
 def fscreate(filename):
     return ispositive(command("AT+FSCREATE=" + str(filename))[-1])
 
-# Read data from a file on the flash storage
+# Read text data from a file on the flash storage
 def fsread(filename, size=1024, start=0):
     mode=int(start>0)
-    return command("AT+FSREAD=" + str(filename) + "," + str(mode) + "," + str(size) + "," + str(start))[1:-1]
+    command()
+    request = "AT+FSREAD=" + str(filename) + "," + str(mode) + "," + str(size) + "," + str(start) + "\n"
+    uart.write(request)
+    data = uart.read()
+    while True:
+        time.sleep(uart_timeout/1000)
+        if uart.any()==0:
+            break
+        data += uart.read()
+    if not data.endswith("ERROR\r\n"):
+        return data[len(request)+2:-6]
+    else:
+        return None
 
-# Write data to a file on the flash storage
-def fswrite(filename, data, append=True, truncate=False):
-    if truncate or (fssize(filename)<0):
-        fscreate(filename)
-    response = command("AT+FSWRITE=" + str(filename) + "," + str(int(append)) + "," + str(len(data)) + ",8", 2000, None, ">")
+# Append a small chunk data to a file on the flash storage, you should use sfwrite
+def fswritepart(filename, data):
+    response = command("AT+FSWRITE=" + str(filename) + ",1," + str(len(data)) + ",8", 2000, None, ">")
     if response[-1].startswith(">"):
         return ispositive(command(data)[-1])
     else:
         return False
+
+# Write data to a file on the flash storage
+def fswrite(filename, data, truncate=False):
+    length = len(data)
+    pointer = 0
+    chunksize = 256
+    # Create a file if needed
+    if truncate or (fssize(filename)<0):
+        fscreate(filename)
+    # Loop through the data in small chunks
+    while pointer<length:
+        result = fswritepart(filename, data[pointer:min(pointer+chunksize,length)])
+        if not result:
+            return False
+        pointer += chunksize
+    return True
 
 # Delete a file from flash storage
 def fsrm(filename):
