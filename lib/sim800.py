@@ -1,3 +1,8 @@
+"""SIM800 library for the TiLDA MK4"""
+
+___license___ = "MIT"
+___dependencies___ = []
+
 import machine
 import time
 import micropython
@@ -278,6 +283,36 @@ def imsi():
         return response[-2]
     else:
         return ""
+
+# Get the ICCID of the Sim Card
+def iccid():
+    response = command("AT+ICCID")
+    return extractval("+ICCID:", response)
+
+    # Get the received signal strength indication
+def rssi():
+    response = command("AT+CSQ")
+    return int(extractval("+CSQ:", response, "0,0").split(",")[0])
+    
+# Get the bit error rate    
+def ber():
+    response = command("AT+CSQ")
+    return int(extractval("+CSQ:", response, "0,0").split(",")[1])
+
+# Get the cell engineering information (True to include neighboring cell id)
+def engineeringinfo(neighbor=False):
+    command("AT+CENG=1," + str(int(neighbor)))
+    response = command("AT+CENG?")
+    command("AT+CENG=0")
+    responselist = extractvals("+CENG:", response)[1:]
+    results = []
+    for entry in responselist:
+        results.append([entry[0], entry.replace("\"", "").split(",")[1:]])
+    return results
+
+# Get the cell id of the currently connected cell
+def cellid():
+    return engineeringinfo()[0][1][6]
 
 # Get/Set ringer volume (0-100)
 def ringervolume(level=None):
