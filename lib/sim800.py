@@ -24,11 +24,18 @@ def isringing():
 
 # Identify if this was a positive responce
 def ispositive(responce):
-    return (responce=="OK") or responce.startswith("CONNECT") or responce.startswith("> ")
+    return (responce=="OK") or responce.startswith("CONNECT") or responce.startswith("SEND OK")
 
 # Identify if this was a negative responce
 def isnegative(responce):
-    return (responce=="NO CARRIER") or (responce=="ERROR") or (responce=="NO DIALTONE") or (responce=="BUSY") or (responce=="NO ANSWER")
+    return (responce=="NO CARRIER") or (responce=="ERROR") or (responce=="NO DIALTONE") or (responce=="BUSY") or (responce=="NO ANSWER") or (responce=="SEND FAIL") or (responce=="TIMEOUT") or (responce=="TimeOut")
+
+# Identify if this is the completion of a responce
+def isdefinitive(responce, custom=None):
+    if custom is not None:
+        return ispositive(responce) or isnegative(responce) or responce.startswith(custom)
+    else:
+        return ispositive(responce) or isnegative(responce)
 
 # Extract the [first/only] parameter from a responce 
 def extractval(parameter, responce, default=""):
@@ -62,8 +69,8 @@ def readline():
             stringin += str(charin, "ASCII")
 
 # Execute a command on the module
-# command is the AT command without the AT or CR/LF, responce_timeout (in ms) is how long to wait for completion, custom_endofdata is to wait for a non standard bit of 
-def command(command="AT", responce_timeout=default_responce_timeout, custom_endofdata=None):
+# command is the AT command without the AT or CR/LF, responce_timeout (in ms) is how long to wait for completion, required_responce is to wait for a non standard responce, custom_endofdata will finish when found
+def command(command="AT", responce_timeout=default_responce_timeout, required_responce=None, custom_endofdata=None):
     global dirtybuffer
     # Empty the buffer
     uart.read()
@@ -76,7 +83,7 @@ def command(command="AT", responce_timeout=default_responce_timeout, custom_endo
     # Read the results
     result = []
     complete = False
-    customcomplete = custom_endofdata is None
+    customcomplete = required_responce is None
     timeouttime = time.time()+(responce_timeout/1000)
     while (time.time()<timeouttime):
         line = readline()
@@ -84,17 +91,17 @@ def command(command="AT", responce_timeout=default_responce_timeout, custom_endo
         if (len(line)>0):
             result.append(line)
         # Check if we have a standard end of responce
-        if (ispositive(line)) or (isnegative(line)):
+        if isdefinitive(line, custom_endofdata):
             complete = True
         # Check if we have the data we are looking for
-        if (custom_endofdata is not None) and (line.startswith(custom_endofdata)):
+        if (required_responce is not None) and (line.startswith(required_responce)):
             customcomplete = True
         # Check if we are done
         if complete and customcomplete:
             return result
     # We ran out of time
     # set the dirty buffer flag is an out of date end of responcs cound end up in the buffer
-    if custom_endofdata is None:
+    if required_responce is None:
         dirtybuffer = True
     result.append("TIMEOUT")
     return result
@@ -173,7 +180,7 @@ def sendsms(number, message):
     # Switch to ASCII(ish)
     command("AT+CSCS=\"8859-1\"")
     # Send the message
-    command("AT+CMGS=\"" + str(number) + "\"")
+    command("AT+CMGS=\"" + str(number) + "\"", 2000, None, "> ")
     return command(message + "\x1a", 60000)
 
 # List the summery of SMS messages (0=unread,1=read,2=saved unread,3=saved sent, 4=all)
@@ -487,6 +494,65 @@ def btrssi(device):
     responce = command("AT+BTRSSI=" + str(device))
     return int(extractval("+BTRSSI:", responce, 0))
 
-    
+
+
+
+# Get available space on the flash storage
+def fsfree():
+    responce = command("AT+FSMEM")
+    return extractval("+FSMEM:", responce, "?:0bytes").split(",")[0].split(":")[1][:-5]
+
+# List the entries in directory on flash storage (returned directories end with "\\")
+def fsls(directory=""):
+    if not directory.endswith("\\"):
+        directory += "\\"
+    return command("AT+FSLS=" + str(directory))[1:-1]
+
+# Get the size of a file on the flash storage
+def fssize(filename):
+    responce = command("AT+FSFLSIZE=" + str(filename))
+    return int(extractval("+FSFLSIZE:", responce, "-1"))
+
+# Create a directory on flash storage
+def fsmkdir(directory):
+    return ispositive(command("AT+FSMKDIR=" + str(directory))[-1])
+
+# Remove a directory on flash storage
+def fsrmdir(directory):
+    return ispositive(command("AT+FSRMDIR=" + str(directory))[-1])
+
+# Create a file on flash storage
+def fscreate(filename):
+    return ispositive(command("AT+FSCREATE=" + str(filename))[-1])
+
+# Read data from a file on the flash storage
+def fsread(filename, size=1024, start=0):
+    mode=int(start>0)
+    return command("AT+FSREAD=" + str(filename) + "," + str(mode) + "," + str(size) + "," + str(start))[1:-1]
+
+# Write data to a file on the flash storage
+def fswrite(filename, data, append=True, truncate=False):
+    if truncate or (fssize(filename)<0):
+        fscreate(filename)
+    responce = command("AT+FSWRITE=" + str(filename) + "," + str(int(append)) + "," + str(len(data)) + ",8", 2000, None, ">")
+    if responce[-1].startswith(">"):
+        return ispositive(command(data)[-1])
+    else:
+        return False
+
+# Delete a file from flash storage
+def fsrm(filename):
+    return ispositive(command("AT+FSDEL=" + str(filename))[-1])
+
+# Rename a file on the flash storage
+def fsmv(filenamefrom, filenameto):
+    return ispositive(command("AT+FSRENAME=" + str(filenamefrom) + "," + str(filenameto))[-1])
+
+
 # Start turning on the SIM800
 poweron(True)
+
+# Testing code to move to app
+#tilda.Buttons.enable_interrupt(tilda.Buttons.BTN_Call, answer())
+#tilda.Buttons.enable_interrupt(tilda.Buttons.BTN_End, hangup())
+
