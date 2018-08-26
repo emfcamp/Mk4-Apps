@@ -29,6 +29,9 @@ class TestDialogs(unittest.TestCase):
     def test_(self):
         prompt_text("description")
 
+    def test_option(self):
+         print(prompt_option(["foo", "bar", "baz"]))
+
 
 
 if __name__ == '__main__':

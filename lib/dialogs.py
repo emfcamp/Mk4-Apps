@@ -139,7 +139,7 @@ def prompt_option(options, index=0, text = "Please select one of the following:"
             options_list.add_item(option["title"])
         else:
             options_list.add_item(str(option))
-    options_list.set_selected_index(index)
+    options_list.selected_index(index)
 
     select_text = "A: " + select_text
     if none_text:
@@ -153,14 +153,14 @@ def prompt_option(options, index=0, text = "Please select one of the following:"
             sleep.wfi()
             ugfx.poll()
             # todo: temporary hack
-            if (buttons.is_triggered(buttons.Buttons.JOY_Up)):
-                index = max(index - 1, 0)
-                options_list.set_selected_index(index)
-            if (buttons.is_triggered(buttons.Buttons.JOY_Down)):
-                index = min(index + 1, len(options) - 1)
-                options_list.set_selected_index(index)
+            #if (buttons.is_triggered(buttons.Buttons.JOY_Up)):
+            #    index = max(index - 1, 0)
+            #    options_list.selected_index(index)
+            #if (buttons.is_triggered(buttons.Buttons.JOY_Down)):
+            #    index = min(index + 1, len(options) - 1)
+            #    options_list.selected_index(index)
 
-            if buttons.is_triggered(buttons.Buttons.BTN_A): return options[options_list.get_selected_index()]
+            if buttons.is_triggered(buttons.Buttons.BTN_A): return options[options_list.selected_index()]
             if button_none and buttons.is_triggered(buttons.Buttons.BTN_B): return None
             if button_none and buttons.is_triggered(buttons.Buttons.BTN_Menu): return None
 
