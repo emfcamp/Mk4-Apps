@@ -4,7 +4,7 @@ import time
 uart_port = 1
 uart_default_baud = 115200
 uart_timeout = 28
-default_responce_timeout = 2000
+default_response_timeout = 2000
 
 status_pin = machine.Pin(6, machine.Pin.IN)
 ringer_pin = machine.Pin(8, machine.Pin.IN)
@@ -12,7 +12,7 @@ pwr_key_pin = machine.Pin(23, machine.Pin.OUT)
 
 # Open the UART
 uart = machine.UART(uart_port, uart_default_baud, mode=machine.UART.BINARY, timeout=uart_timeout)
-dirtybuffer = False # Flag if the buffer could have residual end of responces line in it?
+dirtybuffer = False # Flag if the buffer could have residual end of reresponsesponces line in it?
 
 # Check if the SIM800 is powered up
 def ison():
@@ -22,37 +22,37 @@ def ison():
 def isringing():
     return ringer_pin.value()==0
 
-# Identify if this was a positive responce
-def ispositive(responce):
-    return (responce=="OK") or responce.startswith("CONNECT") or responce.startswith("SEND OK")
+# Identify if this was a positive response
+def ispositive(response):
+    return (response=="OK") or response.startswith("CONNECT") or response.startswith("SEND OK")
 
-# Identify if this was a negative responce
-def isnegative(responce):
-    return (responce=="NO CARRIER") or (responce=="ERROR") or (responce=="NO DIALTONE") or (responce=="BUSY") or (responce=="NO ANSWER") or (responce=="SEND FAIL") or (responce=="TIMEOUT") or (responce=="TimeOut")
+# Identify if this was a negative response
+def isnegative(response):
+    return (response=="NO CARRIER") or (response=="ERROR") or (response=="NO DIALTONE") or (response=="BUSY") or (response=="NO ANSWER") or (response=="SEND FAIL") or (response=="TIMEOUT") or (response=="TimeOut")
 
-# Identify if this is the completion of a responce
-def isdefinitive(responce, custom=None):
+# Identify if this is the completion of a response
+def isdefinitive(response, custom=None):
     if custom is not None:
-        return ispositive(responce) or isnegative(responce) or responce.startswith(custom)
+        return ispositive(response) or isnegative(response) or response.startswith(custom)
     else:
-        return ispositive(responce) or isnegative(responce)
+        return ispositive(response) or isnegative(response)
 
-# Extract the [first/only] parameter from a responce 
-def extractval(parameter, responce, default=""):
-    for entry in responce:
+# Extract the [first/only] parameter from a response 
+def extractval(parameter, response, default=""):
+    for entry in response:
         if entry.startswith(parameter):
             return (entry[len(parameter):]).strip()
     return default
 
-# Extract all parameter from a responce 
-def extractvals(parameter, responce):
+# Extract all parameter from a response 
+def extractvals(parameter, response):
     result = []
-    for entry in responce:
+    for entry in response:
         if entry.startswith(parameter):
             result.append((entry[len(parameter):]).strip())
     return result
 
-# Read a lines of responce from the UART
+# Read a lines of response from the UART
 def readline():
     stringin = ""
     while (True):
@@ -69,8 +69,8 @@ def readline():
             stringin += str(charin, "ASCII")
 
 # Execute a command on the module
-# command is the AT command without the AT or CR/LF, responce_timeout (in ms) is how long to wait for completion, required_responce is to wait for a non standard responce, custom_endofdata will finish when found
-def command(command="AT", responce_timeout=default_responce_timeout, required_responce=None, custom_endofdata=None):
+# command is the AT command without the AT or CR/LF, response_timeout (in ms) is how long to wait for completion, required_response is to wait for a non standard response, custom_endofdata will finish when found
+def command(command="AT", response_timeout=default_response_timeout, required_response=None, custom_endofdata=None):
     global dirtybuffer
     # Empty the buffer
     uart.read()
@@ -83,25 +83,25 @@ def command(command="AT", responce_timeout=default_responce_timeout, required_re
     # Read the results
     result = []
     complete = False
-    customcomplete = required_responce is None
-    timeouttime = time.time()+(responce_timeout/1000)
+    customcomplete = required_response is None
+    timeouttime = time.time()+(response_timeout/1000)
     while (time.time()<timeouttime):
         line = readline()
         # Remember the line if not empty
         if (len(line)>0):
             result.append(line)
-        # Check if we have a standard end of responce
+        # Check if we have a standard end of response
         if isdefinitive(line, custom_endofdata):
             complete = True
         # Check if we have the data we are looking for
-        if (required_responce is not None) and (line.startswith(required_responce)):
+        if (required_response is not None) and (line.startswith(required_response)):
             customcomplete = True
         # Check if we are done
         if complete and customcomplete:
             return result
     # We ran out of time
     # set the dirty buffer flag is an out of date end of responcs cound end up in the buffer
-    if required_responce is None:
+    if required_response is None:
         dirtybuffer = True
     result.append("TIMEOUT")
     return result
@@ -202,9 +202,9 @@ def readsms(index, leaveunread=False):
     # Switch to ASCII(ish)
     command("AT+CSCS=\"8859-1\"")
     # Retrieve the message
-    responce = command("AT+CMGR=" + str(index) + "," + str(int(leaveunread)), 5000)
-    if (len(responce)>=3):
-        return responce[-2]
+    response = command("AT+CMGR=" + str(index) + "," + str(int(leaveunread)), 5000)
+    if (len(response)>=3):
+        return response[-2]
     else:
         return ""
 
@@ -214,17 +214,17 @@ def deletesms(index):
 
 # Get the IMEI number of the SIM800
 def imei():
-    responce = command("AT+GSN")
-    if (len(responce)>=2):
-        return responce[-2]
+    response = command("AT+GSN")
+    if (len(response)>=2):
+        return response[-2]
     else:
         return ""
 
 # Get the IMSI number of the Sim Card
 def imsi():
-    responce = command("AT+CIMI")
-    if (len(responce)>=2):
-        return responce[-2]
+    response = command("AT+CIMI")
+    if (len(response)>=2):
+        return response[-2]
     else:
         return ""
 
@@ -234,8 +234,8 @@ def ringervolume(level=None):
     if level is not None:
         command("AT+CRSL=" + str(level))
     # Retieve the set level to report back
-    responce = command("AT+CRSL?")
-    return int(extractval("+CRSL:", responce, 0))
+    response = command("AT+CRSL?")
+    return int(extractval("+CRSL:", response, 0))
 
 # Get/Set speaker volume (0-100)
 def speakervolume(level=None):
@@ -243,8 +243,8 @@ def speakervolume(level=None):
     if level is not None:
         command("AT+CLVL=" + str(level))
     # Retieve the set level to report back
-    responce = command("AT+CLVL?")
-    return int(extractval("+CLVL:", responce, 0))
+    response = command("AT+CLVL?")
+    return int(extractval("+CLVL:", response, 0))
 
 # Get/Set/Preview and set the ringtone (alert is 0-19)
 def ringtone(alert=None,preview=False):
@@ -252,8 +252,8 @@ def ringtone(alert=None,preview=False):
     if alert is not None:
         command("AT+CALS=" + str(alert) + "," + str(int(preview)))
     # Retieve the current/new setting
-    responce = command("AT+CALS?")
-    current = extractval("+CALS:", responce, 0).split(",")[0]
+    response = command("AT+CALS?")
+    current = extractval("+CALS:", response, 0).split(",")[0]
     # Stop the preview unless we started it
     if alert is None:
         command("AT+CALS=" + current + ",0")
@@ -271,24 +271,24 @@ def playtone(freq=0,duration=2000,async=True):
 
 # Is the battery charging (0=no, 1=yes, 2=full)
 def batterycharging():
-    responce = command("AT+CBC")
-    vals = extractval("+CBC:", responce, "0,0,0").split(",")
+    response = command("AT+CBC")
+    vals = extractval("+CBC:", response, "0,0,0").split(",")
     return int(vals[0])
 
 # How full is the battery (1-100)
 def batterycharge():
-    responce = command("AT+CBC")
-    vals = extractval("+CBC:", responce, "0,0,0").split(",")
+    response = command("AT+CBC")
+    vals = extractval("+CBC:", response, "0,0,0").split(",")
     return int(vals[1])
     
 # List the available operator (returns list of [0=?,1=available,2=current,3=forbidden], 0=long name, 1=short name, 2=GSMLAI )
 def listoperators(available_only=True):
     delim = "||||"
-    responce = command("AT+COPS=?", 45000)
-    responcedata = extractval("+COPS:", responce, "").split(",,")[0]
-    responcelist = responcedata.replace("),(",delim)[1:-1].split(delim)
+    response = command("AT+COPS=?", 45000)
+    responsedata = extractval("+COPS:", response, "").split(",,")[0]
+    responselist = responsedata.replace("),(",delim)[1:-1].split(delim)
     results = []
-    for entry in responcelist:
+    for entry in responselist:
         subresults = []
         for subentry in entry.split(","):
             subresults.append(subentry.strip("\""))
@@ -299,10 +299,10 @@ def listoperators(available_only=True):
 # Get the current operator (format 0=long name, 1=short name, 2=GSMLAI)
 def currentoperator(format=0):
     command("AT+COPS=3," + str(format))
-    responce = command("AT+COPS?")
-    responcedata = extractval("+COPS:", responce, "").split(",")
-    if (len(responcedata)>=3):
-        return responcedata[2].strip("\"")
+    response = command("AT+COPS?")
+    responsedata = extractval("+COPS:", response, "").split(",")
+    if (len(responsedata)>=3):
+        return responsedata[2].strip("\"")
     else:
         return ""
 
@@ -317,27 +317,27 @@ def setoperator(mode, format=None, operator=None):
 
 # Get the activity status (returns 0=ready, 2=unknown, 3=ringing, 4=call in progress)
 def getstatus():
-    responce = command("AT+CPAS")
-    return int(extractval("+CPAS:", responce, "2"))
+    response = command("AT+CPAS")
+    return int(extractval("+CPAS:", response, "2"))
     
 # Get the firmware revision
 def getfirmwarever():
-    responce = command("AT+CGMR")
-    if (len(responce)>=3):
-        return responce[-2]
+    response = command("AT+CGMR")
+    if (len(response)>=3):
+        return response[-2]
     else:
         return ""
 
 # Request Unstructured Supplementary Service Data from network
 def ussd(ussdstring, timeout=8000):
-    responce = command("AT+CUSD=1,\"" + ussdstring + "\"", timeout, "+CUSD:")
-    return extractval("+CUSD:", responce, "")
+    response = command("AT+CUSD=1,\"" + ussdstring + "\"", timeout, "+CUSD:")
+    return extractval("+CUSD:", response, "")
 
 # Get my number (only works on some networks)
 def getmynumber():
-    responcedata = ussd("*#100#", 8000).split(",")
-    if (len(responcedata)>=2):
-        return responcedata[1].strip().strip("\"")
+    responsedata = ussd("*#100#", 8000).split(",")
+    if (len(responsedata)>=2):
+        return responsedata[1].strip().strip("\"")
     else:
         return ""
 
@@ -355,8 +355,8 @@ def btpoweroff():
 
 # Get the current status of Bluetooth (0=off,5=idel, other values docuemtned for "AT+BTSTATUS")
 def btstatus():
-    responce = command("AT+BTSTATUS?")
-    return int(extractval("+BTSTATUS:", responce, "0"))
+    response = command("AT+BTSTATUS?")
+    return int(extractval("+BTSTATUS:", response, "0"))
 
 # Is Bluetooth on?
 def btison():
@@ -365,18 +365,18 @@ def btison():
 # Get/Set the Bluetooth host device name
 def btname(name=None):
     if name is not None:
-        responce = command("AT+BTHOST=" + str(name))
+        response = command("AT+BTHOST=" + str(name))
     # Retrieve the current name
-    responce = command("AT+BTHOST?")
-    responcedata = extractval("+BTHOST:", responce, "").split(",")
-    return responcedata[0]
+    response = command("AT+BTHOST?")
+    responsedata = extractval("+BTHOST:", response, "").split(",")
+    return responsedata[0]
 
 # Get the Bluetooth address
 def btaddress():
-    responce = command("AT+BTHOST?")
-    responcedata = extractval("+BTHOST:", responce, "").split(",")
-    if (len(responcedata)>=2):
-        return responcedata[-1]
+    response = command("AT+BTHOST?")
+    responsedata = extractval("+BTHOST:", response, "").split(",")
+    if (len(responsedata)>=2):
+        return responsedata[-1]
     else:
         return ""
 
@@ -386,18 +386,18 @@ def btvisible(visible=None):
     if visible is not None:
         command("AT+BTVIS=" + str(visible))
     # Retieve the set gain to report back
-    responce = command("AT+BTVIS?")
-    return int(extractval("+BTVIS:", responce, 0))
+    response = command("AT+BTVIS?")
+    return int(extractval("+BTVIS:", response, 0))
 
 # Get the Bluetooth address (timeout from 10000 to 60000, returnd device ID, name, address, rssi)
 def btscan(timeout=30000):
-    responce = command("AT+BTSCAN=1," + str(int(timeout/1000)), timeout+8000, "+BTSCAN: 1")
-    return extractvals("+BTSCAN: 0,", responce)
+    response = command("AT+BTSCAN=1," + str(int(timeout/1000)), timeout+8000, "+BTSCAN: 1")
+    return extractvals("+BTSCAN: 0,", response)
 
 # Pair a Bluetooth device
 def btpair(device):
-    responce = command("AT+BTPAIR=0," + str(device), 8000, "+BTPAIRING:")
-    return extractval("+BTPAIRING:", responce, "").split(",")
+    response = command("AT+BTPAIR=0," + str(device), 8000, "+BTPAIRING:")
+    return extractval("+BTPAIRING:", response, "").split(",")
 
 # Confirm the pairing of a Bluetooth device
 def btpairconfirm(passkey=None):
@@ -416,15 +416,15 @@ def btunpair(device=0):
 
 # List the paired Bluetooth devices
 def btpaired():
-    responce = command("AT+BTSTATUS?")
-    return extractvals("P:", responce)
+    response = command("AT+BTSTATUS?")
+    return extractvals("P:", response)
 
 # List profiles supported by a paired device
 def btgetprofiles(device):
-    responce = command("AT+BTGETPROF=" + str(device), 8000)
-    responcelist = extractvals("+BTGETPROF:", responce)
+    response = command("AT+BTGETPROF=" + str(device), 8000)
+    responselist = extractvals("+BTGETPROF:", response)
     results = []
-    for entry in responcelist:
+    for entry in responselist:
         subresults = []
         for subentry in entry.split(","):
             subresults.append(subentry.strip("\""))
@@ -433,18 +433,18 @@ def btgetprofiles(device):
 		
 # Connect a Bluetooth device
 def btconnect(device, profile):
-    responce = command("AT+BTCONNECT=" + str(device) + "," + str(profile), 8000, "+BTCONNECT:")
-    return extractvals("+BTCONNECT:", responce)
+    response = command("AT+BTCONNECT=" + str(device) + "," + str(profile), 8000, "+BTCONNECT:")
+    return extractvals("+BTCONNECT:", response)
 
 # Disconnect a Bluetooth device
 def btdisconnect(device):
-    responce = command("AT+BTDISCONN=" + str(device), 8000, "+BTDISCONN:")
-    return extractvals("+BTDISCONN:", responce)
+    response = command("AT+BTDISCONN=" + str(device), 8000, "+BTDISCONN:")
+    return extractvals("+BTDISCONN:", response)
 
 # List the Bluetooth connections
 def btconnected():
-    responce = command("AT+BTSTATUS?")
-    return extractvals("C:", responce)
+    response = command("AT+BTSTATUS?")
+    return extractvals("C:", response)
 
 # Make a voice call
 def btcall(number):
@@ -477,8 +477,8 @@ def btvoicevolume(gain=None):
     if gain is not None:
         command("AT+BTVGS=" + str(gain))
     # Retieve the set gain to report back
-    responce = command("AT+BTVGS?")
-    return int(extractval("+BTVGS:", responce, 0))
+    response = command("AT+BTVGS?")
+    return int(extractval("+BTVGS:", response, 0))
 
 # Get/Set microphone gain volume (0-15)
 def btvoicevolume(gain=None):
@@ -486,21 +486,21 @@ def btvoicevolume(gain=None):
     if gain is not None:
         command("AT+BTVGM=" + str(gain))
     # Retieve the set gain to report back
-    responce = command("AT+BTVGM?")
-    return int(extractval("+BTVGM:", responce, 0))
+    response = command("AT+BTVGM?")
+    return int(extractval("+BTVGM:", response, 0))
 
 # Get the Bluetooth signal quality for a device (-127-0)
 def btrssi(device):
-    responce = command("AT+BTRSSI=" + str(device))
-    return int(extractval("+BTRSSI:", responce, 0))
+    response = command("AT+BTRSSI=" + str(device))
+    return int(extractval("+BTRSSI:", response, 0))
 
 
 
 
 # Get available space on the flash storage
 def fsfree():
-    responce = command("AT+FSMEM")
-    return extractval("+FSMEM:", responce, "?:0bytes").split(",")[0].split(":")[1][:-5]
+    response = command("AT+FSMEM")
+    return extractval("+FSMEM:", response, "?:0bytes").split(",")[0].split(":")[1][:-5]
 
 # List the entries in directory on flash storage (returned directories end with "\\")
 def fsls(directory=""):
@@ -510,8 +510,8 @@ def fsls(directory=""):
 
 # Get the size of a file on the flash storage
 def fssize(filename):
-    responce = command("AT+FSFLSIZE=" + str(filename))
-    return int(extractval("+FSFLSIZE:", responce, "-1"))
+    response = command("AT+FSFLSIZE=" + str(filename))
+    return int(extractval("+FSFLSIZE:", response, "-1"))
 
 # Create a directory on flash storage
 def fsmkdir(directory):
@@ -534,8 +534,8 @@ def fsread(filename, size=1024, start=0):
 def fswrite(filename, data, append=True, truncate=False):
     if truncate or (fssize(filename)<0):
         fscreate(filename)
-    responce = command("AT+FSWRITE=" + str(filename) + "," + str(int(append)) + "," + str(len(data)) + ",8", 2000, None, ">")
-    if responce[-1].startswith(">"):
+    response = command("AT+FSWRITE=" + str(filename) + "," + str(int(append)) + "," + str(len(data)) + ",8", 2000, None, ">")
+    if response[-1].startswith(">"):
         return ispositive(command(data)[-1])
     else:
         return False
