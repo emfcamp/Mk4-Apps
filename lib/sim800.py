@@ -1,18 +1,25 @@
 import machine
 import time
+import micropython
+
+CALLER_CALLBACK = 1
+CLI_CALLBACK = 2
+NEWSMS_CALLBACK = 3
 
 uart_port = 1
 uart_default_baud = 115200
 uart_timeout = 28
 default_response_timeout = 2000
 
-status_pin = machine.Pin(6, machine.Pin.IN)
-ringer_pin = machine.Pin(8, machine.Pin.IN)
-pwr_key_pin = machine.Pin(23, machine.Pin.OUT)
+status_pin = machine.Pin(machine.Pin.GPIO_SIM_STATUS, machine.Pin.IN)
+ringer_pin = machine.Pin(machine.Pin.GPIO_SIM_RI, machine.Pin.IN)
+pwr_key_pin = machine.Pin(machine.Pin.GPIO_SIM_PWR_KEY, machine.Pin.OUT)
 
 # Open the UART
 uart = machine.UART(uart_port, uart_default_baud, mode=machine.UART.BINARY, timeout=uart_timeout)
 dirtybuffer = False # Flag if the buffer could have residual end of reresponsesponces line in it?
+
+callbacks = []
 
 # Check if the SIM800 is powered up
 def ison():
@@ -21,6 +28,22 @@ def ison():
 # Check if the SIM800 is ringing
 def isringing():
     return ringer_pin.value()==0
+
+# Register for a callback
+def registercallback(call, function):
+    callbacks.append([call, function])
+
+# Deregitser for a callback
+def deregistercallback(function):
+    for entry in callbacks:
+        if entry[1]==function:
+            callbacks.remove(entry)
+    
+# Execute external funtion of a callback
+def callcallback(call, parameter):
+    for entry in callbacks:
+        if entry[0]==call:
+            micropython.schedule(entry[1], parameter)
 
 # Identify if this was a positive response
 def ispositive(response):
@@ -68,16 +91,31 @@ def readline():
         elif not (charin == b'\n'):
             stringin += str(charin, "ASCII")
 
+def processcallbacks(line):
+    # Check for ringing
+    if line=="RING":
+        callcallback(CALLER_CALLBACK, "")
+    # Check for new caler lin identification
+    val = extractval("+CLIP:", [line])
+    if val:
+        callcallback(CLI_CALLBACK, val)
+    # Check for new SMS messages
+    val = extractval("+CMT:", [line])
+    if val:
+        callcallback(NEWSMS_CALLBACK, val)
+
+# Process the buffer for  unsolicited result codes 
+def processbuffer():
+    while uart.any()>0:
+        line = readline()
+        processcallbacks(line)
+        
 # Execute a command on the module
-# command is the AT command without the AT or CR/LF, response_timeout (in ms) is how long to wait for completion, required_response is to wait for a non standard response, custom_endofdata will finish when found
-def command(command="AT", response_timeout=default_response_timeout, required_response=None, custom_endofdata=None):
+# The same interface as and called by command() but without power so can be called from power()
+def command_internal(command="AT", response_timeout=default_response_timeout, required_response=None, custom_endofdata=None):
     global dirtybuffer
-    # Empty the buffer
-    uart.read()
-    # Do not bother if we are powered off
-    if not ison():
-        dirtybuffer = False
-        return ["POWERED OFF"]
+    # Process anything remaining in the buffer
+    processbuffer()
     # Send the command
     uart.write(command + "\r")
     # Read the results
@@ -87,6 +125,7 @@ def command(command="AT", response_timeout=default_response_timeout, required_re
     timeouttime = time.time()+(response_timeout/1000)
     while (time.time()<timeouttime):
         line = readline()
+        processcallbacks(line)
         # Remember the line if not empty
         if (len(line)>0):
             result.append(line)
@@ -123,20 +162,25 @@ def power(onoroff, async):
         # Stop pressing the virtual key
         pwr_key_pin.off()
         # Clear the buffer
-        uart.read()
+        processbuffer()
         dirtybuffer = False
-		# Send a command to autonigotiate UART speed
+        # We are now live
         if isonnow:
-            command("AT")
+            # Send a command to autonigotiate UART speed
+            command_internal("AT")
+            # Turn on new SMS notificationn
+            command_internal("AT+CNMI=1,2")
+            # Turn on calling line identification notification
+            command_internal("AT+CLIP=1")
     return isonnow
 
 # Power on the SIM800 (returns true when on)
 def poweron(async=False):
-    power(True, async)
+    return power(True, async)
 
 # Power off the SIM800
 def poweroff(async=False):
-    power(False, async)
+    return power(False, async)
 
 # Change the speed on the communication
 def uartspeed(newbaud):
@@ -147,6 +191,13 @@ def uartspeed(newbaud):
         uart = machine.UART(uart_port, uart_default_baud, mode=UART.BINARY, timeout=uart_timeout)
     else:
         uart = machine.UART(uart_port, newbaud, mode=UART.BINARY, timeout=uart_timeout)
+
+# command is the AT command without the AT or CR/LF, response_timeout (in ms) is how long to wait for completion, required_response is to wait for a non standard response, custom_endofdata will finish when found
+def command(command="AT", response_timeout=default_response_timeout, required_response=None, custom_endofdata=None):
+    # Check we are powered on and set up
+    poweron(False)
+    # Call the internal command() function
+    return command_internal(command, response_timeout, required_response, custom_endofdata)
 
 # Make a voice call
 def call(number):
@@ -550,9 +601,12 @@ def fsmv(filenamefrom, filenameto):
 
 
 # Start turning on the SIM800
-poweron(True)
+onatstart = poweron(True)
 
 # Testing code to move to app
+# Try using call and end buttons to answer and hangup
 #tilda.Buttons.enable_interrupt(tilda.Buttons.BTN_Call, answer())
 #tilda.Buttons.enable_interrupt(tilda.Buttons.BTN_End, hangup())
-
+# See if the netowrk list can be used for checking SIM800
+#status_pin = machine.Pin(7, machine.Pin.IN)
+#tilda.Buttons.enable_interrupt(machine.Pin(machine.Pin.GPIO_SIM_NETLIGHT, machine.Pin.IN),processbuffer())
