@@ -166,20 +166,17 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, data=No
         content = None
 
     # ToDo: Handle IPv6 addresses
-    addr = get_address_info(host, port)
+    addr = c(host, port)
 
     sock = usocket.socket(usocket.AF_INET, usocket.SOCK_STREAM)
-
-    if proto == 'https:':
-        # todo: fix this
-        sock = ussl.wrap_socket(sock, ca_certs="DST Root CA X3", cert_reqs=ussl.CERT_OPTIONAL) # ,
 
     if params:
         urlpath += "?" + urlencode(params)
 
     sock.connect(addr)
+
     if proto == 'https:':
-        sock.settimeout(0) # Actually make timeouts working properly with ssl
+        sock = ussl.wrap_socket(sock, ca_certs="DST Root CA X3", cert_reqs=ussl.CERT_OPTIONAL)
 
     sock.send('%s /%s HTTP/1.0\r\nHost: %s\r\n' % (method, urlpath, host))
 

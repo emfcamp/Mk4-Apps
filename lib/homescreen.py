@@ -17,16 +17,16 @@ They also *may*:
 """
 
 ___license___      = "MIT"
-___dependencies___ = ["database", "buttons", "random", "app", "sleep"]
+___dependencies___ = ["database", "buttons", "random", "app", "sleep", "ugfx_helper"]
 
-import database, ugfx, random, buttons, tilda, sleep
+import database, ugfx, random, buttons, tilda, sleep, ugfx_helper
 from app import App
 
 _state = None
 def init(enable_menu_button = True):
     global _state
     _state = {"menu": False}
-    ugfx.init()
+    ugfx_helper.init()
 
     if enable_menu_button:
         pass

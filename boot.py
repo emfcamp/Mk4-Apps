@@ -1,7 +1,5 @@
 import os, tilda
 
-# micropython.alloc_emergency_exception_buf(100) # doesn't exist in TiLDA Mk4 yet
-
 os.sync()
 root = os.listdir()
 
@@ -21,14 +19,13 @@ def file(file, remove):
         print(str(e))
 
 def any_home():
-    return app(next(a for a in root if a.startswith("home")))
+    h = [a for a in root if a.startswith("home")]
+    return h[0] if len(h) else False
 
 if "no_boot" in root:
-    os.remove("no_boot")
-else:
     start = None
     if "main.py" in root:
         start = "main.py"
     start = file("once.txt", True) or file("default_app.txt", False) or any_home() or "bootstrap.py"
-    print(start)
-    #tilda.main(start)
+    print("Booting into %s" % start)
+    tilda.main(start)

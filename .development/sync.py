@@ -1,6 +1,6 @@
-import os, shutil, sys, fnmatch
+import os, shutil, sys, fnmatch, glob
 
-def sync(storage, patterns, resources, verbose):
+def sync(storage, patterns, resources, verbose, skip_wifi):
     root = get_root(verbose)
 
     # Add all paths that are already files
@@ -10,9 +10,10 @@ def sync(storage, patterns, resources, verbose):
     paths.add("boot.py")
 
     # wifi.json
-    wifi_path = os.path.join(root, "wifi.json")
-    if os.path.isfile(wifi_path):
-        paths.add(wifi_path)
+    if not skip_wifi:
+        wifi_path = os.path.join(root, "wifi.json")
+        if os.path.isfile(wifi_path):
+            paths.add(wifi_path)
 
     if not patterns:
         patterns = ["*"]
@@ -28,7 +29,7 @@ def sync(storage, patterns, resources, verbose):
                     print("Resource %s is going to be synced" % key)
                 for path in resource['files'].keys():
                     paths.add(path)
-        if not found:
+        if not found and (pattern not in paths):
             print("WARN: No resources to copy found for pattern %s" % patterns)
     if not verbose:
         print("Copying %s files: " % len(paths), end="", flush=True)
@@ -56,8 +57,18 @@ def sync(storage, patterns, resources, verbose):
         print(" DONE")
     return synced_resources
 
+def clean(storage):
+    print("Cleaning:", end=" ", flush=True)
+    files = glob.glob(os.path.join(storage, "*"))
+    for f in files:
+        if os.path.isfile(f):
+            os.remove(f)
+        else:
+            shutil.rmtree(f)
+    print("DONE")
+
 def ensure_dir(path, storage):
-    # micropython has a tendecy
+    # micropython has a tendecy to turn directories into files
     if not path or path == storage:
         return
     if os.path.isfile(path):

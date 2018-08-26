@@ -57,11 +57,13 @@ from resources import *
 def main():
     import argparse
     cmd_parser = argparse.ArgumentParser(description='Toolchain for working with the TiLDA Mk4')
-    cmd_parser.add_argument('command', nargs=1, help='command [test|reset|sync|run|validate|wifi|firmware-update|app]', choices=['test', 'reset', 'sync', 'validate', 'run', 'wifi', 'firmware-update', 'app'])
+    cmd_parser.add_argument('command', nargs=1, help='command [test|reset|sync|run|validate|wifi|firmware-update|app|bootstrap]', choices=['test', 'reset', 'sync', 'validate', 'run', 'wifi', 'firmware-update', 'app', 'bootstrap'])
+    cmd_parser.add_argument('-c', '--clean', action='store_true', help='clean mass storage before writing')
     cmd_parser.add_argument('-d', '--device', help='the serial device of the badge')
     cmd_parser.add_argument('-s', '--storage', help='the usb mass storage path of the badge')
     cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
     cmd_parser.add_argument('-v', '--verbose', action='store_true', help='adds more output')
+    cmd_parser.add_argument('--skip-wifi', action='store_true', help='does not sync wifi.json')
     cmd_parser.add_argument('--print_resources', action='store_true', help='prints resources in json')
     cmd_parser.add_argument('--boot', help='defines which app to boot into after reboot')
     cmd_parser.add_argument('--run', help='like run, but after a sync')
@@ -90,7 +92,7 @@ def main():
         args.run = "%s/main.py" % args.paths[0]
         #args.boot = args.paths[0]
 
-    if command in ["test", "validate", "sync"]:
+    if command in ["test", "validate", "sync", "bootstrap"]:
         resources = get_resources(path)
         add_metadata(path, resources)
         validate(path, resources)
@@ -111,15 +113,21 @@ def main():
             else:
                 args.paths = ["lib/test_%s.py" % p for p in args.paths]
 
-
-    if command in ["reset", "sync"]:
+    if command in ["reset", "sync", "bootstrap"]:
         pyboard_util.stop_badge(args, args.verbose)
 
-    if command == "sync":
-        paths = args.paths if len(args.paths) else None
-        synced_resources = sync.sync(get_storage(args), paths, resources, args.verbose)
+    if command == "bootstrap":
+        sync.clean(get_storage(args))
+        sync.sync(get_storage(args), ["bootstrap.py"], {}, args.verbose, args.skip_wifi)
+        pyboard_util.soft_reset(args)
 
-    if command in ["reset", "sync"]:
+    if command == "sync":
+        if args.clean:
+            sync.clean(get_storage(args))
+        paths = args.paths if len(args.paths) else None
+        synced_resources = sync.sync(get_storage(args), paths, resources, args.verbose, args.skip_wifi)
+
+    if (command in ["reset", "sync"]) or run_tests:
         sync.set_boot_app(get_storage(args), args.boot or "")
         if args.run:
             command = "run"
@@ -135,7 +143,6 @@ def main():
     if run_tests:
         for resource in synced_resources:
             pyboard_util.check_run([resource])
-            sync.set_no_boot(get_storage(args))
             pyboard_util.run(args, [resource], False)
             pyboard_util.soft_reset(args, False)
 

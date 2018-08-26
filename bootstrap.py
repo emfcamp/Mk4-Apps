@@ -14,12 +14,20 @@ def msg(text):
     for i, line in enumerate(lines):
         ugfx.text(5, 65 + i * 20, line, ugfx.BLACK)
 
-def wifi_details():
+def wifi_details(final_try = False):
     if not "wifi.json" in os.listdir():
-        with open("wifi.json", "w") as f:
-            f.write('{"ssid":"emfcamp","pw":"emfemf"}')
+        with open("wifi.json", "wt") as f:
+            f.write(json.dumps({"ssid":"emfcamp","pw":"emfemf"}))
+            f.flush()
+        os.sync()
     with open("wifi.json") as f:
-        return json.loads(f.read())
+        try:
+            return json.loads(f.read())
+        except Exception as e:
+            if final_try:
+                raise e
+            os.remove("wifi.json")
+            return wifi_details()
 
 def connect(wifi):
     details = wifi_details()
@@ -34,9 +42,21 @@ def connect(wifi):
             raise OSError("Timeout while trying to\nconnect to wifi.\n\nPlease connect your\nbadge to your computer\nand edit wifi.json with\nyour wifi details");
         time.sleep(0.1)
 
+def addrinfo(host, port, retries_left = 20):
+    try:
+        return usocket.getaddrinfo(host, port)[0][4]
+    except OSError as e:
+        if ("-15" in str(e)) and retries_left:
+            # [addrinfo error -15]
+            # This tends to happen after startup and goes away after a while
+            time.sleep_ms(200)
+            return addrinfo(host, port, retries_left - 1)
+        else:
+            raise e
+
 def get(path):
     s = usocket.socket()
-    s.connect(usocket.getaddrinfo(HOST, 80)[0][4])
+    s.connect(addrinfo(HOST, 80))
     body = b""
     status = None
     try:
