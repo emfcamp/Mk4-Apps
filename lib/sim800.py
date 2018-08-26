@@ -7,11 +7,6 @@ import machine
 import time
 import micropython
 
-CALLER_CALLBACK = 1
-CLI_CALLBACK = 2
-NEWSMS_CALLBACK = 3
-RECORD_CALLBACK = 4
-
 uart_port = 1
 uart_default_baud = 115200
 uart_timeout = 28
@@ -26,6 +21,7 @@ uart = machine.UART(uart_port, uart_default_baud, mode=machine.UART.BINARY, time
 dirtybuffer = False # Flag if the buffer could have residual end of reresponsesponces line in it?
 
 callbacks = []
+clip = ""
 
 # Check if the SIM800 is powered up
 def ison():
@@ -44,12 +40,6 @@ def deregistercallback(function):
     for entry in callbacks:
         if entry[1]==function:
             callbacks.remove(entry)
-    
-# Execute external funtion of a callback
-def callcallback(call, parameter):
-    for entry in callbacks:
-        if entry[0]==call:
-            micropython.schedule(entry[1], parameter)
 
 # Identify if this was a positive response
 def ispositive(response):
@@ -97,19 +87,24 @@ def readline():
         elif not (charin == b'\n'):
             stringin += str(charin, "ASCII")
 
+# xxxy
+RING_CALLBACK = "RING"
+CLIP_CALLBACK = "+CLIP:"
+NEWSMS_CALLBACK = "+CMT:"
+DTMF_CALLBACK = "+DTMF:"
+BTPAIRING_CALLBACK = "+BTPAIRING:"
+            
+# Check if we have a callback hook for this line
 def processcallbacks(line):
-    # Check for ringing
-    if line=="RING":
-        callcallback(CALLER_CALLBACK, "")
-    # Check for new caler lin identification
-    val = extractval("+CLIP:", [line])
-    if val:
-        callcallback(CLI_CALLBACK, val)
-    # Check for new SMS messages
-    val = extractval("+CMT:", [line])
-    if val:
-        callcallback(NEWSMS_CALLBACK, val)
-
+    global clip
+    # check for the caller line information
+    if line.startswith("+CLIP:"):
+        clip = line[6:].strip()
+    # Check for app callbacks
+    for entry in callbacks:
+        if line.startswith(entry[0]):
+            micropython.schedule(entry[1], line[len(entry[0]):].strip())
+                
 # Process the buffer for  unsolicited result codes 
 def processbuffer():
     while uart.any()>0:
@@ -178,15 +173,21 @@ def power(onoroff, async):
             command_internal("AT+CNMI=1,2")
             # Turn on calling line identification notification
             command_internal("AT+CLIP=1")
+            # Swith to text mode
+            command("AT+CMGF=1")
+            # Switch to ASCII(ish)
+            command("AT+CSCS=\"8859-1\"")
+            # Enable DTMF detection
+            command("AT+DDET=1,0,1")
     return isonnow
 
 # Power on the SIM800 (returns true when on)
 def poweron(async=False):
     return power(True, async)
 
-# Power off the SIM800
+# Power off the SIM800 (returns true when off)
 def poweroff(async=False):
-    return power(False, async)
+    return not power(False, async)
 
 # Change the speed on the communication
 def uartspeed(newbaud):
@@ -220,6 +221,12 @@ def hangup():
 # Redial the last number
 def redial():
     command("ATDL")
+
+# Get the current/latest number to call
+def latestnumber():
+    if ison():
+        processbuffer()
+    return clip.split(",")[0].strip("\"")
 
 # Play DTMF tone(s) on a call
 def dtmf(number):
@@ -457,7 +464,9 @@ def ussd(ussdstring, timeout=8000):
 def getmynumber():
     responsedata = ussd("*#100#", 8000).split(",")
     if (len(responsedata)>=2):
-        return responsedata[1].strip().strip("\"")
+        num = responsedata[1].strip().strip("\"")
+        if num.isdigit()>0:
+            return num
     else:
         return ""
 
@@ -500,8 +509,11 @@ def btaddress():
     else:
         return ""
 
-# Get/Set Bluetooth visibility
+# Get/Set Bluetooth visibility (True for on, False for off)
 def btvisible(visible=None):
+    # Power on if we want to be visible
+    if visibie:
+        btpoweron()
     # Set the new leve if we have one to set
     if visible is not None:
         command("AT+BTVIS=" + str(visible))
@@ -511,6 +523,7 @@ def btvisible(visible=None):
 
 # Get the Bluetooth address (timeout from 10000 to 60000, returnd device ID, name, address, rssi)
 def btscan(timeout=30000):
+    btpoweron()
     response = command("AT+BTSCAN=1," + str(int(timeout/1000)), timeout+8000, "+BTSCAN: 1")
     return extractvals("+BTSCAN: 0,", response)
 
@@ -568,18 +581,22 @@ def btconnected():
 
 # Make a voice call
 def btcall(number):
+    btpoweron()
     command("AT+BTATD" + str(number), 20000)
 
 # Answer a voice call
 def btanswer():
+    btpoweron()
     command("AT+BTATA", 20000)
 
 # End a voice call
 def bthangup():
+    btpoweron()
     command("AT+BTATH")
 
 # Redial the last number
 def btredial():
+    btpoweron()
     command("AT+BTATDL")
 
 # Play DTMF tone(s) on a Bluetooth call
@@ -614,7 +631,7 @@ def btrssi(device):
     response = command("AT+BTRSSI=" + str(device))
     return int(extractval("+BTRSSI:", response, 0))
 
-
+# xxxy - Add BT object transfer, serial, handsfree
 
 
 # Get available space on the flash storage
@@ -645,8 +662,8 @@ def fsrmdir(directory):
 def fscreate(filename):
     return ispositive(command("AT+FSCREATE=" + str(filename))[-1])
 
-# Read text data from a file on the flash storage
-def fsread(filename, size=1024, start=0):
+# Read a chunk of data from a file on the flash storage
+def fsreadpart(filename, size=256, start=0):
     mode=int(start>0)
     command()
     request = "AT+FSREAD=" + str(filename) + "," + str(mode) + "," + str(size) + "," + str(start) + "\n"
@@ -661,6 +678,16 @@ def fsread(filename, size=1024, start=0):
         return data[len(request)+2:-6]
     else:
         return None
+
+# Read data from a file on the flash storage
+def fsread(filename):
+    result = bytearray(0)
+    while True:
+        chunk = fsreadpart(filename, 256, len(result))
+        if chunk is not None:
+            result += chunk
+        else:
+            return result
 
 # Append a small chunk data to a file on the flash storage, you should use sfwrite
 def fswritepart(filename, data):
