@@ -61,10 +61,13 @@ def clean(storage):
     print("Cleaning:", end=" ", flush=True)
     files = glob.glob(os.path.join(storage, "*"))
     for f in files:
-        if os.path.isfile(f):
-            os.remove(f)
-        else:
-            shutil.rmtree(f)
+        try:
+            if os.path.isfile(f):
+                os.remove(f)
+            else:
+                shutil.rmtree(f)
+        except:
+            pass
     print("DONE")
 
 def ensure_dir(path, storage):

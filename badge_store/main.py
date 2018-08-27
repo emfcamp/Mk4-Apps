@@ -6,7 +6,7 @@ To publish apps use https://badge.emfcamp.org"""
 
 ___license___      = "MIT"
 ___title___        = "Badge Store"
-___dependencies___ = ["app", "badge_store", "dialogs", "ugfx_helper", "app"]
+___dependencies___ = ["badge_store", "dialogs", "ugfx_helper", "app"]
 ___categories___   = ["System"]
 ___bootstrapped___ = True
 

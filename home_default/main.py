@@ -6,7 +6,7 @@ newly activated or reset.
 """
 
 ___name___         = "Homescreen (Default)"
-___license___      = "GPL"
+___license___      = "MIT"
 ___categories___   = ["homescreen"]
 ___dependencies___ = ["homescreen"]
 ___launchable___   = False

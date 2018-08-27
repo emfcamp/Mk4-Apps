@@ -1,8 +1,11 @@
 """Bootstraps the badge by downloading the base software"""
 
-import ugfx, machine, network, json, time, usocket, os
+import ugfx, machine, network, json, time, usocket, os, gc
+from tilda import Buttons
 
 HOST = "badgeserver.emfcamp.org"
+wifi = network.WLAN()
+wifi.active(True)
 
 # Helpers
 def msg(text):
@@ -14,22 +17,45 @@ def msg(text):
     for i, line in enumerate(lines):
         ugfx.text(5, 65 + i * 20, line, ugfx.BLACK)
 
-def wifi_details(final_try = False):
-    if not "wifi.json" in os.listdir():
-        with open("wifi.json", "wt") as f:
-            f.write(json.dumps({"ssid":"emfcamp","pw":"emfemf"}))
-            f.flush()
-        os.sync()
-    with open("wifi.json") as f:
-        try:
-            return json.loads(f.read())
-        except Exception as e:
-            if final_try:
-                raise e
-            os.remove("wifi.json")
-            return wifi_details()
+def wifi_select():
+    msg("Please select your wifi\nConfirm with button A")
+    sl = ugfx.List(5, 110, 228, 204)
+    aps = {}
+    while not Buttons.is_pressed(Buttons.BTN_A):
+        for s in (wifi.scan() or []):
+            if s[0] not in aps:
+                sl.add_item(s[0])
+                aps[s[0]] = s
+        time.sleep(0.01)
+        ugfx.poll()
+    ssid = sl.selected_text()
+    sl.destroy()
 
-def connect(wifi):
+    msg("Wifi: %s\nPlease enter your password\nConfirm with button A" % ssid)
+    kb = ugfx.Keyboard(0, 160, 240, 170)
+    e = ugfx.Textbox(5, 130, 228, 25, text="")
+    while not Buttons.is_pressed(Buttons.BTN_A):
+        time.sleep(0.01)
+        ugfx.poll()
+    pw = e.text()
+    e.destroy()
+    kb.destroy()
+    result = {"ssid":ssid,"pw":pw}
+    with open("wifi.json", "wt") as file:
+        file.write(json.dumps(result))
+        file.flush()
+    os.sync()
+    return result
+
+def wifi_details():
+    try:
+        with open("wifi.json") as f:
+            return json.loads(f.read())
+    except Exception as e:
+        print(str(e))
+        return wifi_select()
+
+def connect():
     details = wifi_details()
     if 'pw' in details:
         wifi.connect(details['ssid'], details['pw'])
@@ -39,7 +65,8 @@ def connect(wifi):
     wait_until = time.ticks_ms() + 10000
     while not wifi.isconnected():
         if (time.ticks_ms() > wait_until):
-            raise OSError("Timeout while trying to\nconnect to wifi.\n\nPlease connect your\nbadge to your computer\nand edit wifi.json with\nyour wifi details");
+            os.remove("wifi.json")
+            raise OSError("Wifi timeout");
         time.sleep(0.1)
 
 def addrinfo(host, port, retries_left = 20):
@@ -134,11 +161,14 @@ def makedirs(path):
 
 # Steps
 def step_wifi():
-    msg("Connecting to wifi...");
-    wifi = network.WLAN()
-    wifi.active(True)
-    if not wifi.isconnected():
-        connect(wifi)
+    while not wifi.isconnected():
+        msg("Connecting to wifi...");
+        try:
+            connect()
+        except Exception as e:
+            print(str(e))
+            msg("Couldn't connect\nPlease check wifi details")
+            time.sleep(1)
 
 def step_download():
     msg("Connecting to server...")
