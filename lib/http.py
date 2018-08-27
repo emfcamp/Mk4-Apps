@@ -4,7 +4,6 @@ Somewhat inspired by "request".
 
 Current known issues:
 * HTTPS is not supported
-*
 """
 
 ___license___ = "MIT"
@@ -76,7 +75,11 @@ class Response(object):
             self.socket = None
 
     def json(self):
-        return ujson.loads(self.text)
+        try:
+            return ujson.loads(self.text)
+        except ValueError as e:
+            print("Invalid JSON: %s" % self.text)
+            raise(e)
 
     # Writes content into a file. This function will write while receiving, which avoids
     # having to load all content into memory
@@ -166,7 +169,7 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, data=No
         content = None
 
     # ToDo: Handle IPv6 addresses
-    addr = c(host, port)
+    addr = get_address_info(host, port)
 
     sock = usocket.socket(usocket.AF_INET, usocket.SOCK_STREAM)
 
