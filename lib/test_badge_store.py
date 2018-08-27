@@ -10,7 +10,7 @@ from ospath import *
 class TestBadgeStore(unittest.TestCase):
 
     def setUpClass(self):
-        self.store = BadgeStore(url="http://badge.marekventur.com", repo="emfcamp/Mk4-Apps", ref="ee144e8")
+        self.store = BadgeStore(repo="emfcamp/Mk4-Apps", ref="ee144e8")
         self.download_file = "shared/test/download.txt"
 
     def tearDownClass(self):
