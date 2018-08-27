@@ -297,7 +297,7 @@ def iccid():
     response = command("AT+ICCID")
     return extractval("+ICCID:", response)
 
-    # Get the received signal strength indication
+# Get the received signal strength indication
 def rssi():
     response = command("AT+CSQ")
     return int(extractval("+CSQ:", response, "0,0").split(",")[0])
@@ -558,12 +558,21 @@ def btgetprofiles(device):
     responselist = extractvals("+BTGETPROF:", response)
     results = []
     for entry in responselist:
-        subresults = []
-        for subentry in entry.split(","):
-            subresults.append(subentry.strip("\""))
+        splitentry = entry.split(",")
+        subresults = [int(splitentry[0]), splitentry[1].strip("\"")]
         results.append(subresults)
     return results
-		
+
+# Is a paticula profile supported (usename=False for id, True for name)
+def btprofilesupported(device, usename):
+    profiles = btgetprofiles(device)
+    for entry in profiles:
+        if (type(usename)==int) and (entry[0]==usename):
+            return True
+        if (type(usename)==str) and (entry[1]==usename):
+            return True
+    return False
+    
 # Connect a Bluetooth device
 def btconnect(device, profile):
     response = command("AT+BTCONNECT=" + str(device) + "," + str(profile), 8000, "+BTCONNECT:")
@@ -578,6 +587,22 @@ def btdisconnect(device):
 def btconnected():
     response = command("AT+BTSTATUS?")
     return extractvals("C:", response)
+
+# Push an OPP object/file over Bluetooth (must be paired for OPP, monitor +BTOPPPUSH: for sucsess / fail / server issue)
+def btopppush(device, filename):
+    response = command("AT+BTOPPPUSH=" + str(device) + "," + filename, 45000, "+BTOPPPUSH:")
+    responce2 = extractval("+BTOPPPUSH:", response, "")
+    return responce2=="1"
+
+# Accept an OPP object/file from Bluetooth (monitor +BTOPPPUSHING: for offering, files stored in "\\User\\BtReceived")
+def btoppaccept():
+    response = command("AT+BTOPPACPT=1", 45000, "+BTOPPPUSH:")
+    responce2 = extractval("+BTOPPPUSH:", response, 0)
+    return responce2=="1"
+
+# Reject an OPP object/file transfer
+def btoppreject():
+    command("AT+BTOPPACPT=0")
 
 # Make a voice call
 def btcall(number):
@@ -630,6 +655,9 @@ def btvoicevolume(gain=None):
 def btrssi(device):
     response = command("AT+BTRSSI=" + str(device))
     return int(extractval("+BTRSSI:", response, 0))
+
+
+
 
 # xxxy - Add BT object transfer, serial, handsfree
 
