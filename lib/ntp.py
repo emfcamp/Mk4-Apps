@@ -6,14 +6,14 @@ Derived from the 2016 implementation.
 ___license___ = "MIT"
 
 import database
-import socket
+import usocket
+import machine
 
 # (date(2000, 1, 1) - date(1900, 1, 1)).days * 24*60*60
 NTP_DELTA = 3155673600
 # With Mk3 Firmware an IP address string works 5%, hangs at socket.socket(..) 95%, could be a bug in 2016 upython?
 NTP_HOSTS = ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"]
 NTP_PORT = 123
-
 
 def get_NTP_time():
 	for NTP_HOST in NTP_HOSTS:
@@ -28,15 +28,14 @@ def query_NTP_host(_NTP_HOST):
 	NTP_QUERY[0] = 0x1b
 	# Catch exception when run on a network without working DNS
 	try:
-		addr = socket.getaddrinfo(_NTP_HOST, NTP_PORT)[0][-1]
+		addr = usocket.getaddrinfo(_NTP_HOST, NTP_PORT)[0][-1]
 	except OSError:
 		return None
-	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s = usocket.socket(usocket.AF_INET, usocket.SOCK_DGRAM)
 	s.sendto(NTP_QUERY, addr)
 
 	# Setting timeout for receiving data. Because we're using UDP,
 	# there's no need for a timeout on send.
-	s.settimeout(2)
 	msg = None
 	try:
 		msg = s.recv(48)
@@ -63,7 +62,6 @@ def query_NTP_host(_NTP_HOST):
 
 def set_NTP_time():
 	import time
-	from pyb import RTC
 	print("Setting time from NTP")
 
 	t = get_NTP_time()
@@ -80,10 +78,9 @@ def set_NTP_time():
 	t += (tz_hours * 3600) + (tz_minutes * 60)
 
 	tm = time.localtime(t)
-	tm = tm[0:3] + (0,) + tm[3:6] + (0,)
+	tm = tm[0:3] + tm[3:6]
 
-	rtc = RTC()
-	rtc.init()
-	rtc.datetime(tm)
+	rtc = machine.RTC()
+	rtc.init(tm)
 
 	return True
