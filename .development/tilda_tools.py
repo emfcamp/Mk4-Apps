@@ -117,22 +117,22 @@ def main():
         pyboard_util.stop_badge(args, args.verbose)
 
     if command == "bootstrap":
-        sync.clean(get_storage(args))
-        sync.sync(get_storage(args), ["bootstrap.py"], {}, args.verbose, args.skip_wifi)
+        sync.clean(args)
+        sync.sync(args, ["bootstrap.py"], {}, args.verbose, args.skip_wifi)
         pyboard_util.soft_reset(args)
 
     if command == "sync":
         if args.clean:
-            sync.clean(get_storage(args))
+            sync.clean(args)
         paths = args.paths if len(args.paths) else None
-        synced_resources = sync.sync(get_storage(args), paths, resources, args.verbose, args.skip_wifi)
+        synced_resources = sync.sync(args, paths, resources, args.verbose, args.skip_wifi)
 
     if (command in ["reset", "sync"]) or run_tests:
-        sync.set_boot_app(get_storage(args), args.boot or "")
+        sync.set_boot_app(args, args.boot or "")
         if args.run:
             command = "run"
             args.paths = [args.run]
-            sync.set_no_boot(get_storage(args))
+            sync.set_no_boot(args)
         pyboard_util.soft_reset(args)
 
 
@@ -146,23 +146,7 @@ def main():
             pyboard_util.run(args, [resource], False)
             pyboard_util.soft_reset(args, False)
 
-
-
     pyboard_util.close_pyb()
-
-def find_storage():
-    # todo: find solution for windows and linux
-    for pattern in ['/Volumes/TILDAMK4', '/Volumes/PYBFLASH', '/Volumes/NO NAME']:
-        for path in glob.glob(pattern):
-            return path
-    print("Couldn't find badge storage - Please make it's plugged in and reset it if necessary")
-    sys.exit(1)
-
-def get_storage(args):
-    if not args.storage:
-        args.storage = find_storage()
-    return args.storage
-
 
 
 if __name__ == "__main__":

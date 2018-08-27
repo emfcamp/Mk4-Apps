@@ -1,5 +1,5 @@
 from pyboard import Pyboard, PyboardError
-import glob, sys, pyboard
+import glob, sys, pyboard, json, binascii, os, hashlib
 
 _pyb = None
 
@@ -70,6 +70,41 @@ def check_run(paths):
             pyfile = f.read()
             compile(pyfile + '\n', filename, 'exec')
 
+def execbuffer(pyb, buf):
+    try:
+        ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=pyboard.stdout_write_bytes)
+    except PyboardError as er:
+        print(er)
+        pyb.close()
+        sys.exit(1)
+    except KeyboardInterrupt:
+        sys.exit(1)
+    if ret_err:
+        pyb.exit_raw_repl()
+        pyb.close()
+        pyboard.stdout_write_bytes(ret_err)
+        sys.exit(1)
+
+def returnbuffer(pyb, buf):
+    res = b''
+    def add_to_res(b):
+        nonlocal res
+        res += b
+    try:
+        ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=add_to_res)
+    except PyboardError as er:
+        print(er)
+        pyb.close()
+        sys.exit(1)
+    except KeyboardInterrupt:
+        sys.exit(1)
+    if ret_err:
+        pyb.exit_raw_repl()
+        pyb.close()
+        pyboard.stdout_write_bytes(ret_err)
+        sys.exit(1)
+    return res.decode('ascii').strip()
+
 def run(args, paths, verbose=True):
     pyb = get_pyb(args)
 
@@ -90,28 +125,13 @@ def run(args, paths, verbose=True):
         if verbose:
             print(" DONE")
 
-        def execbuffer(buf):
-            try:
-                ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=pyboard.stdout_write_bytes)
-            except PyboardError as er:
-                print(er)
-                pyb.close()
-                sys.exit(1)
-            except KeyboardInterrupt:
-                sys.exit(1)
-            if ret_err:
-                pyb.exit_raw_repl()
-                pyb.close()
-                pyboard.stdout_write_bytes(ret_err)
-                sys.exit(1)
-
         try:
             # run any files
             for filename in paths:
                 with open(filename, 'rb') as f:
                     print("-------- %s --------" % filename)
                     pyfile = f.read()
-                    execbuffer(pyfile)
+                    execbuffer(pyb, pyfile)
 
             # exiting raw-REPL just drops to friendly-REPL mode
             pyb.exit_raw_repl()
@@ -120,3 +140,51 @@ def run(args, paths, verbose=True):
                 print("Connection to badge lost") # This can happen on a hard rest
             else:
                 raise e
+
+# Please don't judge me too harshly for this hack, I had lots of problems with the
+# USB mass storage protocol and at some point it looked simpler to just avoid it
+# altogether. This _seems_ to work, so maybe it isn't that terrible after all.
+
+def init_copy_via_repl(args):
+    pyb = get_pyb(args)
+    print("Init copy via repl:", end=" ", flush=True)
+    try:
+        pyb.enter_raw_repl()
+        with open(os.path.join(os.path.dirname(__file__), "copy_via_repl_header.py"), "rt") as f:
+            execbuffer(pyb, f.read())
+
+    except PyboardError as er:
+        print("FAIL")
+        print(er)
+        pyb.close()
+        sys.exit(1)
+
+    print("DONE")
+
+def copy_via_repl(args, path, rel_path):
+    with open(path, "rb") as f:
+        return write_via_repl(args, f.read(), rel_path)
+
+def write_via_repl(args, content, rel_path):
+    pyb = get_pyb(args)
+    h = hashlib.sha256()
+    h.update(content)
+    content = binascii.b2a_base64(content).decode('ascii').strip()
+    rel_path_as_string = json.dumps(rel_path) # make sure quotes are escaped
+    cmd = "h(%s)" % rel_path_as_string
+    badge_hash = returnbuffer(pyb,cmd).splitlines()[0]
+    local_hash = str(binascii.hexlify(h.digest()), "utf8")[:10]
+    if badge_hash == local_hash:
+        # we don't need to update those files
+        return False
+
+    cmd = "w(%s, \"%s\")\n" % (rel_path_as_string, content)
+    execbuffer(pyb,cmd)
+    return True
+
+def end_copy_via_repl(args):
+    # do we need to do anything?
+    pass
+
+def clean_via_repl(args):
+    raise Exception("not implemented yet")

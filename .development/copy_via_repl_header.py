@@ -1,0 +1,51 @@
+# This is meant to run on the badge
+import hashlib, binascii, os
+
+def split(path):
+    if path == "":
+        return ("", "")
+    r = path.rsplit("/", 1)
+    if len(r) == 1:
+        return ("", path)
+    head = r[0]
+    if not head:
+        head = "/"
+    return (head, r[1])
+
+def dirname(path):
+    return split(path)[0]
+
+def exists(path):
+    try:
+        os.stat(path)[0]
+        return True
+    except OSError:
+        return False
+
+def makedirs(path):
+    sub_path = split(path)[0]
+    if sub_path and (not exists(sub_path)):
+        makedirs(sub_path)
+    if not exists(path):
+        os.mkdir(path)
+
+def h(p):
+    try:
+        with open(p, "rb") as f:
+            h = hashlib.sha256()
+            h.update(f.read())
+            print(str(binascii.hexlify(h.digest()), "utf8")[:10])
+            return
+    except:
+        pass
+    print("nooooooooo")
+
+def w(p, c):
+    try:
+        makedirs(dirname(p))
+        with open(p, "wb") as f:
+            f.write(binascii.a2b_base64(c))
+        os.sync()
+    except Exception as e:
+        print(str(e))
+        return None

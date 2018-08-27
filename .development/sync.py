@@ -1,6 +1,6 @@
-import os, shutil, sys, fnmatch, glob
+import os, shutil, sys, fnmatch, glob, pyboard_util
 
-def sync(storage, patterns, resources, verbose, skip_wifi):
+def sync(args, patterns, resources, verbose, skip_wifi):
     root = get_root(verbose)
 
     # Add all paths that are already files
@@ -31,6 +31,7 @@ def sync(storage, patterns, resources, verbose, skip_wifi):
                     paths.add(path)
         if not found and (pattern not in paths):
             print("WARN: No resources to copy found for pattern %s" % patterns)
+    pyboard_util.init_copy_via_repl(args)
     if not verbose:
         print("Copying %s files: " % len(paths), end="", flush=True)
     for path in paths:
@@ -39,17 +40,16 @@ def sync(storage, patterns, resources, verbose, skip_wifi):
         rel_path = os.path.relpath(path, root)
         if rel_path.startswith(".") or os.path.isdir(path) or os.path.islink(path):
             continue
-        if verbose:
-            print("Copying %s..." % rel_path)
-        else:
-            print(".", end="", flush=True)
 
-        target = os.path.join(storage, rel_path)
-        target_dir = os.path.dirname(target)
-        ensure_dir(target_dir, storage)
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-        shutil.copy2(path, target)
+        updated = pyboard_util.copy_via_repl(args, path, rel_path)
+        if verbose:
+            print("Copied %s, updated: %s" % (rel_path, updated))
+        else:
+            if updated:
+                print("+", end="", flush=True)
+            else:
+                print("=", end="", flush=True)
+    pyboard_util.end_copy_via_repl(args)
 
     if verbose:
         print("Files copied successfully")
@@ -57,46 +57,19 @@ def sync(storage, patterns, resources, verbose, skip_wifi):
         print(" DONE")
     return synced_resources
 
-def clean(storage):
+def clean(args):
     print("Cleaning:", end=" ", flush=True)
-    files = glob.glob(os.path.join(storage, "*"))
-    for f in files:
-        try:
-            if os.path.isfile(f):
-                os.remove(f)
-            else:
-                shutil.rmtree(f)
-        except:
-            pass
+    pyboard_util.clean_via_repl(args)
     print("DONE")
 
-def ensure_dir(path, storage):
-    # micropython has a tendecy to turn directories into files
-    if not path or path == storage:
-        return
-    if os.path.isfile(path):
-        os.remove(path)
-    ensure_dir(os.path.dirname(path), storage)
-
-def set_boot_app(storage, app_to_boot):
-    path = os.path.join(storage, 'once.txt')
-    try:
-        os.remove(path)
-    except OSError:
-        pass
-    with open(path, 'w') as f:
-        f.write(app_to_boot + "\n")
+def set_boot_app(args, app_to_boot):
+    content = app_to_boot + "\n"
+    pyboard_util.write_via_repl(args, content.encode("utf8"), 'once.txt')
     if app_to_boot:
         print("setting next boot to %s" % app_to_boot)
 
-def set_no_boot(storage):
-    path = os.path.join(storage, 'no_boot')
-    try:
-        os.remove(path)
-    except OSError:
-        pass
-    with open(path, 'w') as f:
-        f.write("\n")
+def set_no_boot(args):
+    pyboard_util.write_via_repl(args, b"\n", 'no_boot')
 
 def get_root(verbose=False):
     root = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..'))
