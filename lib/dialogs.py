@@ -66,7 +66,7 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width 
         if button_no: button_no.destroy()
         label.destroy()
 
-def prompt_text(description, init_text = "", true_text="OK", false_text="Back", font=FONT_MEDIUM_BOLD, style=default_style_badge):
+def prompt_text(description, init_text="", true_text="OK", false_text="Back", font=FONT_MEDIUM_BOLD, style=default_style_badge):
     """Shows a dialog and keyboard that allows the user to input/change a string
 
     Returns None if user aborts with button B
@@ -119,7 +119,7 @@ def prompt_text(description, init_text = "", true_text="OK", false_text="Back", 
         edit.destroy();
     return
 
-def prompt_option(options, index=0, text = "Please select one of the following:", title=None, select_text="OK", none_text=None):
+def prompt_option(options, index=0, text = None, title=None, select_text="OK", none_text=None):
     """Shows a dialog prompting for one of multiple options
 
     If none_text is specified the user can use the B or Menu button to skip the selection
@@ -133,12 +133,15 @@ def prompt_option(options, index=0, text = "Please select one of the following:"
     if title:
         window.text(5, 10, title, TILDA_COLOR)
         window.line(0, 25, ugfx.width() - 10, 25, ugfx.BLACK)
-        window.text(5, 30, text, ugfx.BLACK)
-        list_y = 50
+        list_y = 30
+        if text:
+            list_y += 20
+            window.text(5, 30, text, ugfx.BLACK)
+
     else:
         window.text(5, 10, text, ugfx.BLACK)
 
-    options_list = ugfx.List(5, list_y, ugfx.width() - 25, 180 - list_y, parent = window)
+    options_list = ugfx.List(5, list_y, ugfx.width() - 25, 260 - list_y, parent = window)
 
     for option in options:
         if isinstance(option, dict) and option["title"]:
@@ -151,8 +154,8 @@ def prompt_option(options, index=0, text = "Please select one of the following:"
     if none_text:
         none_text = "B: " + none_text
 
-    button_select = ugfx.Button(5, ugfx.height() - 50, 140 if none_text else ugfx.width() - 25, 30 , select_text, parent=window)
-    button_none = ugfx.Button(ugfx.width() - 160, ugfx.height() - 50, 140, 30 , none_text, parent=window) if none_text else None
+    button_select = ugfx.Button(5, ugfx.height() - 50, 105 if none_text else 200, 30 , select_text, parent=window)
+    button_none = ugfx.Button(117, ugfx.height() - 50, 105, 30 , none_text, parent=window) if none_text else None
 
     try:
         while True:
@@ -180,7 +183,7 @@ def prompt_option(options, index=0, text = "Please select one of the following:"
 
 class WaitingMessage:
     """Shows a dialog with a certain message that can not be dismissed by the user"""
-    def __init__(self, text = "Please Wait...", title="TiLDA"):
+    def __init__(self, text="Please Wait...", title="TiLDA"):
         self.window = ugfx.Container(30, 30, ugfx.width() - 60, ugfx.height() - 60)
         self.window.show()
         self.window.text(5, 10, title, TILDA_COLOR)

@@ -1,5 +1,7 @@
 """Library for sleep related functions"""
 
+___license___ = "MIT"
+
 import time
 
 def sleep_ms(duration):
