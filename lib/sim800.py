@@ -179,6 +179,9 @@ def power(onoroff, async):
             command("AT+CSCS=\"8859-1\"")
             # Enable DTMF detection
             command("AT+DDET=1,0,1")
+            # Set up multichannel Bluetooth without transparent transmition
+            command("AT+BTSPPCFG=\"MC\",1")
+            command("AT+BTSPPCFG=\"TT\",0")
     return isonnow
 
 # Power on the SIM800 (returns true when on)
@@ -600,6 +603,30 @@ def btoppaccept():
     responce2 = extractval("+BTOPPPUSH:", response, 0)
     return responce2=="1"
 
+# Send data over a Bluetooth serial connection
+def btsppwrite(connection, data):
+    response = command("AT+BTSPPSEND=" + str(connection) + "," + str(len(data)), 8000, None, ">")
+    if response[-1].startswith(">"):
+        return ispositive(command(data)[-1])
+    else:
+        return False
+
+# Receive data from a Bluetooth serial connection
+def btsppread(connection):
+    command()
+    request = "AT+BTSPPGET=3," + str(connection) + "\n"
+    uart.write(request)
+    data = uart.read()
+    while True:
+        time.sleep(uart_timeout/1000)
+        if uart.any()==0:
+            break
+        data += uart.read()
+    if not data.endswith("ERROR\r\n"):
+        return data[len(request)+2:-6]
+    else:
+        return None
+        
 # Reject an OPP object/file transfer
 def btoppreject():
     command("AT+BTOPPACPT=0")
