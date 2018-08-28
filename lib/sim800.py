@@ -16,6 +16,7 @@ status_pin = machine.Pin(machine.Pin.GPIO_SIM_STATUS, machine.Pin.IN)
 ringer_pin = machine.Pin(machine.Pin.GPIO_SIM_RI, machine.Pin.IN)
 pwr_key_pin = machine.Pin(machine.Pin.GPIO_SIM_PWR_KEY, machine.Pin.OUT)
 amp_pin = machine.Pin(machine.Pin.GPIO_AMP_SHUTDOWN, machine.Pin.OUT)
+netlight_pin = machine.Pin(machine.Pin.GPIO_SIM_NETLIGHT, machine.Pin.IN)
 
 # Open the UART
 uart = machine.UART(uart_port, uart_default_baud, mode=machine.UART.BINARY, timeout=uart_timeout)
@@ -204,7 +205,18 @@ def uartspeed(newbaud):
     else:
         uart = machine.UART(uart_port, newbaud, mode=UART.BINARY, timeout=uart_timeout)
 
-# command is the AT command without the AT or CR/LF, response_timeout (in ms) is how long to wait for completion, required_response is to wait for a non standard response, custom_endofdata will finish when found
+# Netlight IRQ (called for finishing setartup and polling uart)
+def netlightscheduled_internal(nullparam=None):
+    # Finish powerup procedure if needed
+    poweron()
+    # Check for incomming commands
+    processbuffer()
+
+# Netlight IRQ (called for finishing setartup and polling uart)
+def netlightirq_internal(nullparam=None):
+    micropython.schedule(netlightscheduled_internal, None)
+ 
+# Command is the AT command without the AT or CR/LF, response_timeout (in ms) is how long to wait for completion, required_response is to wait for a non standard response, custom_endofdata will finish when found
 def command(command="AT", response_timeout=default_response_timeout, required_response=None, custom_endofdata=None):
     # Check we are powered on and set up
     poweron(False)
@@ -806,8 +818,25 @@ def fsrm(filename):
 def fsmv(filenamefrom, filenameto):
     return ispositive(command("AT+FSRENAME=" + str(filenamefrom) + "," + str(filenameto))[-1])
 
+# Callback for call buton being pressed
+def callbuttonpressed_internal(nullparam=None):
+    answer()
+
+# Callback for end buton being pressed
+def endbuttonpressed_internal(nullparam=None):
+    hangup()
+
+# Startup...
+
 # Start turning on the SIM800 asynchronously
 onatstart = poweron(True)
 
 # Turn on the audio amp
 amp_pin.on()
+
+# Enable the interupt on network light for polling uart
+netlight_pin.irq(netlightirq_internal)
+
+# Hook in the Call / End buttons
+tilda.Buttons.enable_interrupt(tilda.Buttons.BTN_Call, callbuttonpressed_internal)
+tilda.Buttons.enable_interrupt(tilda.Buttons.BTN_End, endbuttonpressed_internal)
