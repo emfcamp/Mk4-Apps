@@ -1,15 +1,16 @@
 """SMS app for reading and sending messages
 """
-___name___         = "SMS"
+___name___         = "Phone"
 ___license___      = "MIT"
-___dependencies___ = ["dialogs", "ugfx_helper", "app", "stack_nav", "sim800"]
+___dependencies___ = ["app", "dialogs", "sim800", "ugfx_helper"]
 ___categories___   = ["System"]
 ___bootstrapped___ = True
 
-import sim800
-import ugfx_helper, ugfx
 from app import *
 from dialogs import *
+import ugfx
+import ugfx_helper
+import sim800
 
 ugfx_helper.init()
 ugfx.clear()
