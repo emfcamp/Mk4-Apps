@@ -463,7 +463,7 @@ def setoperator(mode, format=None, operator=None):
     if format is not None:
         params += "," + str(format)
         if operator is not None:
-            params += "," + str(operator)
+            params += ",\"" + str(operator) + "\""
     command("AT+COPS=" + str(mode) + params, 120000)
 
 # Get the activity status (returns 0=ready, 2=unknown, 3=ringing, 4=call in progress)
