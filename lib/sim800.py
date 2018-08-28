@@ -15,6 +15,7 @@ default_response_timeout = 2000
 status_pin = machine.Pin(machine.Pin.GPIO_SIM_STATUS, machine.Pin.IN)
 ringer_pin = machine.Pin(machine.Pin.GPIO_SIM_RI, machine.Pin.IN)
 pwr_key_pin = machine.Pin(machine.Pin.GPIO_SIM_PWR_KEY, machine.Pin.OUT)
+amp_pin = machine.Pin(machine.Pin.GPIO_AMP_SHUTDOWN, machine.Pin.OUT)
 
 # Open the UART
 uart = machine.UART(uart_port, uart_default_baud, mode=machine.UART.BINARY, timeout=uart_timeout)
@@ -89,7 +90,7 @@ def readline():
                 return stringin
         # This will be part of the string then
         elif not (charin == b'\n'):
-            stringin += str(charin, "ASCII")
+            stringin += chr(ord(charin))
             
 # Check if we have a callback hook for this line
 def processcallbacks(line):
@@ -148,15 +149,15 @@ def command_internal(command="AT", response_timeout=default_response_timeout, re
     return result
 
 # Power on the SIM800 (True=on, False=off, returns true when on)
-def power(onoroff, async):
+def power(onoroff, asyncro):
     # Get to a stable state if not async
-    if not async and pwr_key_pin.value():
+    if not asyncro and pwr_key_pin.value():
         pwr_key_pin.off()
         time.sleep(3)
 	# Press the virtual power key if we are off
     if not (ison()==onoroff):
         pwr_key_pin.on()
-        if not async:
+        if not asyncro:
             time.sleep(3)
     # Have we just turned on?
     isonnow = ison()
@@ -186,12 +187,12 @@ def power(onoroff, async):
     return isonnow
 
 # Power on the SIM800 (returns true when on)
-def poweron(async=False):
-    return power(True, async)
+def poweron(asyncro=False):
+    return power(True, asyncro)
 
 # Power off the SIM800 (returns true when off)
-def poweroff(async=False):
-    return not power(False, async)
+def poweroff(asyncro=False):
+    return not power(False, asyncro)
 
 # Change the speed on the communication
 def uartspeed(newbaud):
@@ -359,10 +360,10 @@ def ringtone(alert=None,preview=False):
     return int(current)
 
 # Play a tone though the SIM800 (MHz and ms)
-def playtone(freq=0,duration=2000,async=True):
+def playtone(freq=0,duration=2000,asyncro=True):
     if freq>0:
         command("AT+SIMTONE=1," + str(freq) + "," + str(duration) + ",0," + str(duration))
-        if not async:
+        if not asyncro:
             time.sleep(duration/1000)
     else:
         command("AT+SIMTONE=0")
@@ -807,3 +808,6 @@ def fsmv(filenamefrom, filenameto):
 
 # Start turning on the SIM800 asynchronously
 onatstart = poweron(True)
+
+# Turn on the audio amp
+amp_pin.on()
