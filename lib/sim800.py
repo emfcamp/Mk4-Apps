@@ -29,6 +29,7 @@ callbacks = []
 # Globals for remembering callback data
 clip = ""
 btpairing = ''
+holdoffirq=False
 
 # Check if the SIM800 is powered up
 def ison():
@@ -119,6 +120,9 @@ def processbuffer():
 # The same interface as and called by command() but without power so can be called from power()
 def command_internal(command="AT", response_timeout=default_response_timeout, required_response=None, custom_endofdata=None):
     global dirtybuffer
+    global holdoffirq
+    # Don't let the interupt process the buffer mid command
+    holdoffirq = True
     # Process anything remaining in the buffer
     processbuffer()
     # Send the command
@@ -142,12 +146,14 @@ def command_internal(command="AT", response_timeout=default_response_timeout, re
             customcomplete = True
         # Check if we are done
         if complete and customcomplete:
+            holdoffirq = False
             return result
     # We ran out of time
     # set the dirty buffer flag is an out of date end of responcs cound end up in the buffer
     if required_response is None:
         dirtybuffer = True
     result.append("TIMEOUT")
+    holdoffirq = False
     return result
 
 # Send the command to set the default configuration to the SIM800
@@ -174,7 +180,7 @@ def power(onoroff, asyncro):
     if not asyncro and pwr_key_pin.value():
         pwr_key_pin.off()
         time.sleep(3)
-	# Press the virtual power key if we are off
+    # Press the virtual power key if we are off
     if not (ison()==onoroff):
         pwr_key_pin.on()
         if not asyncro:
@@ -217,7 +223,8 @@ def netlightscheduled_internal(pinstate):
     if pwr_key_pin.value() and ison():
         poweron()
     # Check for incomming commands
-    processbuffer()
+    if holdoffirq==False:
+        processbuffer()
 
 # Netlight IRQ (called for polling uart)
 def netlightirq_internal(pinstate):
@@ -463,7 +470,7 @@ def setoperator(mode, format=None, operator=None):
     if format is not None:
         params += "," + str(format)
         if operator is not None:
-            params += "," + str(operator)
+            params += ",\"" + str(operator) + "\""
     command("AT+COPS=" + str(mode) + params, 120000)
 
 # Get the activity status (returns 0=ready, 2=unknown, 3=ringing, 4=call in progress)
@@ -669,6 +676,8 @@ def btsppwrite(connection, data):
 # Receive data from a Bluetooth serial connection
 def btsppread(connection):
     command()
+    # Don't let the interupt process the buffer mid command
+    holdoffirq = True
     request = "AT+BTSPPGET=3," + str(connection) + "\n"
     uart.write(request)
     data = uart.read()
@@ -677,6 +686,7 @@ def btsppread(connection):
         if uart.any()==0:
             break
         data += uart.read()
+    holdoffirq = False
     if not data.endswith("ERROR\r\n"):
         return data[len(request)+2:-6]
     else:
@@ -770,6 +780,8 @@ def fscreate(filename):
 def fsreadpart(filename, size=256, start=0):
     mode=int(start>0)
     command()
+    # Don't let the interupt process the buffer mid command
+    holdoffirq = True
     request = "AT+FSREAD=" + str(filename) + "," + str(mode) + "," + str(size) + "," + str(start) + "\n"
     uart.write(request)
     data = uart.read()
@@ -778,6 +790,7 @@ def fsreadpart(filename, size=256, start=0):
         if uart.any()==0:
             break
         data += uart.read()
+    holdoffirq = False
     if not data.endswith("ERROR\r\n"):
         return data[len(request)+2:-6]
     else:
