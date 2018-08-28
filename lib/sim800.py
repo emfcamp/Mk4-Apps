@@ -20,8 +20,12 @@ pwr_key_pin = machine.Pin(machine.Pin.GPIO_SIM_PWR_KEY, machine.Pin.OUT)
 uart = machine.UART(uart_port, uart_default_baud, mode=machine.UART.BINARY, timeout=uart_timeout)
 dirtybuffer = False # Flag if the buffer could have residual end of reresponsesponces line in it?
 
+# A list of callback functions
 callbacks = []
+
+# Globals for remembering callback data
 clip = ""
+btpairing = ''
 
 # Check if the SIM800 is powered up
 def ison():
@@ -86,20 +90,17 @@ def readline():
         # This will be part of the string then
         elif not (charin == b'\n'):
             stringin += str(charin, "ASCII")
-
-# xxxy
-RING_CALLBACK = "RING"
-CLIP_CALLBACK = "+CLIP:"
-NEWSMS_CALLBACK = "+CMT:"
-DTMF_CALLBACK = "+DTMF:"
-BTPAIRING_CALLBACK = "+BTPAIRING:"
             
 # Check if we have a callback hook for this line
 def processcallbacks(line):
     global clip
-    # check for the caller line information
+    global btpairing
+    # Check for the caller line information
     if line.startswith("+CLIP:"):
         clip = line[6:].strip()
+    # Check for Bluetooth pairing request
+    if line.startswith("+BTPAIRING:"):
+        btpairing = line[11:].strip()
     # Check for app callbacks
     for entry in callbacks:
         if line.startswith(entry[0]):
@@ -515,28 +516,52 @@ def btaddress():
 # Get/Set Bluetooth visibility (True for on, False for off)
 def btvisible(visible=None):
     # Power on if we want to be visible
-    if visibie:
+    if visible:
         btpoweron()
     # Set the new leve if we have one to set
     if visible is not None:
-        command("AT+BTVIS=" + str(visible))
+        command("AT+BTVIS=" + str(int(visible)))
     # Retieve the set gain to report back
     response = command("AT+BTVIS?")
     return int(extractval("+BTVIS:", response, 0))
 
-# Get the Bluetooth address (timeout from 10000 to 60000, returnd device ID, name, address, rssi)
+# Get the Bluetooth address (timeout in ms from 10000 to 60000, returnd device ID, name, address, rssi)
 def btscan(timeout=30000):
     btpoweron()
+    result = []
     response = command("AT+BTSCAN=1," + str(int(timeout/1000)), timeout+8000, "+BTSCAN: 1")
-    return extractvals("+BTSCAN: 0,", response)
+    for entry in extractvals("+BTSCAN: 0,", response):
+        splitentry = entry.split(",")
+        result = [int(splitentry[0]), splitentry[1].strip("\""), splitentry[2], int(splitentry[3])]
+    return result
 
+# Get the requesting paring device name
+def btparingname():
+    if ison():
+        processbuffer()
+    return btpairing.split(",")[0].strip("\"")
+
+# Get the requesting paring passcode
+def btparingpasscode():
+    if ison():
+        processbuffer()
+    splitdata = btpairing.split(",")
+    if (len(splitdata)>=3):
+        return splitdata[2]
+    else:
+        return ""
+    
 # Pair a Bluetooth device
 def btpair(device):
+    global btpairing
+    btpairing = ''
     response = command("AT+BTPAIR=0," + str(device), 8000, "+BTPAIRING:")
     return extractval("+BTPAIRING:", response, "").split(",")
 
 # Confirm the pairing of a Bluetooth device
 def btpairconfirm(passkey=None):
+    global btpairing
+    btpairing = ''
     if passkey is None:
         return command("AT+BTPAIR=1,1", 8000)
     else:
@@ -544,6 +569,8 @@ def btpairconfirm(passkey=None):
 
 # Cancel/reject the pairing of a Bluetooth device
 def btpairreject():
+    global btpairing
+    btpairing = ''
     return command("AT+BTPAIR=1,0", 8000)
 
 # Unpair a Bluetooth device (unpair everything when device is 0)
@@ -552,8 +579,12 @@ def btunpair(device=0):
 
 # List the paired Bluetooth devices
 def btpaired():
+    result = []
     response = command("AT+BTSTATUS?")
-    return extractvals("P:", response)
+    for entry in extractvals("P:", response):
+        splitentry = entry.split(",")
+        result = [int(splitentry[0]), splitentry[1].strip("\""), splitentry[2]]
+    return result
 
 # List profiles supported by a paired device
 def btgetprofiles(device):
@@ -588,8 +619,12 @@ def btdisconnect(device):
 
 # List the Bluetooth connections
 def btconnected():
+    result = []
     response = command("AT+BTSTATUS?")
-    return extractvals("C:", response)
+    for entry in extractvals("C:", response):
+        splitentry = entry.split(",")
+        result = [int(splitentry[0]), splitentry[1].strip("\""), splitentry[2]]
+    return result
 
 # Push an OPP object/file over Bluetooth (must be paired for OPP, monitor +BTOPPPUSH: for sucsess / fail / server issue)
 def btopppush(device, filename):
@@ -683,12 +718,6 @@ def btrssi(device):
     response = command("AT+BTRSSI=" + str(device))
     return int(extractval("+BTRSSI:", response, 0))
 
-
-
-
-# xxxy - Add BT object transfer, serial, handsfree
-
-
 # Get available space on the flash storage
 def fsfree():
     response = command("AT+FSMEM")
@@ -776,14 +805,5 @@ def fsrm(filename):
 def fsmv(filenamefrom, filenameto):
     return ispositive(command("AT+FSRENAME=" + str(filenamefrom) + "," + str(filenameto))[-1])
 
-
-# Start turning on the SIM800
+# Start turning on the SIM800 asynchronously
 onatstart = poweron(True)
-
-# Testing code to move to app
-# Try using call and end buttons to answer and hangup
-#tilda.Buttons.enable_interrupt(tilda.Buttons.BTN_Call, answer())
-#tilda.Buttons.enable_interrupt(tilda.Buttons.BTN_End, hangup())
-# See if the netowrk list can be used for checking SIM800
-#status_pin = machine.Pin(7, machine.Pin.IN)
-#tilda.Buttons.enable_interrupt(machine.Pin(machine.Pin.GPIO_SIM_NETLIGHT, machine.Pin.IN),processbuffer())
