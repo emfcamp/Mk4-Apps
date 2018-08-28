@@ -6,6 +6,7 @@ ___dependencies___ = []
 import machine
 import time
 import micropython
+import tilda
 
 uart_port = 1
 uart_default_baud = 115200
@@ -149,6 +150,24 @@ def command_internal(command="AT", response_timeout=default_response_timeout, re
     result.append("TIMEOUT")
     return result
 
+# Send the command to set the default configuration to the SIM800
+def senddefaultconfig():
+    # Send a command to autonigotiate UART speed
+    command_internal("AT")
+    # Turn on new SMS notificationn
+    command_internal("AT+CNMI=1,2")
+    # Turn on calling line identification notification
+    command_internal("AT+CLIP=1")
+    # Swith to text mode
+    command("AT+CMGF=1")
+    # Switch to ASCII(ish)
+    command("AT+CSCS=\"8859-1\"")
+    # Enable DTMF detection
+    command("AT+DDET=1,0,1")
+    # Set up multichannel Bluetooth without transparent transmition
+    command("AT+BTSPPCFG=\"MC\",1")
+    command("AT+BTSPPCFG=\"TT\",0")
+    
 # Power on the SIM800 (True=on, False=off, returns true when on)
 def power(onoroff, asyncro):
     # Get to a stable state if not async
@@ -170,21 +189,8 @@ def power(onoroff, asyncro):
         dirtybuffer = False
         # We are now live
         if isonnow:
-            # Send a command to autonigotiate UART speed
-            command_internal("AT")
-            # Turn on new SMS notificationn
-            command_internal("AT+CNMI=1,2")
-            # Turn on calling line identification notification
-            command_internal("AT+CLIP=1")
-            # Swith to text mode
-            command("AT+CMGF=1")
-            # Switch to ASCII(ish)
-            command("AT+CSCS=\"8859-1\"")
-            # Enable DTMF detection
-            command("AT+DDET=1,0,1")
-            # Set up multichannel Bluetooth without transparent transmition
-            command("AT+BTSPPCFG=\"MC\",1")
-            command("AT+BTSPPCFG=\"TT\",0")
+            # Set the deault configuration
+            senddefaultconfig()
     return isonnow
 
 # Power on the SIM800 (returns true when on)
@@ -205,17 +211,18 @@ def uartspeed(newbaud):
     else:
         uart = machine.UART(uart_port, newbaud, mode=UART.BINARY, timeout=uart_timeout)
 
-# Netlight IRQ (called for finishing setartup and polling uart)
-def netlightscheduled_internal(nullparam=None):
-    # Finish powerup procedure if needed
-    poweron()
+# Netlight sheduled (called for polling uart)
+def netlightscheduled_internal(pinstate):
+    # Complete the setup procedure if needed
+    if pwr_key_pin.value() and ison():
+        poweron()
     # Check for incomming commands
     processbuffer()
 
-# Netlight IRQ (called for finishing setartup and polling uart)
-def netlightirq_internal(nullparam=None):
-    micropython.schedule(netlightscheduled_internal, None)
- 
+# Netlight IRQ (called for polling uart)
+def netlightirq_internal(pinstate):
+    micropython.schedule(netlightscheduled_internal, pinstate)
+
 # Command is the AT command without the AT or CR/LF, response_timeout (in ms) is how long to wait for completion, required_response is to wait for a non standard response, custom_endofdata will finish when found
 def command(command="AT", response_timeout=default_response_timeout, required_response=None, custom_endofdata=None):
     # Check we are powered on and set up
@@ -828,15 +835,20 @@ def endbuttonpressed_internal(nullparam=None):
 
 # Startup...
 
+
 # Start turning on the SIM800 asynchronously
 onatstart = poweron(True)
+
+# Reset SIM800 configuration if hardware is still on from before 
+if onatstart:
+    senddefaultconfig()
 
 # Turn on the audio amp
 amp_pin.on()
 
-# Enable the interupt on network light for polling uart
-netlight_pin.irq(netlightirq_internal)
-
 # Hook in the Call / End buttons
 tilda.Buttons.enable_interrupt(tilda.Buttons.BTN_Call, callbuttonpressed_internal)
 tilda.Buttons.enable_interrupt(tilda.Buttons.BTN_End, endbuttonpressed_internal)
+
+# Enable the interupts on network light to poll uart
+netlight_pin.irq(netlightirq_internal)
