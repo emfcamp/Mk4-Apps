@@ -7,7 +7,7 @@ newly activated or reset.
 
 ___name___         = "Homescreen (Default)"
 ___license___      = "MIT"
-___categories___   = ["homescreen"]
+___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen"]
 ___launchable___   = False
 ___bootstrapped___ = True
