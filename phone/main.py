@@ -2,14 +2,15 @@
 """
 ___name___         = "Phone"
 ___license___      = "MIT"
-___dependencies___ = ["dialogs", "app", "sim800"]
+___dependencies___ = ["app", "dialogs", "sim800", "ugfx_helper"]
 ___categories___   = ["System"]
 ___bootstrapped___ = True
 
 from app import *
 from dialogs import *
+import ugfx
+import ugfx_helper
 import sim800
-import ugfx_helper, ugfx
 
 ugfx_helper.init()
 ugfx.clear()
