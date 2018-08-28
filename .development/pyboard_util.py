@@ -187,4 +187,32 @@ def end_copy_via_repl(args):
     pass
 
 def clean_via_repl(args):
-    raise Exception("not implemented yet")
+    init_copy_via_repl(args)
+    print("Cleaning:", end=" ", flush=True)
+    try:
+        execbuffer(get_pyb(args), "clean()")
+    except PyboardError as er:
+        print("FAIL")
+        print(er)
+        pyb.close()
+        sys.exit(1)
+    print("DONE")
+
+def hard_reset(args):
+    pyb = get_pyb(args)
+    print("Hard reset:", end=" ", flush=True)
+    try:
+        pyb.enter_raw_repl()
+        execbuffer(pyb, "import machine\nmachine.reset()\n")
+        print("UNEXPECTED")
+    except PyboardError as er:
+        print("FAIL")
+        print(er)
+        pyb.close()
+        sys.exit(1)
+    except Exception as e:
+        if "Errno 6" in str(e):
+            print("DONE")
+        else:
+            raise e
+

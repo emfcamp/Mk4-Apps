@@ -58,9 +58,7 @@ def sync(args, patterns, resources, verbose, skip_wifi):
     return synced_resources
 
 def clean(args):
-    print("Cleaning:", end=" ", flush=True)
     pyboard_util.clean_via_repl(args)
-    print("DONE")
 
 def set_boot_app(args, app_to_boot):
     content = app_to_boot + "\n"

@@ -29,6 +29,12 @@ def makedirs(path):
     if not exists(path):
         os.mkdir(path)
 
+def isdir(path):
+    try:
+        return os.stat(path)[0] & 0o170000 == 0o040000
+    except OSError:
+        return False
+
 def h(p):
     try:
         with open(p, "rb") as f:
@@ -49,3 +55,18 @@ def w(p, c):
     except Exception as e:
         print(str(e))
         return None
+
+def clean(path=""):
+    for s in os.listdir(path):
+        full = "/".join([path, s]) if path else s
+        try:
+            if isdir(full):
+                try:
+                    clean(full)
+                except:
+                    pass
+                os.rmdir(full)
+            else:
+                os.remove(full)
+        except Exception as e:
+            print("Error while trying to clean '%s'" % full)

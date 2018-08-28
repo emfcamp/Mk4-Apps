@@ -1,5 +1,6 @@
 import os, tilda
 
+print("EMF: boot.py")
 os.sync()
 root = os.listdir()
 
@@ -23,9 +24,12 @@ def any_home():
     return h[0] if len(h) else False
 
 if "no_boot" in root:
+    print("no_boot found, aborting boot sequence")
+else:
     start = None
     if "main.py" in root:
         start = "main.py"
-    start = file("once.txt", True) or file("default_app.txt", False) or any_home() or "bootstrap.py"
+    start = start or file("once.txt", True) or file("default_app.txt", False) or any_home() or "bootstrap.py"
     print("Booting into %s" % start)
     tilda.main(start)
+

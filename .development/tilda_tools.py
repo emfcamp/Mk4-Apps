@@ -119,7 +119,7 @@ def main():
     if command == "bootstrap":
         sync.clean(args)
         sync.sync(args, ["bootstrap.py"], {}, args.verbose, args.skip_wifi)
-        pyboard_util.soft_reset(args)
+        pyboard_util.hard_reset(args)
 
     if command == "sync":
         if args.clean:
