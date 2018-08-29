@@ -96,6 +96,18 @@ def prompt_text(description, init_text = "", true_text="OK", false_text="Back", 
             if buttons.is_triggered(buttons.Buttons.BTN_A): return edit.text()
             if buttons.is_triggered(buttons.Buttons.BTN_B): return None
             if buttons.is_triggered(buttons.Buttons.BTN_Menu): return edit.text()
+            if buttons.is_triggered(buttons.Buttons.BTN_0): edit.text(edit.text() + "0")
+            if buttons.is_triggered(buttons.Buttons.BTN_1): edit.text(edit.text() + "1")
+            if buttons.is_triggered(buttons.Buttons.BTN_2): edit.text(edit.text() + "2")
+            if buttons.is_triggered(buttons.Buttons.BTN_3): edit.text(edit.text() + "3")
+            if buttons.is_triggered(buttons.Buttons.BTN_4): edit.text(edit.text() + "4")
+            if buttons.is_triggered(buttons.Buttons.BTN_5): edit.text(edit.text() + "5")
+            if buttons.is_triggered(buttons.Buttons.BTN_6): edit.text(edit.text() + "6")
+            if buttons.is_triggered(buttons.Buttons.BTN_7): edit.text(edit.text() + "7")
+            if buttons.is_triggered(buttons.Buttons.BTN_8): edit.text(edit.text() + "8")
+            if buttons.is_triggered(buttons.Buttons.BTN_9): edit.text(edit.text() + "9")
+            if buttons.is_triggered(buttons.Buttons.BTN_Hash): edit.text(edit.text() + "#")
+            if buttons.is_triggered(buttons.Buttons.BTN_Star): edit.text(edit.text() + "*")
 
     finally:
         window.hide()
