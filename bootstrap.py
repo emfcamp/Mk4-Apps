@@ -58,7 +58,7 @@ def wifi_details():
 def connect():
     details = wifi_details()
     if 'user' in details:
-        wifi.connect(details['ssid'], details['pw'], enterprise=True, entuser=details['user'], entmethod=wlan.EAP_METHOD_PEAP0_MSCHAPv2, entserverauth=False)
+        wifi.connect(details['ssid'], details['pw'], enterprise=True, entuser=details['user'], entmethod=wifi.EAP_METHOD_PEAP0_MSCHAPv2, entserverauth=False)
     elif 'pw' in details:
         wifi.connect(details['ssid'], details['pw'])
     else:
