@@ -29,6 +29,10 @@ def stop_badge(args, verbose):
     pyb = get_pyb(args)
     print("Stopping running app:", end="", flush=True)
     write_command(pyb, b'\r\x03\x03') # ctrl-C twice: interrupt any running program
+    n = pyb.serial.inWaiting()
+    while n > 0:
+        pyb.serial.read(n)
+        n = pyb.serial.inWaiting()
     print(" DONE")
 
 def write_command(pyb, command):

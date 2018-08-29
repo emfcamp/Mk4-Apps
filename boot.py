@@ -30,6 +30,8 @@ else:
     if "main.py" in root:
         start = "main.py"
     start = start or file("once.txt", True) or file("default_app.txt", False) or any_home() or "bootstrap.py"
+    if ".py" not in start:
+        start += "/main.py"
     print("Booting into %s" % start)
     tilda.main(start)
 
