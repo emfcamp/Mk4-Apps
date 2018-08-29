@@ -69,7 +69,7 @@ def connect(wait=True, timeout=10, show_wait_message=False, prompt_on_fail=True,
 
 def connect_wifi(details, timeout, wait=False):
     if 'user' in details:
-        nic().connect(details['ssid'], details['pw'], enterprise=True, entuser=details['user'], entmethod=wlan.EAP_METHOD_PEAP0_MSCHAPv2, entserverauth=False)
+        nic().connect(details['ssid'], details['pw'], enterprise=True, entuser=details['user'], entmethod=nic().EAP_METHOD_PEAP0_MSCHAPv2, entserverauth=False)
     elif 'pw' in details:
         nic().connect(details['ssid'], details['pw'])
     else:
