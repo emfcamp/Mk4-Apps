@@ -135,7 +135,7 @@ def add_metadata(path, resources):
     for resource in resources.values():
         file = None
         if resource['type'] == "app":
-            file = next(f for f in resource['files'] if "/main.py" in f)
+            file = next(f for f in resource['files'] if os.path.basename(f) == "main.py")
         elif resource['type'] == "lib":
             file = next(iter(resource['files'].keys()))
 
@@ -166,6 +166,7 @@ def resolve_dependencies(resources):
             to_add = resource['dependencies'].copy()
             while len(to_add):
                 r = to_add.pop()
+                r = os.path.normpath(r)
                 if r in already_added:
                     continue
                 if r not in resources:
@@ -244,6 +245,6 @@ def pretty_print_resources(resources):
 
 def normalize_dependency(dependency):
     """lib dependencies can be shortened to just their module name"""
-    if "." in dependency or "/" in dependency or "upip:" in dependency:
+    if "." in dependency or os.pathsep in dependency or "upip:" in dependency:
         return dependency
-    return "lib/%s.py" % dependency
+    return os.path.join("lib", "%s.py" % dependency)
