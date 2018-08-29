@@ -676,6 +676,7 @@ def btsppwrite(connection, data):
 # Receive data from a Bluetooth serial connection
 def btsppread(connection):
     command()
+    global holdoffirq
     # Don't let the interupt process the buffer mid command
     holdoffirq = True
     request = "AT+BTSPPGET=3," + str(connection) + "\n"
@@ -778,6 +779,7 @@ def fscreate(filename):
 
 # Read a chunk of data from a file on the flash storage
 def fsreadpart(filename, size=256, start=0):
+    global holdoffirq
     mode=int(start>0)
     command()
     # Don't let the interupt process the buffer mid command
@@ -846,8 +848,8 @@ def callbuttonpressed_internal(nullparam=None):
 def endbuttonpressed_internal(nullparam=None):
     hangup()
 
-# Startup...
 
+# Startup...
 
 # Start turning on the SIM800 asynchronously
 onatstart = poweron(True)
