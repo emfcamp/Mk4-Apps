@@ -75,11 +75,8 @@ def prompt_text(description, init_text = "", true_text="OK", false_text="Back", 
     window = ugfx.Container(0, 0, ugfx.width(), ugfx.height())
 
     if false_text:
-        true_text = "M: " + true_text
+        true_text = "A: " + true_text
         false_text = "B: " + false_text
-
-    if buttons.has_interrupt("BTN_MENU"):
-        buttons.disable_interrupt("BTN_MENU")
 
     ugfx.set_default_font(FONT_MEDIUM_BOLD)
     kb = ugfx.Keyboard(0, ugfx.height()//2, ugfx.width(), ugfx.height()//2, parent=window)
@@ -91,15 +88,12 @@ def prompt_text(description, init_text = "", true_text="OK", false_text="Back", 
     label = ugfx.Label(ugfx.width()//10, ugfx.height()//10, ugfx.width()*4//5, ugfx.height()*2//5-90, description, parent=window)
 
     try:
-        #button_yes.attach_input(ugfx.BTN_MENU,0) # todo: re-enable this
-        #if button_no: button_no.attach_input(ugfx.BTN_B,0)
-
         window.show()
         # edit.set_focus() todo: do we need this?
         while True:
             sleep.wfi()
             ugfx.poll()
-            #if buttons.is_triggered(buttons.Buttons.BTN_A): return edit.text()
+            if buttons.is_triggered(buttons.Buttons.BTN_A): return edit.text()
             if buttons.is_triggered(buttons.Buttons.BTN_B): return None
             if buttons.is_triggered(buttons.Buttons.BTN_Menu): return edit.text()
 
