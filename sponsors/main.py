@@ -2,11 +2,11 @@
 
 ___name___         = "Sponsors"
 ___license___      = "MIT"
-___dependencies___ = ["wifi", "http", "ugfx_helper"]
+___dependencies___ = ["wifi", "http", "ugfx_helper", "sleep"]
 ___categories___   = ["EMF"]
 ___bootstrapped___ = True
 
-import ugfx_helper, os, wifi, ugfx, http, time
+import ugfx_helper, os, wifi, ugfx, http, time, sleep
 from tilda import Buttons
 
 ugfx_helper.init()
@@ -21,6 +21,6 @@ except:
     ugfx.text(5, 5, "Couldn't download sponsors", ugfx.BLACK)
 
 while (not Buttons.is_pressed(Buttons.BTN_A)) and (not Buttons.is_pressed(Buttons.BTN_B)) and (not Buttons.is_pressed(Buttons.BTN_Menu)):
-    time.sleep(0.01)
+    sleep.wfi()
 
 ugfx.clear()
