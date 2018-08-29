@@ -6,71 +6,41 @@ Currently supports
 * Pick default app
 * Change badgestore repo/branch
 
+Todo:
+* timezone
+
 """
 
 ___name___         = "Settings"
 ___license___      = "MIT"
-___dependencies___ = ["dialogs", "ugfx_helper", "database"]
+___dependencies___ = ["dialogs", "ugfx_helper", "database", "app", "stack_nav", "wifi"]
 ___categories___   = ["System"]
 ___bootstrapped___ = True
 
 import ugfx_helper, os, wifi, app, database
+from settings.badge_store_settings import settings_badge_store
+from dialogs import *
+from stack_nav import *
 
-### VIEWS ###
-
-ugfx_helper.init()
-
-title = "Settings"
-
-def clear():
-    ugfx.clear(ugfx.html_color(ugfx.WHITE))
-
-def settings_name(state):
-    pass
-
+### SCREENS ###
 def settings_startup_app(state):
-    pass
+    apps = app.get_apps()
+    print(apps)
+    selection = prompt_option([{"title": a.title, "app": a} for a in apps], text="Select App:", none_text="Back", title="Set startup app")
+    if selection:
+       app.write_launch_file(app.name, "default_app.txt")
 
 def settings_wifi(state):
-    pass
-
-def settings_badge_store(state):
-    pass
+    wifi.choose_wifi()
 
 def settings_main(state):
-    menu_items = [
-        {"title": "Change Name", "function": settings_name},
-        {"title": "Wifi", "function": settings_wifi},
-        {"title": "Set startup app", "function": settings_startup_app},
-        {"title": "Change Badge Store", "function": settings_badge_store}
-    ]
+    return selection({
+        "Homescreeen Name": change_database_string("Set your name", "name"),
+        "Wifi": settings_wifi,
+        "Startup app": settings_startup_app,
+        "Badge Store": settings_badge_store
+    }, none_text="Exit")
 
-    return prompt_option(menu_items, none_text="Exit", text="What do you want to do?", title=title)
-
-# Todo: this might be useful in a lib
-
-# A stack-based naviation system.
-NEXT_EXIT = "exit" # Leave navigation
-NEXT_INIT = "init" # Go to top of stack
-def nav(init_fn, init_state={}):
-    stack = [(init_fn, init_state)]
-
-    while len(stack):
-        (fn, state) = stack[-1] # peek
-        next_state = state.clone()
-        print(next_state)
-        result = fn(next_state)
-        if callable(result):
-            stack.append((result, next_state))
-        elif result == NEXT_INIT:
-            stack = [(init_fn, init_state)]
-        elif result == NEXT_EXIT:
-            break
-        else:
-            stack.pop()
-
-    print("bye")
-
-# Entry point
+### ENTRY POINT ###
+ugfx_helper.init()
 nav(settings_main)
-#show_app("launcher")

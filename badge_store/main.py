@@ -6,22 +6,22 @@ To publish apps use https://badge.emfcamp.org"""
 
 ___license___      = "MIT"
 ___title___        = "Badge Store"
-___dependencies___ = ["badge_store", "dialogs", "ugfx_helper", "app"]
+___dependencies___ = ["badge_store", "dialogs", "ugfx_helper", "app", "database"]
 ___categories___   = ["System"]
 ___bootstrapped___ = True
 
-import ugfx_helper
-import os
-import wifi
+import ugfx_helper, os, database, wifi, app
 from dialogs import *
-import app
 from lib.badge_store import BadgeStore
 
 ### VIEWS ###
 
 ugfx_helper.init()
 
-store = BadgeStore()
+url = database.get("badge_store.url", "http://badgeserver.emfcamp.org/2018")
+repo = database.get("badge_store.repo", "emfcamp/Mk4-Apps")
+ref = database.get("badge_store.ref", "master")
+store = BadgeStore(url=url, repo=repo, ref=ref)
 title = "TiLDA Badge Store"
 
 def clear():
