@@ -9,7 +9,6 @@ ___categories___   = ["Sound"]
 ___dependencies___ = ["speaker", "buttons", "ugfx_helper"]
 
 import ugfx, speaker, ugfx_helper
-from app import *
 from tilda import Buttons
 from buttons import *
 

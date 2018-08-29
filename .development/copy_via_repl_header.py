@@ -48,13 +48,17 @@ def h(p):
 
 def w(p, c):
     try:
+        print("file", p)
         makedirs(dirname(p))
         with open(p, "wb") as f:
             f.write(binascii.a2b_base64(c))
         os.sync()
+        print("OK")
     except Exception as e:
-        print(str(e))
-        return None
+        import sys
+        print("Error while writing file %s" % p)
+        sys.print_exception(e)
+        pass
 
 def clean(path=""):
     for s in os.listdir(path):

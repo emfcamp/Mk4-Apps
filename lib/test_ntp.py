@@ -1,14 +1,18 @@
 """Tests for ntp"""
 
 ___license___      = "MIT"
-___dependencies___ = ["upip:unittest", "ntp", "wifi"]
+___dependencies___ = ["upip:unittest", "ntp", "wifi", "ugfx_helper"]
 
-import unittest, wifi, ntp, machine
+import unittest, wifi, ntp, machine, ugfx_helper
 
 class TestWifi(unittest.TestCase):
 
     def setUpClass(self):
+        ugfx_helper.init()
         wifi.connect()
+
+    def tearDownClass(self):
+        ugfx_helper.deinit()
 
     def test_get_time(self):
         t = ntp.get_NTP_time()

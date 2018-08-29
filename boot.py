@@ -17,7 +17,7 @@ def file(file, remove):
             os.remove(file)
         return app(a)
     except Exception as e:
-        print(str(e))
+        print("Not found: %s" % file)
 
 def any_home():
     h = [a for a in root if a.startswith("home")]

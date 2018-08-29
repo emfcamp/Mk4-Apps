@@ -85,20 +85,22 @@ def connect_wifi(details, timeout, wait=False):
 def is_connected():
     return nic().isconnected()
 
+def get_strength():
+    n = nic()
+    if n.isconnected():
+        r
+    else:
+        return None
+
 def get_security_level(ap):
     #todo: fix this
     n = nic()
-    levels = {}
-    try:
-        levels = {
-            n.SCAN_SEC_OPEN: 0, # I am awful
-            n.SCAN_SEC_WEP: 'WEP',
-            n.SCAN_SEC_WPA: 'WPA',
-            n.SCAN_SEC_WPA2: 'WPA2',
-        }
-    except AttributeError:
-        print("Firmware too old to query wifi security level, please upgrade.")
-        return None
+    levels = {
+        n.SCAN_SEC_OPEN: 0, # I am awful
+        n.SCAN_SEC_WEP: 'WEP',
+        n.SCAN_SEC_WPA: 'WPA',
+        n.SCAN_SEC_WPA2: 'WPA2',
+    }
 
     return levels.get(ap.get('security', None), None)
 
@@ -111,9 +113,7 @@ def choose_wifi(dialog_title='TiLDA'):
             print(visible_aps)
             sleep.sleep_ms(300)
             #todo: timeout
-        print(visible_aps)
         visible_aps.sort(key=lambda x:x[3], reverse=True)
-        print(visible_aps)
         # We'll get one result for each AP, so filter dupes
         for ap in visible_aps:
             title = ap[0]
@@ -128,7 +128,6 @@ def choose_wifi(dialog_title='TiLDA'):
             if ap['ssid'] not in [ a['ssid'] for a in filtered_aps ]:
                 filtered_aps.append(ap)
         del visible_aps
-    print(filtered_aps)
 
     ap = dialogs.prompt_option(
         filtered_aps,
@@ -142,11 +141,7 @@ def choose_wifi(dialog_title='TiLDA'):
             if ap['security'] == None:
                 ap['security'] = 'wifi'
 
-            key = dialogs.prompt_text(
-                "Enter %s key" % ap['security'],
-                width = 310,
-                height = 220
-            )
+            key = dialogs.prompt_text("Enter %s key" % ap['security'])
         with open("wifi.json", "wt") as file:
             if key:
                 conn_details = {"ssid": ap['ssid'], "pw": key}

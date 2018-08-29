@@ -1,19 +1,18 @@
 """Tests for wifi"""
 
 ___license___      = "MIT"
-___dependencies___ = ["upip:unittest", "wifi"]
+___dependencies___ = ["upip:unittest", "wifi", "ugfx_helper"]
 
-import unittest, wifi, ugfx
+import unittest, wifi, ugfx_helper
 from machine import Pin
 
 class TestWifi(unittest.TestCase):
 
     def setUpClass(self):
-        ugfx.init()
-        Pin(Pin.PWM_LCD_BLIGHT).on()
+        ugfx_helper.init()
 
     def tearDownClass(self):
-        Pin(Pin.PWM_LCD_BLIGHT).off()
+        ugfx_helper.deinit()
 
     def test_connect(self):
         wifi.connect(show_wait_message=True)

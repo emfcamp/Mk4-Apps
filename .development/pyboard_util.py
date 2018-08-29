@@ -179,8 +179,10 @@ def write_via_repl(args, content, rel_path):
         return False
 
     cmd = "w(%s, \"%s\")\n" % (rel_path_as_string, content)
-    execbuffer(pyb,cmd)
-    return True
+    result = returnbuffer(pyb,cmd)
+    if "OK" in result:
+        return True
+    raise Exception("Couldn't write %s to badge: %s" % (rel_path, result))
 
 def end_copy_via_repl(args):
     # do we need to do anything?

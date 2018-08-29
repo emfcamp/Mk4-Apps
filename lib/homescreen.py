@@ -17,9 +17,9 @@ They also *may*:
 """
 
 ___license___      = "MIT"
-___dependencies___ = ["database", "buttons", "random", "app", "sleep", "ugfx_helper"]
+___dependencies___ = ["database", "buttons", "random", "app", "sleep", "ugfx_helper", "wifi"]
 
-import database, ugfx, random, buttons, tilda, sleep, ugfx_helper
+import database, ugfx, random, buttons, tilda, sleep, ugfx_helper, wifi
 from app import App
 
 _state = None
