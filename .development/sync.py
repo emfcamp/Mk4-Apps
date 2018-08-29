@@ -31,6 +31,7 @@ def sync(args, patterns, resources, verbose, skip_wifi):
                     paths.add(path)
         if not found and (pattern not in paths):
             print("WARN: No resources to copy found for pattern %s" % patterns)
+    pyboard_util.soft_reset(args, verbose)
     pyboard_util.init_copy_via_repl(args)
     if not verbose:
         print("Copying %s files: " % len(paths), end="", flush=True)
