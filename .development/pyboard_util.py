@@ -62,7 +62,7 @@ def soft_reset(args, verbose = True):
 
 def find_tty():
     # Todo: find solution for windows, test in linux
-    for pattern in ['/dev/ttyACM*', '/dev/tty.usbmodem*']:
+    for pattern in ['/dev/ttyACM*', '/dev/tty.usbmodemTiLDA*', '/dev/tty.usbmodem*']:
         for path in glob.glob(pattern):
             return path
     print("Couldn't find badge tty - Please make it's plugged in and reset it if necessary")
