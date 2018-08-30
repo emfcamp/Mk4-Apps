@@ -1,4 +1,8 @@
 import os, tilda
+from machine import Neopix
+
+n=Neopix()
+n.display([0,0,0]);
 
 print("EMF: boot.py")
 os.sync()
