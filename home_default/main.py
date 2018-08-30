@@ -23,13 +23,8 @@ ugfx.clear()
 #ugfx.set_default_font(ugfx.FONT_MEDIUM_BOLD)
 ugfx.Label(0, 20, ugfx.width(), 40, "TiLDA Mk4") # , justification=ugfx.Label.CENTERTOP
 
-# name
-if name():
-    #ugfx.set_default_font(ugfx.FONT_NAME)
-    ugfx.Label(0, 60, ugfx.width(), 40, name()) # , justification=ugfx.Label.CENTERTOP
-else:
-    #ugfx.set_default_font(ugfx.FONT_MEDIUM)
-    ugfx.Label(0, 60, ugfx.width(), 40, "Set your name in the settings app") # , justification=ugfx.Label.CENTERTOP
+#ugfx.set_default_font(ugfx.FONT_NAME)
+ugfx.Label(0, 60, ugfx.width(), 40, name("Set your name in the settings app")) # , justification=ugfx.Label.CENTERTOP
 
 # info
 ugfx.Label(0, 200, ugfx.width(), 40, "Press MENU") # , justification=ugfx.Label.CENTERTOP
@@ -41,5 +36,3 @@ status = ugfx.Label(0, 130, ugfx.width(), 40, "") # , justification=ugfx.Label.C
 while True:
     status.text("wifi: %s%%\nbattery: %s%%" % (int(wifi_strength() * 100), int(battery() * 100)))
     sleep_or_exit(0.5)
-
-
