@@ -10,7 +10,7 @@ def firmware_update(verbose):
 
     print("Hello - Welcome to the automated TiLDA Mk4 firmware updater")
     try:
-        response = subprocess.run(["dfu-util", "--list"], capture_output=True)
+        response = subprocess.run(["dfu-util", "--list"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if response.returncode != 0:
             print(response)
             return
