@@ -25,11 +25,14 @@ def any_home():
 
 if "no_boot" in root:
     print("no_boot found, aborting boot sequence")
+elif "bootstrap.py" in root:
+    print("Bootstrapping...")
+    tilda.main("bootstrap.py")
 else:
     start = None
     if "main.py" in root:
         start = "main.py"
-    start = start or file("once.txt", True) or file("default_app.txt", False) or any_home() or "bootstrap.py"
+    start = start or file("once.txt", True) or file("default_app.txt", False) or any_home()
     if ".py" not in start:
         start += "/main.py"
     print("Booting into %s" % start)

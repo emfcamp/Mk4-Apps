@@ -184,6 +184,7 @@ def step_download():
 
 def step_goodbye():
     msg("All done!\n\nRestarting badge...")
+    os.remove("bootstrap.py")
     time.sleep(2)
     machine.reset()
 
