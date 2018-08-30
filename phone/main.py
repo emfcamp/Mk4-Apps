@@ -15,6 +15,8 @@ import sim800
 ugfx_helper.init()
 ugfx.clear()
 
+sim800.poweron()
+
 notocall = prompt_text("Number to call:")
 
 if (notocall):
