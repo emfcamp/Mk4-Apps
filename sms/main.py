@@ -12,6 +12,8 @@ import ugfx
 import ugfx_helper
 import sim800
 
+sim800.poweron()
+
 ugfx_helper.init()
 ugfx.clear()
 
