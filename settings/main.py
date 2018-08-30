@@ -35,7 +35,7 @@ def settings_wifi(state):
 
 def settings_main(state):
     return selection({
-        "Homescreeen Name": change_database_string("Set your name", "name"),
+        "Homescreen Name": change_database_string("Set your name", "name"),
         "Wifi": settings_wifi,
         "Startup app": settings_startup_app,
         "Badge Store": settings_badge_store
