@@ -6,11 +6,12 @@ Todo: fix this, it doesn't work at at the moment
 ___name___         = "Synthesizers"
 ___license___      = "MIT"
 ___categories___   = ["Sound"]
-___dependencies___ = ["speaker", "buttons", "ugfx_helper"]
+___dependencies___ = ["speaker", "buttons", "ugfx_helper", "app"]
 
 import ugfx, speaker, ugfx_helper
 from tilda import Buttons
 from buttons import *
+from app import restart_to_default
 
 ugfx_helper.init()
 speaker.enabled(True)
@@ -49,3 +50,4 @@ def mode_buttons():
             speaker.stop()
 
 mode_buttons() # Todo: Allow different modes and allow users to switch between them via joystick or something
+restart_to_default()

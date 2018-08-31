@@ -2,10 +2,10 @@
 
 ___name___         = "Tilda Torch"
 ___license___      = "MIT"
-___dependencies___ = ["sleep"]
+___dependencies___ = ["sleep", "app"]
 ___categories___   = ["EMF"]
 
-import ugfx, os, time, sleep
+import ugfx, os, time, sleep, app
 from tilda import Buttons
 from machine import Pin
 
@@ -24,3 +24,5 @@ while (not Buttons.is_pressed(Buttons.BTN_A)) and (not Buttons.is_pressed(Button
 torch.off()
 
 ugfx.clear()
+
+app.restart_to_default()
