@@ -179,7 +179,7 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, data=No
     sock.connect(addr)
 
     if proto == 'https:':
-        sock = ussl.wrap_socket(sock, ca_certs="DST Root CA X3", cert_reqs=ussl.CERT_OPTIONAL)
+        sock = ussl.wrap_socket(sock)
 
     sock.send('%s /%s HTTP/1.0\r\nHost: %s\r\n' % (method, urlpath, host))
 
