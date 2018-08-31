@@ -8,7 +8,7 @@ from http import *
 import hashlib, binascii
 
 class BadgeStore:
-    def __init__(self, url = "http://badgeserver.emfcamp.org/2018", repo="emfcamp/Mk4-Apps", ref="master"):
+    def __init__(self, url = "https://badgeserver.emfcamp.org/2018", repo="emfcamp/Mk4-Apps", ref="master"):
         self.url = url
         self.repo = repo
         self.ref = ref

@@ -18,7 +18,7 @@ from lib.badge_store import BadgeStore
 
 ugfx_helper.init()
 
-url = database.get("badge_store.url", "http://badgeserver.emfcamp.org/2018")
+url = database.get("badge_store.url", "https://badgeserver.emfcamp.org/2018")
 repo = database.get("badge_store.repo", "emfcamp/Mk4-Apps")
 ref = database.get("badge_store.ref", "master")
 store = BadgeStore(url=url, repo=repo, ref=ref)

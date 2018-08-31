@@ -14,7 +14,7 @@ ugfx.clear()
 
 ugfx.text(5, 5, "Loading...", ugfx.BLACK)
 try:
-    image = http.get("http://s3.amazonaws.com/tilda-badge/sponsors/screen.png").raise_for_status().content
+    image = http.get("https://s3.amazonaws.com/tilda-badge/sponsors/screen.png").raise_for_status().content
     ugfx.display_image(0,0,bytearray(image))
 except:
     ugfx.clear()
