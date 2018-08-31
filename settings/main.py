@@ -44,3 +44,4 @@ def settings_main(state):
 ### ENTRY POINT ###
 ugfx_helper.init()
 nav(settings_main)
+app.restart_to_default()
