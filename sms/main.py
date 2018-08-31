@@ -46,6 +46,11 @@ while True:
         else:
             message = sim800.readsms(selection["index"])
             notice(message, title=selection["title"])
+            if prompt_boolean("Delete this message?", title=selection["title"]):
+                sim800.deletesms(selection["index"])
+                for menuitem in menuset:
+                    if menuitem["index"]==selection["index"]:
+                        menuset.remove(menuitem)
     else:
         break
 
