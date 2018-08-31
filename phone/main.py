@@ -32,6 +32,52 @@ def answercall():
 def handupcall():
     sim800.hangup()
 
+def playdtmf():
+    if sim800.getstatus()==4:
+        notice("Use the keypad to play a DTMF tones on a call. Pres A or B to retun to the menu.", title="TiLDA Phone")
+        while True:
+            if buttons.is_pressed(buttons.Buttons.BTN_0):
+                sim800.dtmf("0")
+                time.sleep(1)
+            if buttons.is_pressed(buttons.Buttons.BTN_1):
+                sim800.dtmf("1")
+                time.sleep(1)
+            if buttons.is_pressed(buttons.Buttons.BTN_2):
+                sim800.dtmf("2")
+                time.sleep(1)
+            if buttons.is_pressed(buttons.Buttons.BTN_3):
+                sim800.dtmf("3")
+                time.sleep(1)
+            if buttons.is_pressed(buttons.Buttons.BTN_4):
+                sim800.dtmf("4")
+                time.sleep(1)
+            if buttons.is_pressed(buttons.Buttons.BTN_5):
+                sim800.dtmf("5")
+                time.sleep(1)
+            if buttons.is_pressed(buttons.Buttons.BTN_6):
+                sim800.dtmf("6")
+                time.sleep(1)
+            if buttons.is_pressed(buttons.Buttons.BTN_7):
+                sim800.dtmf("7")
+                time.sleep(1)
+            if buttons.is_pressed(buttons.Buttons.BTN_8):
+                sim800.dtmf("8")
+                time.sleep(1)
+            if buttons.is_pressed(buttons.Buttons.BTN_9):
+                sim800.dtmf("9")
+                time.sleep(1)
+            if buttons.is_pressed(buttons.Buttons.BTN_Star):
+                sim800.dtmf("*")
+                time.sleep(1)
+            if buttons.is_pressed(buttons.Buttons.BTN_Hash):
+                sim800.dtmf("#")
+            if buttons.is_pressed(buttons.Buttons.BTN_A):
+                return
+            if buttons.is_pressed(buttons.Buttons.BTN_B):
+                return
+    else:
+        notice("You are not on a call.", title="TiLDA Phone")
+
 def speakervolume():
     sim800.hangup()
 
@@ -104,6 +150,7 @@ menuset = []
 menuset.append({ "title" : "Call", "index" : 1 })
 menuset.append({ "title" : "Answer", "index" : 2 })
 menuset.append({ "title" : "Hangup/Reject", "index" : 3 })
+menuset.append({ "title" : "DTMF Tones", "index" : 4 })
 menuset.append({ "title" : "Speaker Volume", "index" : 6 })
 menuset.append({ "title" : "Ringer Volume", "index" : 7 })
 menuset.append({ "title" : "Information", "index" : 8 })
@@ -119,6 +166,8 @@ while True:
         answercall()
     elif (selection["index"]==3):
         hangupcall()
+    elif (selection["index"]==4):
+        playdtmf()
     elif (selection["index"]==6):
         speakervol()
     elif (selection["index"]==7):
