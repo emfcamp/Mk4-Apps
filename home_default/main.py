@@ -22,22 +22,26 @@ intro_text = "Hi! I'm"
 name_height = 60
 status_height = 20
 info_height = 30
-logo_path = "shared/logo.png"
-logo_height = 150
-logo_width = 56
+logo_path = "shared/cake.png"
+logo_height = 120
+logo_width = 120
 
 # Maximum length of name before downscaling
 max_name = 8
 
 # Background stuff
 init()
-ugfx.clear(ugfx.html_color(0x800080))
+ugfx.clear(ugfx.html_color(0xD50000))
 
 # Colour stuff
 style = ugfx.Style()
-style.set_enabled([ugfx.WHITE, ugfx.html_color(0x800080), ugfx.html_color(0x800080), ugfx.html_color(0x800080)])
-style.set_background(ugfx.html_color(0x800080))
+style.set_enabled([ugfx.WHITE, ugfx.html_color(0xD50000), ugfx.html_color(0xD50000), ugfx.html_color(0xD50000)])
+style.set_background(ugfx.html_color(0xD50000))
 ugfx.set_default_style(style)
+
+
+# Draw for people to see
+ugfx.orientation(90)
 
 # Logo stuff
 ugfx.display_image(
@@ -45,16 +49,11 @@ ugfx.display_image(
     int((ugfx.height() - logo_height) / 2), 
     logo_path
 )
-
-
-
-# Draw for people to see
-ugfx.orientation(90)
 # Draw introduction
 ugfx.set_default_font(ugfx.FONT_TITLE)
 ugfx.Label(0, ugfx.height() - name_height - intro_height, ugfx.width(), intro_height, intro_text, justification=ugfx.Label.CENTER)
 # Process name
-name_setting = name("Set your name in the settings app")
+name_setting = name("Birthday boy")
 if len(name_setting) <= max_name:
     ugfx.set_default_font(ugfx.FONT_NAME)
 else:
