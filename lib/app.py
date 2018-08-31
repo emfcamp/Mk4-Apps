@@ -58,12 +58,6 @@ class App:
             return self.attributes[attribute]
         return default
 
-    def uninstall(self):
-        try:
-            os.remove(self.name)
-        except Exception as e:
-            pass
-
     def boot(self):
         write_launch_file(self.name)
         machine.reset()
@@ -98,6 +92,10 @@ def get_apps(category=None):
     if category:
         return [app for app in _apps if app.matches_category(category)]
     return _apps
+
+def uncache_apps():
+    global _apps
+    _apps = None
 
 _categories = None
 def get_categories():

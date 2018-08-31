@@ -19,10 +19,10 @@ TILDA_COLOR = ugfx.html_color(0x7c1143);
 FONT_SMALL = 0 #todo: find correct values
 FONT_MEDIUM_BOLD = 0
 
-def notice(text, title="TiLDA", close_text="Close", width = 260, height = 180, font=FONT_SMALL, style=None):
-    prompt_boolean(text, title = title, true_text = close_text, false_text = None, width = width, height = height, font=font, style=style)
+def notice(text, title="TiLDA", close_text="Close", font=FONT_SMALL, style=None):
+    prompt_boolean(text, title = title, true_text = close_text, false_text = None, font=font, style=style)
 
-def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width = 260, height = 180, font=FONT_SMALL, style=None):
+def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", font=FONT_SMALL, style=None):
     """A simple one and two-options dialog
 
     if 'false_text' is set to None only one button is displayed.
@@ -32,7 +32,11 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", width 
     if style == None:
         style = default_style_dialog
     ugfx.set_default_font(FONT_MEDIUM_BOLD)
-    window = ugfx.Container((ugfx.width() - width) // 2, (ugfx.height() - height) // 2,  width, height)
+
+    width = ugfx.width() - 10
+    height = ugfx.height() - 10
+
+    window = ugfx.Container(5, 5,  width, height)
     window.show()
     ugfx.set_default_font(font)
     window.text(5, 10, title, TILDA_COLOR)

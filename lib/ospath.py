@@ -17,6 +17,10 @@ F_OK = 0
 
 def join(*args):
     # TODO: this is non-compliant
+    if not args:
+        return ""
+    if len(args) == 1:
+        return args[0]
     if type(args[0]) is bytes:
         return b"/".join(args)
     else:
@@ -70,3 +74,16 @@ def makedirs(path):
         makedirs(sub_path)
     if not exists(path):
         os.mkdir(path)
+
+def recursive_rmdir(path=""):
+    for s in os.listdir(path):
+        full = join(path, s)
+        if isdir(full):
+            try:
+                recursive_rmdir(full)
+            except:
+                pass
+            os.rmdir(full)
+        else:
+            os.remove(full)
+
