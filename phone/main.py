@@ -73,10 +73,10 @@ def showinfo():
         info += "IMSI : " + imsi + "\n"
     rssi = sim800.rssi()
     if (rssi):
-        info += "RSSI : " + rssi + "\n"
+        info += "RSSI : " + str(rssi) + "\n"
     ber = sim800.ber()
     if (ber):
-        info += "BER : " + ber + "\n"
+        info += "BER : " + str(ber) + "\n"
     cellid = sim800.cellid()
     if (cellid):
         info += "Cell ID : " + cellid + "\n"
