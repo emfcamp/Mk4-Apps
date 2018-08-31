@@ -19,7 +19,7 @@ They also *may*:
 ___license___      = "MIT"
 ___dependencies___ = ["database", "buttons", "random", "app", "sleep", "ugfx_helper", "wifi"]
 
-import database, ugfx, random, buttons, tilda, sleep, ugfx_helper, wifi
+import database, ugfx, random, buttons, tilda, sleep, ugfx_helper, wifi, time
 from app import App
 
 _state = None
@@ -41,6 +41,12 @@ def set_state(key, value = True):
 def clean_up():
     pass
 
+def time_as_string(seconds=False):
+    t = time.localtime()
+    if seconds:
+        return "%d:%02d:%02d" % (t[3], t[4], t[5])
+    return "%d:%02d" % (t[3], t[4]) #todo: add a setting for AM/PM mode
+
 def sleep_or_exit(interval = 0.5):
     # todo: do this better - check button multiple times and sleep for only a short while
     if buttons.is_triggered(tilda.Buttons.BTN_Menu):
@@ -52,9 +58,12 @@ def sleep_or_exit(interval = 0.5):
 def name(default = None):
     return database.get("homescreen.name", default)
 
+# Strength in %, None if unavailable
 def wifi_strength():
-    return random.random()
+    return wifi.get_strength()
 
+# Charge in %, None if unavailable
 def battery():
-    return random.random()
+    return None # todo: fix me, we can get this from the sim800
+
 

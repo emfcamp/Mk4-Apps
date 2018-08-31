@@ -2,11 +2,11 @@
 
 ___name___         = "Sponsors"
 ___license___      = "MIT"
-___dependencies___ = ["wifi", "http", "ugfx_helper", "sleep"]
+___dependencies___ = ["wifi", "http", "ugfx_helper", "sleep", "app"]
 ___categories___   = ["EMF"]
 ___bootstrapped___ = True
 
-import ugfx_helper, os, wifi, ugfx, http, time, sleep
+import ugfx_helper, os, wifi, ugfx, http, time, sleep, app
 from tilda import Buttons
 
 ugfx_helper.init()
@@ -24,3 +24,4 @@ while (not Buttons.is_pressed(Buttons.BTN_A)) and (not Buttons.is_pressed(Button
     sleep.wfi()
 
 ugfx.clear()
+app.restart_to_default()

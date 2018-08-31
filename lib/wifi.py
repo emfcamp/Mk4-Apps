@@ -87,12 +87,16 @@ def connect_wifi(details, timeout, wait=False):
 def is_connected():
     return nic().isconnected()
 
+# returns wifi strength in %, None if unavailable
 def get_strength():
     n = nic()
     if n.isconnected():
-        r
-    else:
-        return None
+        v = n.status("rssi");
+        if v:
+            # linear range: -60 =100%; -100= 20%
+            # todo: it's probably not linear, improve me.
+            return v * 2 + 220
+    return None
 
 def get_security_level(ap):
     #todo: fix this

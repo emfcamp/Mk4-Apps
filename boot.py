@@ -29,6 +29,7 @@ def any_home():
     return h[0] if len(h) else False
 
 if "no_boot" in root:
+    os.remove("no_boot")
     print("no_boot found, aborting boot sequence")
 elif "bootstrap.py" in root:
     print("Bootstrapping...")

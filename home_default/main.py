@@ -34,5 +34,12 @@ status = ugfx.Label(0, 130, ugfx.width(), 40, "") # , justification=ugfx.Label.C
 
 # update loop
 while True:
-    status.text("wifi: %s%%\nbattery: %s%%" % (int(wifi_strength() * 100), int(battery() * 100)))
+    text = "";
+    value_wifi_strength = wifi_strength()
+    value_battery = battery()
+    if value_wifi_strength:
+        text += "wifi: %s%%\n" % int(value_wifi_strength)
+    if value_battery:
+        text += "battery: %s%%\n" % int(value_battery)
+    status.text(text)
     sleep_or_exit(0.5)

@@ -18,19 +18,19 @@ class TestDialogs(unittest.TestCase):
     def tearDownClass(self):
         ugfx_helper.deinit()
 
-#    def test_waiting(self):
-#        count_max = 3
-#        with WaitingMessage("Testing...", "Foo") as c:
-#            for i in range(1, count_max):
-#                c.text = "%d/%d" % (i, count_max)
-#
-#        print("done")
+    def test_waiting(self):
+        count_max = 3
+        with WaitingMessage("Testing...", "Foo") as c:
+            for i in range(1, count_max):
+                c.text = "%d/%d" % (i, count_max)
 
-    def test_(self):
+        print("done")
+
+    def test_text(self):
         prompt_text("description")
 
     def test_option(self):
-         print(prompt_option(["foo", "bar", "baz"]))
+        print(prompt_option(["foo", "bar", "baz"]))
 
 
 
