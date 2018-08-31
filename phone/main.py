@@ -61,7 +61,7 @@ def showinfo():
     info = ""
     yournum = sim800.getmynumber()
     if (yournum):
-        info += "Your Number : " + yournum + "\n"
+        info += yournum + "\n"
     yourop = sim800.currentoperator(0)
     if (yourop):
         info += "Operator : " + yourop + "\n"
@@ -97,7 +97,7 @@ def selectoperator():
         sim800.setoperator(0)
         notice("perator selection set to automatic.", title="TiLDA Phone")
     else:
-        sim800.setoperator(1,2,selectedop)
+        sim800.setoperator(1,2,selectedop["index"])
         notice(selectedop["title"] + " set as operator.", title="TiLDA Phone")
 
 menuset = []
