@@ -13,6 +13,17 @@ class BadgeStore:
         self.ref = ref
         self._apps = None
 
+    def get_tls(self):
+        if self.url.startswith("https://badgeserver.emfcamp.org/"):
+            # We can't validate the actual badgeserver's certificate because
+            # Let's Encrypt will rotate it every 90 days and brick any badge
+            # that's not updated in time
+            # TODO: Validate the contents of the certificate, not the actual certificate itself
+            # return ("DST Root CA X3", "badgeserver.emfcamp.org")
+            return ("DST Root CA X3", None)
+
+        return None
+
     def get_all_apps(self):
         if not self._apps:
             self._apps = self._call("apps")
@@ -36,7 +47,7 @@ class BadgeStore:
     def _call(self, command, params = {}):
         params["repo"] = self.repo
         params["ref"] = self.ref
-        with http.get("%s/%s" % (self.url, command), params=params).raise_for_status() as response:
+        with http.get("%s/%s" % (self.url, command), params=params, tls=self.get_tls()).raise_for_status() as response:
             return response.json() # todo: error handling
 
     def _create_installers(self, files):
@@ -46,7 +57,7 @@ class BadgeStore:
             if hash == get_hash(path):
                 continue
             params = {"repo": self.repo, "ref": self.ref, "path": path}
-            installers.append(Installer(path, url, params, hash))
+            installers.append(Installer(path, url, params, hash, self.get_tls()))
         return installers
 
     def _is_file_up_to_date(self, path, hash):
@@ -55,11 +66,12 @@ class BadgeStore:
 TEMP_FILE = ".tmp.download"
 
 class Installer:
-    def __init__(self, path, url, params, hash):
+    def __init__(self, path, url, params, hash, tls):
         self.path = path
         self.url = url
         self.params = params
         self.hash = hash
+        self.tls = tls
 
     def download(self):
         count = 0
@@ -72,7 +84,7 @@ class Installer:
                     pass
                 raise OSError("Aborting download of %s after 5 unsuccessful attempts" % self.path)
             try:
-                http.get(self.url, params=self.params).raise_for_status().download_to(TEMP_FILE)
+                http.get(self.url, params=self.params, tls=self.tls).raise_for_status().download_to(TEMP_FILE)
             except OSError as e:
                 if "404" in str(e):
                     raise e
