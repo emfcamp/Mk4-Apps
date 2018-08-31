@@ -16,7 +16,10 @@ from app import restart_to_default
 ugfx_helper.init()
 speaker.enabled(True)
 
+octave = 4
+
 def mode_buttons():
+    global octave
     print("mode: buttons")
     notes = {
         Buttons.BTN_1: "C",
@@ -32,10 +35,7 @@ def mode_buttons():
         Buttons.BTN_0: "A#",
         Buttons.BTN_Hash: "B"
     }
-    ugfx.clear()
-    ugfx.text(5, 5, "Synth", ugfx.BLACK)
-    ugfx.text(5, 30, "Use the buttons >", ugfx.BLACK)
-    ugfx.text(5, 80, "Octave: 4", ugfx.BLUE) # Allow the octave to be changed
+    render_ui()
 
     alive = True
     while alive:
@@ -45,9 +45,23 @@ def mode_buttons():
                 note_to_play = note
                 break
         if note_to_play:
-            speaker.note(note_to_play)
+            speaker.note("{}{}".format(note_to_play, octave))
         else:
             speaker.stop()
+        if is_triggered(Buttons.BTN_Menu):
+            return
+        if is_triggered(Buttons.JOY_Up):
+            octave = min(6, max(0, octave+1))
+            render_ui()
+        if is_triggered(Buttons.JOY_Down):
+            octave = min(6, max(0, octave-1))
+            render_ui()
+
+def render_ui():
+    ugfx.clear()
+    ugfx.text(5, 5, "Synth", ugfx.BLACK)
+    ugfx.text(5, 30, "Use the buttons >", ugfx.BLACK)
+    ugfx.text(5, 80, "Octave: {}".format(octave), ugfx.BLUE)
 
 mode_buttons() # Todo: Allow different modes and allow users to switch between them via joystick or something
 restart_to_default()
