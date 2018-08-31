@@ -61,10 +61,21 @@ def soft_reset(args, verbose = True):
         raise PyboardError('could not soft reboot')
 
 def find_tty():
-    # Todo: find solution for windows, test in linux
+    # Todo: test in linux, let user pick if multiple ports are available
     for pattern in ['/dev/ttyACM*', '/dev/tty.usbmodemTiLDA*', '/dev/tty.usbmodem*']:
         for path in glob.glob(pattern):
             return path
+
+    if sys.platform.startswith('win'):
+        import serial
+        for port in ['COM%s' % (i + 1) for i in range(256)]:
+            try:
+                s = serial.Serial(port)
+                s.close()
+                return port
+            except (OSError, serial.SerialException):
+                pass
+
     print("Couldn't find badge tty - Please make it's plugged in and reset it if necessary")
     sys.exit(1)
 
