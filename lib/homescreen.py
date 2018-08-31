@@ -17,9 +17,9 @@ They also *may*:
 """
 
 ___license___      = "MIT"
-___dependencies___ = ["database", "buttons", "random", "app", "sleep", "ugfx_helper", "wifi"]
+___dependencies___ = ["database", "buttons", "random", "app", "sleep", "ugfx_helper", "wifi", "sim800"]
 
-import database, ugfx, random, buttons, tilda, sleep, ugfx_helper, wifi, time
+import database, ugfx, random, buttons, tilda, sleep, ugfx_helper, wifi, time, sim800
 from app import App
 
 _state = None
@@ -64,6 +64,6 @@ def wifi_strength():
 
 # Charge in %, None if unavailable
 def battery():
-    return None # todo: fix me, we can get this from the sim800
+    return sim800.batterycharge() # todo: fix me, we can get this from the sim800
 
 
