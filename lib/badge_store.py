@@ -4,8 +4,7 @@ ___license___      = "MIT"
 ___dependencies___ = ["http", "ospath"]
 
 from ospath import *
-from http import *
-import hashlib, binascii
+import hashlib, binascii, http
 
 class BadgeStore:
     def __init__(self, url = "https://badgeserver.emfcamp.org/2018", repo="emfcamp/Mk4-Apps", ref="master"):
@@ -37,7 +36,7 @@ class BadgeStore:
     def _call(self, command, params = {}):
         params["repo"] = self.repo
         params["ref"] = self.ref
-        with get("%s/%s" % (self.url, command), params=params).raise_for_status() as response:
+        with http.get("%s/%s" % (self.url, command), params=params).raise_for_status() as response:
             return response.json() # todo: error handling
 
     def _create_installers(self, files):
@@ -73,7 +72,7 @@ class Installer:
                     pass
                 raise OSError("Aborting download of %s after 5 unsuccessful attempts" % self.path)
             try:
-                get(self.url, params=self.params).raise_for_status().download_to(TEMP_FILE)
+                http.get(self.url, params=self.params).raise_for_status().download_to(TEMP_FILE)
             except OSError as e:
                 if "404" in str(e):
                     raise e
