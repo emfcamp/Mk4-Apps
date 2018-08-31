@@ -15,7 +15,7 @@ ugfx_helper.init()
 ugfx.clear()
 
 options = [{"title": a.title, "app": a} for a in get_apps()]
-option = prompt_option(options, none_text="Homescreen", text="Select App to start")
+option = prompt_option(options, none_text="Home", text="Select App to start")
 
 if not option:
     restart_to_default()
