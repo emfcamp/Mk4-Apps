@@ -127,7 +127,7 @@ class Response(object):
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
-def open_http_socket(method, url, json=None, timeout=None, headers=None, data=None, params=None):
+def open_http_socket(method, url, json=None, timeout=None, headers=None, data=None, params=None, tls=None):
     # This will immediately return if we're already connected, otherwise
     # it'll attempt to connect or prompt for a new network. Proceeding
     # without an active network connection will cause the getaddrinfo to
@@ -179,7 +179,16 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, data=No
     sock.connect(addr)
 
     if proto == 'https:':
-        sock = ussl.wrap_socket(sock)
+        if tls is None:
+            sock = ussl.wrap_socket(sock)
+        else:
+            root, site = tls
+            sock = ussl.wrap_socket(
+                sock,
+                cert_reqs=ussl.CERT_REQUIRED,
+                ca_certs=root,
+                servercertfile=site,
+            )
 
     sock.send('%s /%s HTTP/1.0\r\nHost: %s\r\n' % (method, urlpath, host))
 
@@ -213,8 +222,8 @@ def get_address_info(host, port, retries_left = 20):
             raise e
 
 # Adapted from upip
-def request(method, url, json=None, timeout=None, headers=None, data=None, params=None):
-    sock = open_http_socket(method, url, json, timeout, headers, data, params)
+def request(method, url, json=None, timeout=None, headers=None, data=None, params=None, tls=None):
+    sock = open_http_socket(method, url, json, timeout, headers, data, params, tls)
     try:
         response = Response()
         state = 1
