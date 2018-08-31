@@ -47,3 +47,5 @@ while True:
         notice(message, title=selection["title"])
     else:
         break
+
+restart_to_default()

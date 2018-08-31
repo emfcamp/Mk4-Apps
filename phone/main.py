@@ -20,4 +20,5 @@ sim800.poweron()
 notocall = prompt_text("Number to call:")
 
 if (notocall):
-	sim800.call(notocall)
+    sim800.call(notocall)
+restart_to_default()
