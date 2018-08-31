@@ -13,9 +13,8 @@ class TestHttp(unittest.TestCase):
         wifi.connect()
 
     def test_get_with_https(self):
-        with get("https://httpbin.org/get") as response:
+        with get("https://badgeserver.emfcamp.org") as response:
             self.assertEqual(response.status, 200)
-            print(response.text)
 
     def test_get(self):
         with get("http://httpbin.org/get", params={"foo": "bar"}, headers={"accept": "application/json"}) as response:
