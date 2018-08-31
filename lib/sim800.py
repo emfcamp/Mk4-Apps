@@ -496,8 +496,7 @@ def getmynumber():
     responsedata = ussd("*#100#", 8000).split(",")
     if (len(responsedata)>=2):
         num = responsedata[1].strip().strip("\"")
-        if num.isdigit()>0:
-            return num
+        return num
     else:
         return ""
 
