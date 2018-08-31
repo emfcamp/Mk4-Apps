@@ -1,6 +1,6 @@
 """SMS app for reading and sending messages
 """
-___name___         = "Phone"
+___name___         = "SMS"
 ___license___      = "MIT"
 ___dependencies___ = ["app", "dialogs", "sim800", "ugfx_helper"]
 ___categories___   = ["System"]
@@ -40,11 +40,12 @@ menuset.insert(0, { "title" : "Send message...", "index" : -1 })
 
 while True:
     selection = prompt_option(menuset, text="Select message", select_text="Read", none_text="Exit")
-    if (selection["index"]==-1):
-        send_message()
-    elif (selection):
-        message = sim800.readsms(selection["index"])
-        notice(message, title=selection["title"])
+    if (selection):
+        if (selection["index"]==-1):
+            send_message()
+        else:
+            message = sim800.readsms(selection["index"])
+            notice(message, title=selection["title"])
     else:
         break
 
