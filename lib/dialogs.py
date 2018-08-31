@@ -173,7 +173,8 @@ def prompt_option(options, index=0, text = None, title=None, select_text="OK", n
             #    index = min(index + 1, len(options) - 1)
             #    options_list.selected_index(index)
 
-            if buttons.is_triggered(buttons.Buttons.BTN_A): return options[options_list.selected_index()]
+            if buttons.is_triggered(buttons.Buttons.BTN_A) or buttons.is_triggered(buttons.Buttons.JOY_Center):
+                return options[options_list.selected_index()]
             if button_none and buttons.is_triggered(buttons.Buttons.BTN_B): return None
             if button_none and buttons.is_triggered(buttons.Buttons.BTN_Menu): return None
 
