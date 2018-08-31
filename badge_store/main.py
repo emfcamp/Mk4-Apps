@@ -103,7 +103,8 @@ def main_menu():
 
         if option:
             option["function"]()
-
+        else:
+            break
 
 def _get_current_apps():
     return [a.name for a in app.get_apps()]
