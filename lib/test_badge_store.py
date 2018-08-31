@@ -38,7 +38,7 @@ class TestBadgeStore(unittest.TestCase):
 
     def test_install_integration(self):
         self._remove_download_file()
-        store = BadgeStore(url="http://badge.marekventur.com", repo="emfcamp/Mk4-Apps", ref="dont-delete-test-download-branch")
+        store = BadgeStore(repo="emfcamp/Mk4-Apps", ref="dont-delete-test-download-branch")
         for installer in store.install(["launcher"]):
             if installer.path == "shared/test/download.txt":
                 installer.download()
@@ -48,7 +48,7 @@ class TestBadgeStore(unittest.TestCase):
 
     def test_bootstrap_integration(self):
         self._remove_download_file()
-        store = BadgeStore(url="http://badge.marekventur.com")
+        store = BadgeStore()
         installers = store.bootstrap()
         self.assertTrue(len(installers) > 0)
 
