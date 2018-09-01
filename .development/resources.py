@@ -141,7 +141,6 @@ def add_metadata(path, resources):
 
         if file:
             try:
-                print(os.path.join(path, file))
                 with open(os.path.join(path, file), "r", encoding='utf8') as stream:
                     resource.update(_normalize_metadata(read_metadata(stream)))
             except ParseException as e:
