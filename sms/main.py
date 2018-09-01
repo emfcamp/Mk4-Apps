@@ -24,8 +24,8 @@ def send_message():
     number = ""
     message = ""
     while True:
-        num = prompt_text("Number to message:", init_text=number)
-        if num is None:
+        number = prompt_text("Number to message:", init_text=number)
+        if number is None:
             return
         message = prompt_text("Message:", init_text=message)
         if message is not None:
