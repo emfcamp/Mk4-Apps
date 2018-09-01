@@ -1,8 +1,6 @@
-"""Default homescreen
-
-This is the default homescreen for the Tilda Mk4.
-It gets automatically installed when a badge is
-newly activated or reset.
+"""
+Clone of the default homescreen for the Tilda Mk4.
+Shows the EMF homescreen and a picture loaded on the badge alternately.
 """
 
 ___name___ = "Custom Image Home"
