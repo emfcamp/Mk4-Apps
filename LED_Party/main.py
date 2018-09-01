@@ -17,7 +17,7 @@ colourList = [0xB0171F,0xDC143C,0xFFB6C1,0xFFAEB9,0xEEA2AD,0xCD8C95,0x8B5F65,0xF
 n = Neopix()
 ugfx.init()
 ugfx.clear()
-ugfx.text(5, 5, "PRESS B TO PARTY, B TO QUIT", ugfx.BLACK)
+ugfx.text(5, 5, "PRESS B TO PARTY, A TO QUIT", ugfx.BLACK)
 
 
 def ledChange():
