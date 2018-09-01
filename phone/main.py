@@ -139,12 +139,13 @@ def selectoperator():
     for op in sim800.listoperators():
         opset.append({ "title" : op[1], "index" : op[3] })
     selectedop = prompt_option(opset, text="Operator", select_text="Select", none_text="Cancel")
-    if selectedop["index"]==-1:
-        sim800.setoperator(0)
-        notice("perator selection set to automatic.", title="TiLDA Phone")
-    else:
-        sim800.setoperator(1,2,selectedop["index"])
-        notice(selectedop["title"] + " set as operator.", title="TiLDA Phone")
+    if selectedop:
+        if selectedop["index"]==-1:
+            sim800.setoperator(0)
+            notice("perator selection set to automatic.", title="TiLDA Phone")
+        else:
+            sim800.setoperator(1,2,selectedop["index"])
+            notice(selectedop["title"] + " set as operator.", title="TiLDA Phone")
 
 menuset = []
 menuset.append({ "title" : "Call", "index" : 1 })
