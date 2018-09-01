@@ -77,7 +77,7 @@ ugfx.orientation(270)
 ugfx.set_default_font(ugfx.FONT_TITLE)
 ugfx.Label(0, ugfx.height() - info_height * 2, ugfx.width(), info_height, "TiLDA Mk4", justification=ugfx.Label.CENTER)
 # info
-ugfx.Label(0, ugfx.height() - info_height, ugfx.width(), info_height, "Press MENU", justification=ugfx.Label.CENTER)
+ugfx.Label(0, ugfx.height() - info_height, ugfx.width(), info_height, "Long Press MENU", justification=ugfx.Label.CENTER)
 
 ugfx.set_default_font(ugfx.FONT_SMALL)
 status = ugfx.Label(0, ugfx.height() - info_height * 2 - status_height, ugfx.width(), status_height, "", justification=ugfx.Label.CENTER)
