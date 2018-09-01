@@ -8,7 +8,7 @@ newly activated or reset.
 ___name___         = "Homescreen (Default)"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
-___dependencies___ = ["homescreen", "shared/emf_ham.png", "shared/sponsors.png"]
+___dependencies___ = ["homescreen", "shared/sponsors.png"]
 ___launchable___   = False
 ___bootstrapped___ = True
 
@@ -28,12 +28,11 @@ while time.ticks_ms() < wait_until:
 
 # Padding for name
 intro_height = 30
-intro_text = "Hi! I'm"
 name_height = 60
 status_height = 20
 callsign_height = 50
 info_height = 30
-logo_path = "shared/emf_ham.png"
+logo_path = "home_ham/emf_ham.png"
 logo_width = 200
 
 # Maximum length of name before downscaling
