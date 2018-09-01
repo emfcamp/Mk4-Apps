@@ -29,7 +29,7 @@ def answercall():
     else:
         notice("No call to answer.", title="TiLDA Phone")
 
-def handupcall():
+def hangupcall():
     sim800.hangup()
 
 def playdtmf():
@@ -38,37 +38,26 @@ def playdtmf():
         while True:
             if buttons.is_pressed(buttons.Buttons.BTN_0):
                 sim800.dtmf("0")
-                time.sleep(1)
             if buttons.is_pressed(buttons.Buttons.BTN_1):
                 sim800.dtmf("1")
-                time.sleep(1)
             if buttons.is_pressed(buttons.Buttons.BTN_2):
                 sim800.dtmf("2")
-                time.sleep(1)
             if buttons.is_pressed(buttons.Buttons.BTN_3):
                 sim800.dtmf("3")
-                time.sleep(1)
             if buttons.is_pressed(buttons.Buttons.BTN_4):
                 sim800.dtmf("4")
-                time.sleep(1)
             if buttons.is_pressed(buttons.Buttons.BTN_5):
                 sim800.dtmf("5")
-                time.sleep(1)
             if buttons.is_pressed(buttons.Buttons.BTN_6):
                 sim800.dtmf("6")
-                time.sleep(1)
             if buttons.is_pressed(buttons.Buttons.BTN_7):
                 sim800.dtmf("7")
-                time.sleep(1)
             if buttons.is_pressed(buttons.Buttons.BTN_8):
                 sim800.dtmf("8")
-                time.sleep(1)
             if buttons.is_pressed(buttons.Buttons.BTN_9):
                 sim800.dtmf("9")
-                time.sleep(1)
             if buttons.is_pressed(buttons.Buttons.BTN_Star):
                 sim800.dtmf("*")
-                time.sleep(1)
             if buttons.is_pressed(buttons.Buttons.BTN_Hash):
                 sim800.dtmf("#")
             if buttons.is_pressed(buttons.Buttons.BTN_A):
@@ -139,12 +128,13 @@ def selectoperator():
     for op in sim800.listoperators():
         opset.append({ "title" : op[1], "index" : op[3] })
     selectedop = prompt_option(opset, text="Operator", select_text="Select", none_text="Cancel")
-    if selectedop["index"]==-1:
-        sim800.setoperator(0)
-        notice("perator selection set to automatic.", title="TiLDA Phone")
-    else:
-        sim800.setoperator(1,2,selectedop["index"])
-        notice(selectedop["title"] + " set as operator.", title="TiLDA Phone")
+    if selectedop:
+        if selectedop["index"]==-1:
+            sim800.setoperator(0)
+            notice("Operator selection set to automatic.", title="TiLDA Phone")
+        else:
+            sim800.setoperator(1,2,selectedop["index"])
+            notice(selectedop["title"] + " set as operator.", title="TiLDA Phone")
 
 menuset = []
 menuset.append({ "title" : "Call", "index" : 1 })
