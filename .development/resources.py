@@ -141,7 +141,7 @@ def add_metadata(path, resources):
 
         if file:
             try:
-                with open(os.path.join(path, file), "r") as stream:
+                with open(os.path.join(path, file), "r", encoding='utf8') as stream:
                     resource.update(_normalize_metadata(read_metadata(stream)))
             except ParseException as e:
                 resource.setdefault("errors", []).append(file + ": " + str(e))
@@ -197,7 +197,7 @@ def _validate_resource(path, resource):
         if file.endswith(".py"):
             try:
                 filename = os.path.join(path, file)
-                with open(filename, 'r') as s:
+                with open(filename, 'r', encoding='utf8') as s:
                     compile(s.read() + '\n', filename, 'exec')
             except Exception as e:
                 resource.setdefault("errors", []).append(str(e))

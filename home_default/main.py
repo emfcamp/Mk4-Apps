@@ -15,13 +15,16 @@ ___bootstrapped___ = True
 import ugfx
 from homescreen import *
 import time
+from tilda import Buttons
 
 # We ❤️ our sponsors
+init()
 ugfx.display_image(0, 0, "shared/sponsors.png")
-wait = 5
-while wait:
-    wait-=1
-    sleep_or_exit(0.5)
+wait_until = time.ticks_ms() + 3000
+while time.ticks_ms() < wait_until:
+    time.sleep(0.1)
+    if Buttons.is_pressed(Buttons.BTN_A) or Buttons.is_pressed(Buttons.BTN_B) or Buttons.is_pressed(Buttons.BTN_Menu):
+        break
 
 # Padding for name
 intro_height = 30
@@ -37,7 +40,7 @@ logo_width = 56
 max_name = 8
 
 # Background stuff
-init()
+
 ugfx.clear(ugfx.html_color(0x800080))
 
 # Colour stuff
@@ -77,7 +80,7 @@ ugfx.orientation(270)
 ugfx.set_default_font(ugfx.FONT_TITLE)
 ugfx.Label(0, ugfx.height() - info_height * 2, ugfx.width(), info_height, "TiLDA Mk4", justification=ugfx.Label.CENTER)
 # info
-ugfx.Label(0, ugfx.height() - info_height, ugfx.width(), info_height, "Press MENU", justification=ugfx.Label.CENTER)
+ugfx.Label(0, ugfx.height() - info_height, ugfx.width(), info_height, "Long Press MENU", justification=ugfx.Label.CENTER)
 
 ugfx.set_default_font(ugfx.FONT_SMALL)
 status = ugfx.Label(0, ugfx.height() - info_height * 2 - status_height, ugfx.width(), status_height, "", justification=ugfx.Label.CENTER)

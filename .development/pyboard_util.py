@@ -81,7 +81,7 @@ def find_tty():
 
 def check_run(paths):
     for filename in paths:
-        with open(filename, 'r') as f:
+        with open(filename, 'r', encoding='utf8') as f:
             pyfile = f.read()
             compile(pyfile + '\n', filename, 'exec')
 
@@ -185,6 +185,8 @@ def write_via_repl(args, content, rel_path):
     h = hashlib.sha256()
     h.update(content)
     content = binascii.b2a_base64(content).decode('ascii').strip()
+    if os.sep != '/':
+        rel_path = rel_path.replace(os.sep, '/')
     rel_path_as_string = json.dumps(rel_path) # make sure quotes are escaped
     cmd = "h(%s)" % rel_path_as_string
     badge_hash = returnbuffer(pyb,cmd).splitlines()[0]
