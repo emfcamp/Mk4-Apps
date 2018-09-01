@@ -81,7 +81,7 @@ def find_tty():
 
 def check_run(paths):
     for filename in paths:
-        with open(filename, 'r') as f:
+        with open(filename, 'r', encoding='utf8') as f:
             pyfile = f.read()
             compile(pyfile + '\n', filename, 'exec')
 
