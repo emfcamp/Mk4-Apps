@@ -25,6 +25,9 @@ while not Buttons.is_pressed(Buttons.BTN_Menu):
 
     ugfx.clear()
 
+    wifi.nic().active(False)
+    wifi.nic().active(True)
+
     # networks = [{ "ssid": ap[0], "mac": ap[1], "channel": ap[2], "signal": ap[3] } for ap in wifi.nic().scan()]
     networks = sorted([net for net in wifi.nic().scan() if net[0] == "emfcamp-legacy18"], key=lambda n: n[3], reverse=True)
 
