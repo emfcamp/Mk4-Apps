@@ -25,13 +25,15 @@ def draw_screen():
         ugfx.text(5, 22 + idx*15, beer['description'], ugfx.WHITE)
 
 ugfx.init()
-ugfx.clear()
+ugfx.clear(ugfx.BLACK)
 
 Buttons.enable_interrupt(Buttons.BTN_A, lambda button_id:draw_screen(), on_press=True, on_release=False)
 Buttons.enable_interrupt(Buttons.BTN_B, lambda button_id:app.restart_to_default(), on_press=True, on_release=False)
 
-ugfx.text(5, 30, "Press the A button to refresh", ugfx.BLACK)
-ugfx.text(5, 45, "Press the B button to exit", ugfx.BLACK)
+ugfx.text(5, 10, "Instructions:", ugfx.WHITE)
+ugfx.text(5, 30, "Press the A button to refresh", ugfx.WHITE)
+ugfx.text(5, 45, "Press the B button to exit", ugfx.WHITE)
+ugfx.text(5, 75, "Loading data from the bar...", ugfx.WHITE)
 
 draw_screen()
 
