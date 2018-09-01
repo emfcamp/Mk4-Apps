@@ -142,7 +142,7 @@ def selectoperator():
     if selectedop:
         if selectedop["index"]==-1:
             sim800.setoperator(0)
-            notice("perator selection set to automatic.", title="TiLDA Phone")
+            notice("operator selection set to automatic.", title="TiLDA Phone")
         else:
             sim800.setoperator(1,2,selectedop["index"])
             notice(selectedop["title"] + " set as operator.", title="TiLDA Phone")
