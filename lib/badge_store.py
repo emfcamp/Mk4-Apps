@@ -28,6 +28,9 @@ class BadgeStore:
     def get_app(self, app):
         return self._call("app", {"app": app})
 
+    def get_prs(self):
+        return self._call("prs")
+
     def install(self, apps):
         return self._create_installers(self._call("install", {"apps": ",".join(apps)}))
 
