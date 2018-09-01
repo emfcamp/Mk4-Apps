@@ -4,7 +4,7 @@ ___name___         = "LED Party (Party Party)"
 ___license___      = "MIT"
 ___dependencies___ = ["wifi", "http", "ugfx_helper", "sleep"]
 ___categories___   = ["LEDs"]
-___bootstrapped___ = True # Whether or not apps get downloaded on first install. Defaults to "False", mostly likely you won't have to use this at all.
+___bootstrapped___ = False # Whether or not apps get downloaded on first install. Defaults to "False", mostly likely you won't have to use this at all.
 
 import random, time, wifi, ugfx, http
 from tilda import LED, Buttons
