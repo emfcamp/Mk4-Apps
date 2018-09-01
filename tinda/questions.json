@@ -1,0 +1,316 @@
+{
+  "questions":[
+    {
+      "text":"Dogs or cats?",
+      "options":[
+        {
+          "title":"Dogs",
+          "value":"1"
+        },
+        {
+          "title":"Cats",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"iOS or Android?",
+      "options":[
+        {
+          "title":"iOS",
+          "value":"1"
+        },
+        {
+          "title":"Android",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Beer or Club-Mate?",
+      "options":[
+        {
+          "title":"Beer",
+          "value":"1"
+        },
+        {
+          "title":"Club-Mate",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Meat or vegan?",
+      "options":[
+        {
+          "title":"Meat",
+          "value":"1"
+        },
+        {
+          "title":"Vegan",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Fantasy or sci-fi?",
+      "options":[
+        {
+          "title":"Fantasy",
+          "value":"1"
+        },
+        {
+          "title":"Sci-fi",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Breakfast...?",
+      "options":[
+        {
+          "title":"English breakfast",
+          "value":"1"
+        },
+        {
+          "title":"Continental breakfast",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Cash or card?",
+      "options":[
+        {
+          "title":"Cash",
+          "value":"1"
+        },
+        {
+          "title":"Card",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Tent or caravan/camper?",
+      "options":[
+        {
+          "title":"Tent",
+          "value":"1"
+        },
+        {
+          "title":"Caravan/camper",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Twitter or Facebook?",
+      "options":[
+        {
+          "title":"Twitter",
+          "value":"1"
+        },
+        {
+          "title":"Facebook",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Music or podcasts?",
+      "options":[
+        {
+          "title":"Music",
+          "value":"1"
+        },
+        {
+          "title":"Podcasts",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Early bird or night owl?",
+      "options":[
+        {
+          "title":"Early bird",
+          "value":"1"
+        },
+        {
+          "title":"Night owl",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Eastnor Castle or Obelisk?",
+      "options":[
+        {
+          "title":"Eastnor Castle",
+          "value":"1"
+        },
+        {
+          "title":"Eastnor Obelisk",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Doctor Who or Black Mirror?",
+      "options":[
+        {
+          "title":"Doctor Who",
+          "value":"1"
+        },
+        {
+          "title":"Black Mirror",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Coffee or tea?",
+      "options":[
+        {
+          "title":"Coffee",
+          "value":"1"
+        },
+        {
+          "title":"Tea",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Orwell or Douglas Adams?",
+      "options":[
+        {
+          "title":"George Orwell",
+          "value":"1"
+        },
+        {
+          "title":"Douglas Adams",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Beach or mountains?",
+      "options":[
+        {
+          "title":"Beach",
+          "value":"1"
+        },
+        {
+          "title":"Mountains",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Video or board games?",
+      "options":[
+        {
+          "title":"Video games",
+          "value":"1"
+        },
+        {
+          "title":"Board games",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Talks or Null Sector?",
+      "options":[
+        {
+          "title":"Talks",
+          "value":"1"
+        },
+        {
+          "title":"Null Sector",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Doughmain or Grazing Shed?",
+      "options":[
+        {
+          "title":"Pizza Doughmain",
+          "value":"1"
+        },
+        {
+          "title":"Grazing Shed",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Leave or remain?",
+      "options":[
+        {
+          "title":"Leave",
+          "value":"1"
+        },
+        {
+          "title":"Remain",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Netflix or YouTube?",
+      "options":[
+        {
+          "title":"Netflix",
+          "value":"1"
+        },
+        {
+          "title":"YouTube",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Hardware or software?",
+      "options":[
+        {
+          "title":"Hardware",
+          "value":"1"
+        },
+        {
+          "title":"Software",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Year-round...",
+      "options":[
+        {
+          "title":"Summer Time",
+          "value":"1"
+        },
+        {
+          "title":"Standard Time",
+          "value":"2"
+        }
+      ]
+    },
+    {
+      "text":"Is this your first EMF camp?",
+      "options":[
+        {
+          "title":"Yes",
+          "value":"1"
+        },
+        {
+          "title":"No",
+          "value":"2"
+        }
+      ]
+    }
+  ]
+}
