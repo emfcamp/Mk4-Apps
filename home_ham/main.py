@@ -1,16 +1,12 @@
-"""Default homescreen
+"""Amateur Radio homescreen
 
-This is the default homescreen for the Tilda Mk4.
-It gets automatically installed when a badge is
-newly activated or reset.
+This is a modified version of the default homescreen that allows you to set a callsign
 """
 
-___name___         = "Homescreen (Default)"
+___name___         = "Amateur Radio Homescreen"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen", "shared/sponsors.png"]
-___launchable___   = False
-___bootstrapped___ = True
 
 import ugfx
 from homescreen import *
@@ -19,12 +15,7 @@ from tilda import Buttons
 
 # We ❤️ our sponsors
 init()
-ugfx.display_image(0, 0, "shared/sponsors.png")
-wait_until = time.ticks_ms() + 3000
-while time.ticks_ms() < wait_until:
-    time.sleep(0.1)
-    if Buttons.is_pressed(Buttons.BTN_A) or Buttons.is_pressed(Buttons.BTN_B) or Buttons.is_pressed(Buttons.BTN_Menu):
-        break
+ugfx.clear()
 
 # Padding for name
 intro_height = 30
@@ -98,5 +89,4 @@ while True:
     status.text(text)
     sleep_or_exit(0.5)
 
-ugfx.clear()
 app.restart_to_default()
