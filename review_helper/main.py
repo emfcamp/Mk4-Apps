@@ -4,7 +4,6 @@ ___name___         = "PR Review Helper"
 ___license___      = "MIT"
 ___categories___   = ["System"]
 ___dependencies___ = ["dialogs", "app", "ugfx_helper", "badge_store", "http", "stack_nav", "wifi"]
-___bootstrapped___ = True
 
 import ugfx_helper, ugfx, wifi
 from app import *
