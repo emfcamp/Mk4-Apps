@@ -10,7 +10,7 @@ import ugfx_helper, ugfx, wifi
 from app import *
 from dialogs import *
 from stack_nav import *
-from badge_store import BadgeStore
+from lib.badge_store import BadgeStore
 
 title = "PR Review Helper"
 
