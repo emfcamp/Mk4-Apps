@@ -5,21 +5,38 @@ ___license___      = "MIT"
 ___dependencies___ = ["app", "sleep", "wifi", "http", "ugfx_helper"]
 ___categories___   = ["EMF"]
 
-import wifi, ugfx, http, ujson, app
-from tilda import Buttons
-from time import sleep
+import wifi, ugfx, http, ujson, app, sleep
+from tilda import Buttons, LED
+
+def get_beer():
+    global bar
+
+    LED(LED.RED).on()
+    bar_json = http.get("https://bar.emf.camp/location/Bar.json").raise_for_status().content
+    bar = ujson.loads(bar_json)
+    LED(LED.RED).off()
+
+def draw_screen():
+    get_beer()
+    ugfx.clear(ugfx.BLACK)
+    ugfx.text(60, 5, "what's on tap?", ugfx.RED)
+    ugfx.line(5, 20, ugfx.width(), 20, ugfx.GREY)
+    for idx, beer in enumerate(bar['location']):
+        ugfx.text(5, 22 + idx*15, beer['description'], ugfx.WHITE)
 
 ugfx.init()
 ugfx.clear()
 
-while (not Buttons.is_pressed(Buttons.BTN_A)) and (not Buttons.is_pressed(Buttons.BTN_B)) and (not Buttons.is_pressed(Buttons.BTN_Menu)):
+Buttons.enable_interrupt(Buttons.BTN_A, lambda button_id:draw_screen(), on_press=True, on_release=False)
+Buttons.enable_interrupt(Buttons.BTN_B, lambda button_id:app.restart_to_default(), on_press=True, on_release=False)
 
-    bar_json = http.get("https://bar.emf.camp/location/Bar.json").raise_for_status().content
-    bar = ujson.loads(bar_json)
+ugfx.text(5, 30, "Press the A button to refresh", ugfx.BLACK)
+ugfx.text(5, 45, "Press the B button to exit", ugfx.BLACK)
 
-    for idx, beer in enumerate(bar['location']):
-        ugfx.text(5, 5+idx*15, beer['description'], ugfx.RED)
+draw_screen()
 
-    sleep(60)
+while True:
+    sleep.wfi()
 
+ugfx.clear()
 app.restart_to_default()
