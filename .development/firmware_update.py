@@ -24,7 +24,7 @@ def firmware_update(verbose):
             print("3) Your badge is in DFU mode. You can tell by a small, red flashing light at the back")
             print("")
             print("To put your badge into DFU mode (or if you're unsure whether it really is) you need to")
-            print("press the joystick to the right while pressing the reset button at the back.")
+            print("press the joystick centrally down while pressing the reset button at the back.")
             print("")
             print("After that, please try this script again.")
             return
