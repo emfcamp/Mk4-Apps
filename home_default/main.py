@@ -8,13 +8,20 @@ newly activated or reset.
 ___name___         = "Homescreen (Default)"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
-___dependencies___ = ["homescreen", "shared/logo.png"]
+___dependencies___ = ["homescreen", "shared/logo.png", "shared/sponsors.png"]
 ___launchable___   = False
 ___bootstrapped___ = True
 
 import ugfx
 from homescreen import *
 import time
+
+# We ❤️ our sponsors
+ugfx.display_image(0, 0, "shared/sponsors.png")
+wait = 5
+while wait:
+    wait-=1
+    sleep_or_exit(0.5)
 
 # Padding for name
 intro_height = 30
@@ -41,8 +48,8 @@ ugfx.set_default_style(style)
 
 # Logo stuff
 ugfx.display_image(
-    int((ugfx.width() - logo_width) / 2), 
-    int((ugfx.height() - logo_height) / 2), 
+    int((ugfx.width() - logo_width) / 2),
+    int((ugfx.height() - logo_height) / 2),
     logo_path
 )
 
@@ -58,7 +65,7 @@ name_setting = name("Set your name in the settings app")
 if len(name_setting) <= max_name:
     ugfx.set_default_font(ugfx.FONT_NAME)
 else:
-    ugfx.set_default_font(ugfx.FONT_MEDIUM_BOLD)   
+    ugfx.set_default_font(ugfx.FONT_MEDIUM_BOLD)
 # Draw name
 ugfx.Label(0, ugfx.height() - name_height, ugfx.width(), name_height, name_setting, justification=ugfx.Label.CENTER)
 
@@ -68,7 +75,7 @@ ugfx.Label(0, ugfx.height() - name_height, ugfx.width(), name_height, name_setti
 ugfx.orientation(270)
 # Title
 ugfx.set_default_font(ugfx.FONT_TITLE)
-ugfx.Label(0, ugfx.height() - info_height * 2, ugfx.width(), info_height, "TiLDA Mk4", justification=ugfx.Label.CENTER) 
+ugfx.Label(0, ugfx.height() - info_height * 2, ugfx.width(), info_height, "TiLDA Mk4", justification=ugfx.Label.CENTER)
 # info
 ugfx.Label(0, ugfx.height() - info_height, ugfx.width(), info_height, "Press MENU", justification=ugfx.Label.CENTER)
 
