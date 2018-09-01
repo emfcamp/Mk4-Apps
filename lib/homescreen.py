@@ -58,6 +58,10 @@ def sleep_or_exit(interval = 0.5):
 def name(default = None):
     return database.get("homescreen.name", default)
 
+
+def callsign(default = None):
+    return database.get("homescreen.callsign", default)
+
 # Strength in %, None if unavailable
 def wifi_strength():
     return wifi.get_strength()
