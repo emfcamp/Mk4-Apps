@@ -61,7 +61,6 @@ ugfx.display_image(
 # Draw for people to see
 # Draw introduction
 ugfx.set_default_font(ugfx.FONT_TITLE)
-ugfx.Label(0, ugfx.height() - name_height - intro_height, ugfx.width(), intro_height, intro_text, justification=ugfx.Label.CENTER)
 # Process name
 name_setting = name("Set your name in the settings app")
 callsign_setting = callsign("Set your callsign in the settings app")
@@ -98,3 +97,6 @@ while True:
         text += "Battery: %s%%" % int(value_battery)
     status.text(text)
     sleep_or_exit(0.5)
+
+ugfx.clear()
+app.restart_to_default()
