@@ -29,7 +29,7 @@ def answercall():
     else:
         notice("No call to answer.", title="TiLDA Phone")
 
-def handupcall():
+def hangupcall():
     sim800.hangup()
 
 def playdtmf():
