@@ -189,7 +189,7 @@ def gameOver(score):
 
 def runGame():
     paddle = Paddle()
-    direction = random.random() * 2 - 1
+    direction = random.random() - 0.5
     initial_speed_up = 4
     ball = Ball(x = SCREEN_WIDTH / 2, y = SCREEN_HEIGHT / 2, dx = math.cos(direction) * initial_speed_up, dy = math.sin(direction) * initial_speed_up)
     blocks = \
