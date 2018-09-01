@@ -13,9 +13,7 @@ from homescreen import *
 import time
 from tilda import Buttons
 
-# We ❤️ our sponsors
 init()
-ugfx.clear()
 
 # Padding for name
 intro_height = 30
