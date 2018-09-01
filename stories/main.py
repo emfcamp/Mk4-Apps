@@ -1,4 +1,4 @@
-"""A big "thank you" to all our Sponsors who made this year's badge possible!"""
+"""Read stories from twentythreemillionstories.org"""
 
 ___name___         = "twenty-three million stories"
 ___license___      = "MIT"
