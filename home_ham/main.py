@@ -6,7 +6,7 @@ This is a modified version of the default homescreen that allows you to set a ca
 ___name___         = "Amateur Radio Homescreen"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
-___dependencies___ = ["homescreen", "shared/sponsors.png"]
+___dependencies___ = ["homescreen"]
 
 import ugfx
 from homescreen import *
