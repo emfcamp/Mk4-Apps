@@ -1,4 +1,6 @@
 """What's on tap?!
+
+Get up to date information on what's in stock at The Robot Arms!
 """
 ___name___         = "beer"
 ___license___      = "MIT"
