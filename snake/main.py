@@ -62,19 +62,19 @@ def one_round():
     #   disp_body_straight(body_x[i],body_y[i],orient,body_colour)
 
     while keepgoing:
-        if Buttons.is_pressed(Buttons.JOY_Right) or Buttons.is_pressed(Buttons.BTN_6):
+        if dir_x != -1 and (Buttons.is_pressed(Buttons.JOY_Right) or Buttons.is_pressed(Buttons.BTN_6)):
             dir_x = 1;
             dir_y = 0;
             orient = 270
-        elif Buttons.is_pressed(Buttons.JOY_Left) or Buttons.is_pressed(Buttons.BTN_4):
+        elif dir_x != 1 and (Buttons.is_pressed(Buttons.JOY_Left) or Buttons.is_pressed(Buttons.BTN_4)):
             dir_x = -1;
             dir_y = 0;
             orient = 90
-        elif Buttons.is_pressed(Buttons.JOY_Down) or Buttons.is_pressed(Buttons.BTN_8):
+        elif dir_y != -1 and (Buttons.is_pressed(Buttons.JOY_Down) or Buttons.is_pressed(Buttons.BTN_8)):
             dir_y = 1;
             dir_x = 0;
             orient = 180
-        elif Buttons.is_pressed(Buttons.JOY_Up) or Buttons.is_pressed(Buttons.BTN_0):
+        elif dir_y != 1 and (Buttons.is_pressed(Buttons.JOY_Up) or Buttons.is_pressed(Buttons.BTN_0)):
             dir_y = -1;
             dir_x = 0;
             orient = 0
