@@ -34,7 +34,6 @@ status_height = 20
 callsign_height = 50
 info_height = 30
 logo_path = "shared/emf_ham.png"
-logo_height = 180
 logo_width = 200
 
 # Maximum length of name before downscaling
@@ -72,12 +71,17 @@ if len(name_setting) <= max_name:
 else:
     ugfx.set_default_font(ugfx.FONT_MEDIUM_BOLD)
 # Draw name
-ugfx.Label(0, 200 ,ugfx.width(), name_height, name_setting, justification=ugfx.Label.CENTER)
+ugfx.Label(0, 220 ,ugfx.width(), name_height, name_setting, justification=ugfx.Label.CENTER)
 
 
 
 # Title
-ugfx.Label(0, 260, ugfx.width(), callsign_height, callsign_setting, justification=ugfx.Label.CENTER)
+if len(callsign_setting) <= max_name:
+    ugfx.set_default_font(ugfx.FONT_NAME)
+else:
+    ugfx.set_default_font(ugfx.FONT_MEDIUM_BOLD)
+# Draw callsign
+ugfx.Label(0, 270, ugfx.width(), callsign_height, callsign_setting, justification=ugfx.Label.CENTER)
 
 ugfx.set_default_font(ugfx.FONT_SMALL)
 # Draw for wearer to see
