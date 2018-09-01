@@ -3,7 +3,8 @@
 ___name___         = "System Info"
 ___license___      = "MIT"	
 ___dependencies___ = ["sleep", "app", "sim800"]
-___categories___   = ["EMF"]
+___categories___   = ["EMF", "System"]
+___bootstrapped___ = True
 
 #import ugfx, os, time, sleep, app, sim800
 
@@ -36,6 +37,9 @@ else:
     ugfx.Label(5, 170, 240, 15, "Your network is " + simoperator)
 
 ugfx.Label(5, 185, 240, 15, simversion)
+
+ugfx.Label(5, 300, 240, 15, "** Hold A or B or MENU to exit **")
+
 
 while (not Buttons.is_pressed(Buttons.BTN_A)) and (not Buttons.is_pressed(Buttons.BTN_B)) and (not Buttons.is_pressed(Buttons.BTN_Menu)):
 
