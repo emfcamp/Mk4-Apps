@@ -6,7 +6,7 @@ ___dependencies___ = ["dialogs", "ugfx_helper"]
 ___categories___   = ["EMF"]
 ___bootstrapped___ = True
 
-import ugfx, tilda, ugfx_helper, dialogs
+import ugfx, tilda, ugfx_helper, dialogs, app
 
 ugfx_helper.init()
 ugfx.clear()
@@ -18,3 +18,4 @@ with dialogs.WaitingMessage(title="Mass Storage Enabled", text="You can now use 
     print("Waiting for USB mass storage to be unmounted...")
     tilda.storage_disable_usb()
     print("DONE")
+    app.restart_to_default()
