@@ -11,9 +11,6 @@ $ tilda_tools reset
 Soft reboot badge and start specific app
 $ tilda_tools reset --boot my_app
 
-Update files on the badge to match the current local version, restarts afterwards
-$ tilda_tools sync
-
 Update files in folder(s) to match current local version
 $ tilda_tools sync my_game shared
 $ tilda_tools sync <pattern1> <pattern2> ...
@@ -109,7 +106,8 @@ def main():
         if command == "test":
             command = "sync"
             if len(args.paths) == 0:
-                args.paths = ["lib/test_*"]
+                print("Please define an app or lib to sync: tilda_tools sync my_app\n")
+                sys.exit(1)
             else:
                 args.paths = ["lib/test_%s.py" % p for p in args.paths]
 
