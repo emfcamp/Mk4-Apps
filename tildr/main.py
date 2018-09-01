@@ -51,12 +51,12 @@ def create_profile(my_profile):
 
     name, age = "", ""
     while name == "":
-        name = dialogs.prompt_text("What's your name?", init_text=my_profile['username'])
+        name = dialogs.prompt_text("What's your name?")
     while age == "":
-        age = dialogs.prompt_text("What's your age?", init_text=my_profile['age'])
-    tag_line = dialogs.prompt_text("Tell us your tagline:", init_text=my_profile['tag_line'])
-    looking_for = dialogs.prompt_text("And what you're looking for:", init_text=my_profile['looking_for'])
-    contact = dialogs.prompt_text("And your twitter username?", init_text=my_profile['contact'])
+        age = dialogs.prompt_text("What's your age?")
+    tag_line = dialogs.prompt_text("Tell us your tagline:")
+    looking_for = dialogs.prompt_text("And what you're looking for:")
+    contact = dialogs.prompt_text("And your twitter username?")
     imei = sim800.imei()
 
     top_left_logo()
@@ -93,9 +93,9 @@ def main_screen(my_profile):
                 return False
             if buttons.is_triggered(Buttons.BTN_B) or buttons.is_triggered(Buttons.JOY_Right):
                 break
-            if buttons.is_triggered(Buttons.BTN_A) or buttons.is_triggered(Buttons.JOY_Left):
-                create_profile(my_profile)
-                break
+            # if buttons.is_triggered(Buttons.BTN_A) or buttons.is_triggered(Buttons.JOY_Left):
+            #     create_profile(my_profile)
+            #     break
 
 
 def next_person(my_profile):
@@ -139,7 +139,7 @@ def display_person(person):
 
     ugfx.text(5, 245, person["contact"], ugfx.BLUE)
 
-    ugfx.Button(0, 280, 100, 40, "< Edit profile", parent=None, shape=ugfx.Button.RECT, style=None)
+    # ugfx.Button(0, 280, 100, 40, "< Edit profile", parent=None, shape=ugfx.Button.RECT, style=None)
     ugfx.Button(160, 280, 100, 40, "Swipe >", parent=None, shape=ugfx.Button.RECT, style=None)
 
 
@@ -152,7 +152,8 @@ def no_more(my_profile):
     ugfx.Label(5, 160, 230, 20, "Soz "+my_profile["username"], justification=ugfx.Label.CENTERTOP)
     ugfx.Label(5, 180, 230, 20, "Come back later ;)", justification=ugfx.Label.CENTERTOP)
 
-    ugfx.Button(0, 280, 100, 40, "< Edit profile", parent=None, shape=ugfx.Button.RECT, style=None)
+    # ugfx.Button(0, 280, 100, 40, "< Edit profile", parent=None, shape=ugfx.Button.RECT, style=None)
+    ugfx.Button(160, 280, 100, 40, "Try again >", parent=None, shape=ugfx.Button.RECT, style=None)
 
 
 def get_profile():
@@ -194,7 +195,7 @@ while running:
             'looking_for': "",
             'contact': ""
         }
-        if not create_profile():
+        if not create_profile(profile):
             continue
 
     main_screen(profile)
