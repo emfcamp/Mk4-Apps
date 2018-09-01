@@ -74,3 +74,8 @@ def clean(path=""):
                 os.remove(full)
         except Exception as e:
             print("Error while trying to clean '%s'" % full)
+
+try:
+    os.remove("bootstrap.py")
+except:
+    pass
