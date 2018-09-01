@@ -40,6 +40,9 @@ while not Buttons.is_pressed(Buttons.BTN_Menu):
     for ap in aps[:20]:
         ugfx.Label(0, y, 240, 25, "{1}dB {0}".format(*ap))
         y += status_height
+    
+    if len(aps) == 0:
+        ugfx.Label(0, y, 240, 25, "No emfcamp-legacy18 APs found")
 
 ugfx.clear()
 app.restart_to_default()
