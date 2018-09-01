@@ -2,7 +2,7 @@
 
 ___name___         = "twenty-three million stories"
 ___license___      = "MIT"
-___categories___   = ["Art"]
+___categories___   = ["Other"]
 ___dependencies___ = [ "app", "dialogs", "http", "ugfx_helper", "sleep" ]
 ___bootstrapped___ = False
 
