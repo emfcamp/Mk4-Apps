@@ -110,6 +110,7 @@ def ledChange():
 
 # update loop
 while True:
+    ledChange()
     text = "";
     value_wifi_strength = wifi_strength()
     value_battery = battery()
