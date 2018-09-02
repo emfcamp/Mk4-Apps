@@ -41,6 +41,9 @@ def draw_flag():
 
 
 def draw_name():
+    # Orientation for other people to see
+    ugfx.orientation(90)
+
     ugfx.set_default_font(ugfx.FONT_NAME)
 
     # Process name
