@@ -37,16 +37,10 @@ for num, colour in enumerate(colours):
     width_loc = int(num * colour_width)
     ugfx.area(width_loc, 0, int(colour_width), 320, ugfx.html_color(colour))
 
-# Message to display
-prefix_message = "Hi I'm"
-prefix_color = 0x3c701b
-
 ugfx.set_default_font(ugfx.FONT_NAME)
 
 # Calc center of screen
 center = (int(ugfx.width() / 2), int(ugfx.height() / 2))
-# Can't use label since the background covers the flag
-ugfx.text(10, center[1] + name_height, prefix_message, ugfx.html_color(prefix_color))
 
 # Process name
 given_name = homescreen.name("Set your name in the settings app")
