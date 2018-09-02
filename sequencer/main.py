@@ -154,10 +154,11 @@ def mode_buttons():
                 for row in range(total_rows):
                     for col in range(total_cols):
                         active_states[row][col] = False
-                ui_changed = False
+                ui_changed = True
         if is_triggered(Buttons.BTN_A):
             if (joy_last_pressed[5] + debounce_time < time.ticks_ms()):
                 joy_last_pressed[5] = time.ticks_ms()
+                speaker.stop()
                 display_help()
                 ui_changed = True
         if is_triggered(Buttons.BTN_Menu):
