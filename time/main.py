@@ -20,4 +20,16 @@ if not wifi.is_connected():
     wifi.connect(show_wait_message=True)
 ntp.set_NTP_time()
 rtc = machine.RTC()
-ugfx.text(5, 5, repr(rtc.now()), ugfx.BLACK)
+ugfx.orientation(270)
+while 1:
+    ugfx.text(5, 5, "current time", ugfx.BLACK)
+    year = rtc.now()[0]
+    month = rtc.now()[1]
+    day = rtc.now()[2]
+    hour = rtc.now()[3]
+    minute = rtc.now()[4]
+    second = rtc.now()[5]
+    time_str = "%02i:%02i:%02i %i/%i/%4i" % (hour, minute, second, day, month, year)
+    ugfx.text(5, 20, time_str, ugfx.BLACK)
+    utime.sleep(1)
+    ugfx.clear()
