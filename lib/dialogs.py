@@ -4,6 +4,7 @@ ___license___ = "MIT"
 ___dependencies___ = ["buttons", "sleep"]
 
 import ugfx, buttons, sleep
+from buttons import Buttons
 import time
 
 default_style_badge = ugfx.Style()
@@ -210,6 +211,39 @@ def prompt_option(options, index=0, text = None, title=None, select_text="OK", n
                 return options[options_list.selected_index()]
             if button_none and buttons.is_triggered(buttons.Buttons.BTN_B): return None
             if button_none and buttons.is_triggered(buttons.Buttons.BTN_Menu): return None
+            # These are indexes for selected_index, 1 means "First item", ie index 0. 0 is treated as if it were 10
+            button_nums = {
+                Buttons.BTN_1: 0,
+                Buttons.BTN_2: 1,
+                Buttons.BTN_3: 2,
+                Buttons.BTN_4: 3,
+                Buttons.BTN_5: 4,
+                Buttons.BTN_6: 5,
+                Buttons.BTN_7: 6,
+                Buttons.BTN_8: 7,
+                Buttons.BTN_9: 8,
+                Buttons.BTN_0: 9,
+            }
+            for key, num in button_nums.items():
+                if buttons.is_triggered(key):
+                    # No need to check for too large an index; gwinListSetSelected validates this.
+                    options_list.selected_index(num)
+                    break
+            if buttons.is_triggered(Buttons.BTN_Hash):
+                # Page down
+                idx = options_list.selected_index() + 10
+                cnt = options_list.count()
+                if idx >= cnt:
+                    idx = cnt - 1
+                options_list.selected_index(idx)
+                continue
+            if buttons.is_triggered(Buttons.BTN_Star):
+                # Page up
+                idx = options_list.selected_index() - 10
+                if idx < 0:
+                    idx = 0
+                options_list.selected_index(idx)
+                continue
 
     finally:
         window.hide()
