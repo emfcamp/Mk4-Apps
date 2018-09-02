@@ -5,7 +5,7 @@ ___license___      = "MIT"
 ___dependencies___ = ["sleep", "app"]
 ___categories___   = ["EMF"]
 
-import ugfx, sleep, app
+import ugfx, os, time, sleep, app
 
 
 # initialize screen
