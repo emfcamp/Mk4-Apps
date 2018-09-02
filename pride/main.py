@@ -40,8 +40,8 @@ for num, colour in enumerate(colours):
 
 ugfx.set_default_font(ugfx.FONT_NAME)
 
-# Calc center of screen
-center = (int(ugfx.width() / 2), int(ugfx.height() / 2))
+# Calc width center of screen
+center_width = int(ugfx.width() / 2)
 
 # Process name
 given_name = homescreen.name("Set your name in the settings app")
@@ -64,7 +64,7 @@ while True:
     wifi_strength_value = homescreen.wifi_strength()
     if wifi_strength_value:
         wifi_message = 'WiFi: %s%%' % int(wifi_strength_value)
-        wifi_text = ugfx.text(center[0], ugfx.height() - info_height, wifi_message, ugfx.BLACK)
+        wifi_text = ugfx.text(center_width, ugfx.height() - info_height, wifi_message, ugfx.BLACK)
 
     battery_value = homescreen.battery()
     if battery_value:
