@@ -111,6 +111,8 @@ def cbButton1(button_id):
 	ugfx.display_image(0, 0, "holland/eu.png")
 	
 def cbButton2(button_id):
+	sim800.speakervolume(100)
+	sim800.stopplayback()
 	show_screen(0x000000, 0xFFFFFF, "PLAY")
 	a = sim800.startplayback(1,0,100)
 	if not a:
@@ -238,5 +240,7 @@ while True:
 		else:
 			n.display([0x000000, 0x000000])
 			aaa = True
+		if not vip:
+			time.sleep(0.1)
 	else:
 		time.sleep(0.1)
