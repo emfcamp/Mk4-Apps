@@ -150,6 +150,11 @@ def cbButton8(button_id):
 def cbButton9(button_id):
 	global strobe
 	strobe = False
+	
+def cbButtonHash(button_id):
+	global vip
+	vip = False
+	ugfx.display_image(0, 0, "holland/brenno.png")
 		
 Buttons.enable_interrupt(
 	Buttons.BTN_Call,
@@ -220,6 +225,12 @@ Buttons.enable_interrupt(
 Buttons.enable_interrupt(
 	Buttons.BTN_9,
 	cbButton9,
+	on_press=True,
+	on_release=False);
+
+Buttons.enable_interrupt(
+	Buttons.BTN_Hash,
+	cbButtonHash,
 	on_press=True,
 	on_release=False);
 
