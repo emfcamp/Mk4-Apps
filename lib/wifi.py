@@ -76,11 +76,7 @@ def connect_wifi(details, timeout, wait=False):
         nic().connect(details['ssid'])
 
     if wait:
-        wait_until = time.ticks_ms() + timeout * 1000
         while not nic().isconnected():
-            #nic().update() # todo: do we need this?
-            if (time.ticks_ms() > wait_until):
-                raise OSError("Timeout while trying to connect to wifi")
             sleep.sleep_ms(100)
 
 
