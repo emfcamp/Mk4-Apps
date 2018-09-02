@@ -9,8 +9,10 @@ def sleep_ms(duration):
     time.sleep_ms(duration)
 
 def sleep(duration):
-    # todo: deepsleep?
-    time.sleep(duration)
+    start_time = time.ticks_ms()
+    end_time = start_time + duration * 1000
+    while time.ticks_ms() < end_time:
+        wfi()
 
 def wfi():
     # todo: this is fake
