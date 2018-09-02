@@ -16,7 +16,7 @@ ___dependencies___ = ["sleep", "app", "ugfx_helper",
                       "shared/nyan/10.png",
                       "shared/nyan/11.png"]
                       
-___categories___   = ["FUN", "Homescreens"]
+___categories___   = ["Homescreens", "Other"]
 
 import ugfx_helper, os, wifi, ugfx, http, time, sleep, app
 from tilda import Buttons
