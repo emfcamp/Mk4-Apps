@@ -7,7 +7,7 @@ ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen","emfcampqueer_home/pridelogo.png"]
 ___launchable___   = False
-___bootstrapped___ = True
+___bootstrapped___ = False
 
 import ugfx
 from homescreen import *
