@@ -199,10 +199,7 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, data=No
 
 def get_address_info(host, port, retries_left = 20):
     try:
-        if is_ipv4_address(host):
-            return (host, port)
-        else:
-            return usocket.getaddrinfo(host, port)[0][4]
+        return usocket.getaddrinfo(host, port)[0][4]
     except OSError as e:
         if ("-15" in str(e)) and retries_left:
             # [addrinfo error -15]
