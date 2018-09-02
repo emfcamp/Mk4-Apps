@@ -45,7 +45,8 @@ def draw_flag(colours):
     colour_width = ugfx.width() / len(colours)
     for num, colour in enumerate(colours):
         width_loc = int(num * colour_width)
-        ugfx.area(width_loc, 0, int(colour_width), 320, ugfx.html_color(colour))
+        flag_height = ugfx.height() - (name_height + info_height)
+        ugfx.area(width_loc, info_height, int(colour_width), flag_height, ugfx.html_color(colour))
 
 
 def draw_name():
