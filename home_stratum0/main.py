@@ -83,6 +83,6 @@ while True:
     if value_battery:
         text += "Battery: %s%%" % int(value_battery)
     status.text(text)
-    sleep_or_exit(5.0)
+    sleep_or_exit(0.5)
 
 app.restart_to_default()
