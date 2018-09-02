@@ -1,6 +1,6 @@
 """Nyan Cat Animation!"""
 
-___name___         = "serendipity"
+___name___         = "nyan"
 ___license___      = "MIT"
 ___dependencies___ = ["sleep", "app", "ugfx_helper", 
                       "shared/nyan/0.png",
@@ -16,7 +16,7 @@ ___dependencies___ = ["sleep", "app", "ugfx_helper",
                       "shared/nyan/10.png",
                       "shared/nyan/11.png"]
                       
-___categories___   = ["EMF", "Other"]
+___categories___   = ["FUN", "Homescreens"]
 
 import ugfx_helper, os, wifi, ugfx, http, time, sleep, app
 from tilda import Buttons
