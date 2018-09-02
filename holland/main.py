@@ -33,9 +33,12 @@ def show_vip(inv):
 def show_flag():
 	ugfx.display_image(0, 0, "holland/nederland.png")
 
+def show_boot():
+	ugfx.display_image(0, 0, "holland/start.png")
+
 ugfx_helper.init()
 ugfx.clear()
-show_flag()
+show_boot()
 
 import sim800
 import time
@@ -134,7 +137,9 @@ def cbButton6(button_id):
 	n.display([0x000000, 0x000000])
 	
 def cbButton7(button_id):
-	pass
+	global vip
+	vip = False
+	show_boot()
 
 def cbButton8(button_id):
 	global strobe
