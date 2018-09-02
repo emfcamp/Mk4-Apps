@@ -2,7 +2,7 @@
 
 ___name___         = "serendipity"
 ___license___      = "MIT"
-___dependencies___ = ["sleep", "app", "ugfx_helper", "serendipity/world.png", "serendipity/sun.png"]
+___dependencies___ = ["sleep", "app", "ugfx_helper"]
 ___categories___   = ["EMF", "Other"]
 
 import ugfx_helper, os, wifi, ugfx, http, time, sleep, app
@@ -12,19 +12,21 @@ from tilda import Buttons
 ugfx_helper.init()
 ugfx.clear(ugfx.BLACK)
 
-#ugfx.text(5, 5, "[work in progress]", ugfx.BLACK)
-
-sun = ugfx.Image("serendipity/seresun.png")
-sun = ugfx.Image("serendipity/world.png")
+img = [ugfx.Image("serendipity/sun.png"),
+       ugfx.Image("serendipity/world.png")]
 
 ugfx.backlight(100)
 
 n = 0
-while (not Buttons.is_pressed(Buttons.BTN_A)) and (not Buttons.is_pressed(Buttons.BTN_B)) and (not Buttons.is_pressed(Buttons.BTN_Menu)):
+ugfx.display_image( 0, 0, img[n] )
+
+while True:
     
-    ugfx.display_image( 0, 90, "shared/nyan/{}.png".format(n) )
-    n = (n+1) % 12
-    sleep.sleep_ms(10)
+    if Buttons.is_pressed(Buttons.BTN_B):
+      break
+    elif Buttons.is_pressed(Buttons.BTN_A):
+      n = (n+1) % 2
+      ugfx.display_image( 0, 0, img[n] )
 
 ugfx.clear()
 app.restart_to_default()
