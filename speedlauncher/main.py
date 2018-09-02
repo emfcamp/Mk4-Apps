@@ -1,7 +1,7 @@
 """Launcher for apps currently installed"""
 
-___name___         = "Launcher"
-___license___      = "MIT"
+___name___         = "Speed Launcher"
+___license___      = "WTFPL"
 ___categories___   = ["System"]
 ___dependencies___ = ["app", "ugfx_helper"]
 ___launchable___   = False
