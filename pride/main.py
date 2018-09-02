@@ -65,12 +65,12 @@ def draw_user_info():
     wifi_strength_value = homescreen.wifi_strength()
     if wifi_strength_value:
         wifi_message = 'WiFi: %s%%' % int(wifi_strength_value)
-        wifi_text = ugfx.text(center_width, ugfx.height() - info_height, wifi_message, ugfx.BLACK)
+        ugfx.text(center_width, ugfx.height() - info_height, wifi_message, ugfx.BLACK)
 
     battery_value = homescreen.battery()
     if battery_value:
         battery_message = 'Battery: %s%%' % int(battery_value)
-        battery_text = ugfx.text(0, ugfx.height() - info_height, battery_message, ugfx.BLACK)
+        ugfx.text(0, ugfx.height() - info_height, battery_message, ugfx.BLACK)
 
 
 draw_flag()
