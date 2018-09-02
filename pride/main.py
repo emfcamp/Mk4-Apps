@@ -8,8 +8,6 @@ ___name___         = "Pride"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen", "app"]
-___launchable___   = False
-___bootstrapped___ = False
 
 
 from app import restart_to_default
