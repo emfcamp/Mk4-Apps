@@ -1,8 +1,8 @@
 """A simple homescreen diplaying an avatar from an url and the user's name"""
 
 ___name___         = "Avatar Homescreen"
-___license___      = "MIT"
-___categories___   = ["Homescreen"]
+___license___      = "WTFPL"
+___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen", "wifi", "http", "sleep", "app", "buttons"]
 ___bootstrapped___ = False
 ___launchable___   = True
