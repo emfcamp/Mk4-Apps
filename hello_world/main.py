@@ -14,7 +14,7 @@ ugfx.init()
 ugfx.clear()
 
 # show text
-ugfx.text(5, 5, "Hello World!", ugfx.BLACK)
+ugfx.text(5, 5, "Hello World!!", ugfx.BLACK)
 
 
 # waiting until a button has been pressed
