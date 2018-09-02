@@ -200,7 +200,7 @@ def open_http_socket(method, url, json=None, timeout=None, headers=None, data=No
 def get_address_info(host, port, retries_left = 20):
     try:
         if is_ipv4_address(host):
-            addr = (host, port)
+            return (host, port)
         else:
             return usocket.getaddrinfo(host, port)[0][4]
     except OSError as e:
@@ -268,5 +268,3 @@ def is_ipv4_address(address):
         return len(valid_octets) == 4
     except Exception:
         return False
-
-
