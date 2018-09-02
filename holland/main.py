@@ -11,6 +11,8 @@ from dialogs import *
 import ugfx
 import ugfx_helper
 
+from machine import Neopix
+
 def show_screen(color1, color2, text, text2="", flip=False):
 	if flip:
 		ugfx.orientation(90)
@@ -40,9 +42,11 @@ import time
 from tilda import Buttons
 
 sim800.poweron()
+n = Neopix()
 
 vip = False
 vip_inv = False
+strobe = False
 
 def cbButtonA(button_id):
 	global vip
@@ -122,6 +126,23 @@ def cbButton4(button_id):
 	global vip
 	vip = False
 	ugfx.display_image(0, 0, "holland/otter.png")
+	
+def cbButton5(button_id):
+	n.display([0xFFFFFF, 0xFFFFFF])
+
+def cbButton6(button_id):
+	n.display([0x000000, 0x000000])
+	
+def cbButton7(button_id):
+	pass
+
+def cbButton8(button_id):
+	global strobe
+	strobe = True
+
+def cbButton9(button_id):
+	global strobe
+	strobe = False
 		
 Buttons.enable_interrupt(
 	Buttons.BTN_Call,
@@ -165,7 +186,38 @@ Buttons.enable_interrupt(
 	on_press=True,
 	on_release=False);
 
+Buttons.enable_interrupt(
+	Buttons.BTN_5,
+	cbButton5,
+	on_press=True,
+	on_release=False);
+
+Buttons.enable_interrupt(
+	Buttons.BTN_6,
+	cbButton6,
+	on_press=True,
+	on_release=False);
+
+Buttons.enable_interrupt(
+	Buttons.BTN_7,
+	cbButton7,
+	on_press=True,
+	on_release=False);
+
+Buttons.enable_interrupt(
+	Buttons.BTN_8,
+	cbButton8,
+	on_press=True,
+	on_release=False);
+
+Buttons.enable_interrupt(
+	Buttons.BTN_9,
+	cbButton9,
+	on_press=True,
+	on_release=False);
+
 vip = True
+aaa = False
 
 while True:
 	if vip_inv:
@@ -174,4 +226,12 @@ while True:
 		vip_inv = True
 	if vip:
 		show_vip(vip_inv)
-	time.sleep(0.1)
+	if strobe:
+		if aaa:
+			n.display([0xFFA500, 0xFFA500])
+			aaa = False
+		else:
+			n.display([0x000000, 0x000000])
+			aaa = True
+	else:
+		time.sleep(0.1)
