@@ -72,7 +72,7 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", font=F
         if button_no: button_no.destroy()
         label.destroy()
 
-def prompt_text(description, init_text="", true_text="OK", false_text="Back", font=FONT_MEDIUM_BOLD, style=default_style_badge):
+def prompt_text(description, init_text="", true_text="OK", false_text="Back", font=FONT_MEDIUM_BOLD, style=default_style_badge, numeric=False):
     """Shows a dialog and keyboard that allows the user to input/change a string
 
     Returns None if user aborts with button B
@@ -102,7 +102,7 @@ def prompt_text(description, init_text="", true_text="OK", false_text="Back", fo
             if buttons.is_triggered(buttons.Buttons.BTN_A): return edit.text()
             if buttons.is_triggered(buttons.Buttons.BTN_B): return None
             if buttons.is_triggered(buttons.Buttons.BTN_Menu): return edit.text()
-            handle_keypad(edit)
+            handle_keypad(edit, numeric)
 
     finally:
         window.hide()
@@ -116,7 +116,7 @@ def prompt_text(description, init_text="", true_text="OK", false_text="Back", fo
 
 last_key = None
 last_keytime = None
-def handle_keypad(edit):
+def handle_keypad(edit, numeric):
     global last_key, last_keytime
     threshold = 1000
     keymap = {
@@ -136,7 +136,9 @@ def handle_keypad(edit):
 
     for key, chars in keymap.items():
         if buttons.is_triggered(key):
-            if key != last_key:
+            if numeric:
+                edit.text(edit.text() + chars[-1])
+            elif key != last_key:
                 edit.text(edit.text() + chars[0])
             else:
                 if last_keytime is None or (time.ticks_ms() - last_keytime) > threshold:

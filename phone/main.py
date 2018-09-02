@@ -19,7 +19,7 @@ ugfx.clear()
 
 
 def makecall():
-    notocall = prompt_text("Number to call:")
+    notocall = prompt_text("Number to call:", numeric=True)
     if (notocall):
         sim800.call(notocall)
 
