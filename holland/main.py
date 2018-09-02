@@ -11,26 +11,32 @@ from dialogs import *
 import ugfx
 import ugfx_helper
 
-def show_screen(color1, color2, text, text2=""):
-    ugfx.clear(ugfx.html_color(color1))
-    ugfx.text(0, 100, text, ugfx.html_color(color2))
-    ugfx.text(0, 200, text2, ugfx.html_color(color2))
+def show_screen(color1, color2, text, text2="", flip=False):
+	if flip:
+		ugfx.orientation(90)
+	ugfx.clear(ugfx.html_color(color1))
+	ugfx.set_default_font(ugfx.FONT_NAME)
+	ugfx.text(0, 100, text, ugfx.html_color(color2))
+	ugfx.set_default_font(ugfx.FONT_SMALL)
+	ugfx.text(0, 200, text2, ugfx.html_color(color2))
+	if flip:
+		ugfx.orientation(270)
 
 def show_vip(inv):
 	if (inv):
-		show_screen(0xFFFFFF, 0xFFA400, "Dutch VIP")
+		show_screen(0xFFFFFF, 0xFFA400, "Dutch VIP", "", True)
 	else:
-		show_screen(0xFFA400, 0xFFFFFF, "Dutch VIP")
+		show_screen(0xFFA400, 0xFFFFFF, "Dutch VIP", "", True)
 
 def show_flag():
 	ugfx.display_image(0, 0, "holland/nederland.png")
 
 ugfx_helper.init()
 ugfx.clear()
-ugfx.set_default_font(ugfx.FONT_NAME)
-show_vip(False)
+show_flag()
 
 import sim800
+import time
 from tilda import Buttons
 
 sim800.poweron()
@@ -162,11 +168,10 @@ Buttons.enable_interrupt(
 vip = True
 
 while True:
-	#sleep_or_exit(0.5)
 	if vip_inv:
 		vip_inv = False
 	else:
 		vip_inv = True
 	if vip:
 		show_vip(vip_inv)
-	pass
+	time.sleep(0.1)
