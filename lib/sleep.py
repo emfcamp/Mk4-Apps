@@ -2,14 +2,16 @@
 
 ___license___ = "MIT"
 
-import utime
+import time
 
 def sleep_ms(duration):
-    utime.sleep_ms(duration)
+    # todo: deepsleep?
+    time.sleep_ms(duration)
 
 def sleep(duration):
-    utime.sleep(duration)
+    # todo: deepsleep?
+    time.sleep(duration)
 
-def wfi(duration):
-    #todo: this is fake
-    sleep_ms(duration)
+def wfi():
+    # todo: this is fake
+    sleep_ms(1)
