@@ -7,8 +7,6 @@ ___name___ = "Custom Image Home"
 ___license___ = "MIT"
 ___categories___ = ["Homescreens"]
 ___dependencies___ = ["homescreen", "shared/logo.png", "shared/sponsors.png"]
-___launchable___ = False
-___bootstrapped___ = True
 
 import ugfx
 from homescreen import *
