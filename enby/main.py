@@ -1,7 +1,7 @@
-"""Pride flag homescreen
+"""enby flag homescreen
 
 Similar to the default homescreen, but the
-background is the pride flag.
+background is the enby flag. Based on Pride Flag Homescreen by marekventur
 """
 
 ___name___         = "Enby"
@@ -28,7 +28,7 @@ max_name = 8
 # Orientation for other people to see
 ugfx.orientation(90)
 
-# Pride flag colours
+# enby flag colours
 colours = [0xfff433, 0xffffff, 0x9b59d0, 0x000000]
 
 # Draw each "band" of colour in the flag
@@ -39,13 +39,14 @@ for num, colour in enumerate(colours):
 
 # Message to display
 prefix_message = "Hi I'm"
+prefix_color = 0x3c701b
 
 ugfx.set_default_font(ugfx.FONT_NAME)
 
 # Calc center of screen
 center = (int(ugfx.width() / 2), int(ugfx.height() / 2))
 # Can't use label since the background covers the flag
-ugfx.text(50, center[1] + name_height, prefix_message, ugfx.WHITE)
+ugfx.text(50, center[1] + name_height, prefix_message, ugfx.html_color(prefix_color))
 
 # Process name
 given_name = homescreen.name("Set your name in the settings app")
