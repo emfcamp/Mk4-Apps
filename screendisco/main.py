@@ -4,7 +4,7 @@
 ___name___         = "Screen Party"
 ___license___      = "MIT"
 ___dependencies___ = ["ugfx_helper", "sleep", "random"]
-___categories___   = ["LEDs"]
+___categories___   = ["Homescreens"]
 ___bootstrapped___ = False
 
 import random, ugfx, buttons, math, time
