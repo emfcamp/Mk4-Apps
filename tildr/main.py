@@ -6,14 +6,10 @@ ___dependencies___ = ["wifi", "http", "ugfx_helper", "sleep", "dialogs", "sim800
 ___categories___   = ["Other"]
 ___bootstrapped___ = True
 
-import app, buttons, ugfx, ugfx_helper, http, dialogs, sim800, database, ujson, ure
+import app, buttons, ugfx, ugfx_helper, http, dialogs, sim800, database, ujson
 from tilda import Buttons
-from machine import Neopix
 
-running = True
 api_url = "http://emf2018.us-east-2.elasticbeanstalk.com"
-
-n = Neopix()
 
 ugfx_helper.init()
 ugfx.clear(ugfx.html_color(0x000000))
@@ -117,16 +113,6 @@ def next_person(my_profile):
 def display_person(person):
     top_left_logo()
 
-    # try:
-    #     resp = http.get("https://twitter.com/"+person['contact'].lstrip("@")+"/profile_image?size=mini").raise_for_status()
-    #     url2 = ure.search('href=\"([^\"]+)',resp.content).group(1).decode('ascii')
-    #     print(url2)
-    #     img = http.get(url2).raise_for_status().content
-    #     print(img)
-    #     ugfx.display_image(180, 5, bytearray(img))
-    # except Exception as ex:
-    #     print(ex)
-
     ugfx.set_default_font(ugfx.FONT_TITLE)
     ugfx.Label(5, 90, 230, 40, person["username"], justification=ugfx.Label.LEFTTOP)
     ugfx.set_default_font(ugfx.FONT_SMALL)
@@ -180,7 +166,7 @@ def quit_loop():
             return False
 
 
-while running:
+while True:
 
     profile = get_profile()
 
