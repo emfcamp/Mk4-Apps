@@ -46,7 +46,7 @@ ugfx.set_default_font(ugfx.FONT_NAME)
 # Calc center of screen
 center = (int(ugfx.width() / 2), int(ugfx.height() / 2))
 # Can't use label since the background covers the flag
-ugfx.text(50, center[1] + name_height, prefix_message, ugfx.html_color(prefix_color))
+ugfx.text(10, center[1] + name_height, prefix_message, ugfx.html_color(prefix_color))
 
 # Process name
 given_name = homescreen.name("Set your name in the settings app")
