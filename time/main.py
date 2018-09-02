@@ -6,19 +6,18 @@ ___categories___   = ["EMF"]
 
 # borrowed from https://github.com/micropython/micropython/blob/master/esp8266/scripts/ntptime.py
 
-import ugfx, ntp, wifi
+import ugfx, ntp, wifi, sleep
 # initialize screen
 ugfx.init()
 ugfx.clear()
 
-# (date(2000, 1, 1) - date(1900, 1, 1)).days * 24*60*60
-NTP_DELTA = 3155673600
 
-host = "pool.ntp.org"
 
 # set the RTC using time from ntp
 # print out RTC datetime
 
-wifi.nic()
-while
-ugfx.text(5, 5, repr(ntp.get_NTP_time()), ugfx.BLACK)
+if not wifi.is_connected():
+    wifi.connect(show_wait_message=True)
+else:
+    ntp.set_NTP_time()
+    ugfx.text(5, 5, repr(ntp.get_NTP_time()), ugfx.BLACK)
