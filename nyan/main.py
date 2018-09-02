@@ -1,4 +1,4 @@
-"""Nyan Cat Animation!"""
+"""Nyan Cat Animation! Rotate the screen with 'A'."""
 
 ___name___         = "nyan"
 ___license___      = "MIT"
@@ -28,6 +28,7 @@ ugfx.clear(ugfx.BLACK)
 ugfx.backlight(100)
 
 n = 0
+r = 90
 while True:
     ugfx.display_image( 0, 90, "shared/nyan/{}.png".format(n) )
     n = (n+2) % 12
@@ -35,6 +36,10 @@ while True:
     
     if Buttons.is_pressed(Buttons.BTN_B):
       break
+    elif Buttons.is_pressed(Buttons.BTN_A):
+      r = (r + 180) % 360
+      ugfx.clear(ugfx.BLACK)
+      ugfx.orientation(r)
 
 ugfx.clear()
 app.restart_to_default()
