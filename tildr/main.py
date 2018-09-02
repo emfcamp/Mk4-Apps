@@ -4,7 +4,7 @@ ___name___         = "Tildr Dating"
 ___license___      = "MIT"
 ___dependencies___ = ["wifi", "http", "ugfx_helper", "sleep", "dialogs", "sim800", "database"]
 ___categories___   = ["Other"]
-___bootstrapped___ = True
+___bootstrapped___ = False
 
 import app, buttons, ugfx, ugfx_helper, sleep, http, dialogs, sim800, database, ujson
 from tilda import Buttons
