@@ -1,4 +1,4 @@
-"""This is a simple hello world app"""
+"""Happy accidents or unplanned, fortunate discoveries."""
 
 ___name___         = "serendipity"
 ___license___      = "MIT"
@@ -12,4 +12,7 @@ import ugfx, os, time, sleep, app
 ugfx.init()
 ugfx.clear()
 
-ugfx.text(5, 5, "[work in progress]", ugfx.BLACK)
+#ugfx.text(5, 5, "[work in progress]", ugfx.BLACK)
+
+def draw_furniture():
+  ugfx.display_image( 0, 0, "serendipity/main.png" )
