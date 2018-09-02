@@ -13,6 +13,7 @@ import time
 # from imu import IMU
 import gc
 # import pyb
+import app
 
 app_path = './3dspin'
 
@@ -357,3 +358,4 @@ while run:
         time.sleep_ms(500) # Wait a while to avoid skipping ahead if the user still has the button down
     if Buttons.is_pressed(Buttons.BTN_Menu):
         run = False
+		app.restart_to_default()
