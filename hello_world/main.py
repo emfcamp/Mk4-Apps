@@ -5,7 +5,7 @@ ___license___      = "MIT"
 ___dependencies___ = ["sleep", "app"]
 ___categories___   = ["EMF"]
 
-import ugfx, os, time, sleep, app
+import ugfx, sleep, app
 from tilda import Buttons
 
 
