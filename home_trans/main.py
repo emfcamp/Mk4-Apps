@@ -31,7 +31,7 @@ name_height = 64
 status_height = 20
 info_height = 30
 logo_path = "shared/logo.png"
-trans_logo_path = "home_magic/logo.png"
+trans_logo_path = "home_trans/logo.png"
 logo_height = 150
 logo_width = 56
 
@@ -47,7 +47,7 @@ style = ugfx.Style()
 style.set_enabled([ugfx.BLACK, ugfx.html_color(0x55cdfc), ugfx.html_color(0x55cdfc), ugfx.html_color(0x55cdfc)])
 style.set_background(ugfx.html_color(0x55cdfc))
 ugfx.set_default_style(style)
-ugfx.display_image(0, 0, "home_magic/trans.png")
+ugfx.display_image(0, 0, "home_trans/trans.png")
 
 # Logo stuff
 ugfx.display_image(
@@ -117,7 +117,7 @@ def draw_trans():
 	style.set_enabled([ugfx.BLACK, ugfx.html_color(0x55cdfc), ugfx.html_color(0x55cdfc), ugfx.html_color(0x55cdfc)])
 	style.set_background(ugfx.html_color(0x55cdfc))
 	ugfx.set_default_style(style)
-	ugfx.display_image(0, 0, "home_magic/trans.png")
+	ugfx.display_image(0, 0, "home_trans/trans.png")
 
 	# Logo stuff
 	ugfx.display_image(
