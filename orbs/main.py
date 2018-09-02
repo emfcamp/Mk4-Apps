@@ -15,10 +15,8 @@ import ugfx_helper
 from orbs.umqtt.simple import MQTTClient
 import network
 from machine import mem32
-wlan=network.WLAN()
-if not wlan.isconnected():
-  import wifi
-  wifi.connect()
+import wifi
+wifi.connect()
 
 ugfx_helper.init()
 ugfx.clear()
