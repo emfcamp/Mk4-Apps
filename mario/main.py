@@ -8,7 +8,7 @@ Replay Track when user pushes a button.
 ___name___         = "Mario Theme"
 ___license___      = ""
 ___categories___   = ["Sound"]
-___dependencies___ = ["speaker", "buttons", "ugfx_helper", "app", "time","wifi", "http", "sleep" ]
+___dependencies___ = ["speaker", "buttons", "ugfx_helper", "app", "wifi", "http", "sleep" ]
 
 import ugfx_helper, os, wifi, ugfx, http, time, sleep, app,speaker
 from tilda import Buttons
