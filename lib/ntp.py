@@ -8,6 +8,7 @@ ___license___ = "MIT"
 import database
 import usocket
 import machine
+import utime
 
 # (date(2000, 1, 1) - date(1900, 1, 1)).days * 24*60*60
 NTP_DELTA = 3155673600
@@ -61,7 +62,6 @@ def query_NTP_host(_NTP_HOST):
 
 
 def set_NTP_time():
-        import time
         print("Setting time from NTP")
 
         t = get_NTP_time()
@@ -69,18 +69,12 @@ def set_NTP_time():
                 print("Could not set time from NTP")
                 return False
 
-        tz = 0
         with database.Database() as db:
-                tz = db.get("timezone", 0)
+                tz = db.get("timezone", 1)
 
-        tz_minutes = int(abs(tz) % 100) * (1 if tz >= 0 else -1)
-        tz_hours = int(tz / 100)
-        t += (tz_hours * 3600) + (tz_minutes * 60)
-        print(dir(time))
-        #tm = time.localtime(t)
-        #tm = tm[0:3] + tm[3:6]
-#
+        tm = utime.localtime(t)
+        tm = tm[0:3] + ((tm[3] + tz),) + tm[3:6]
         rtc = machine.RTC()
-        #rtc.init(tm)
+        rtc.init(tm)
 
         return True
