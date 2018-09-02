@@ -5,7 +5,6 @@ Gracefully reboot into main menu on Menu Press.
 Replay Track when user pushes a button. 
 """
 
-# I used https://www.princetronics.com/supermariothemesong/ to get the Hz and Timings.
 ___name___         = "Mario Theme"
 ___license___      = ""
 ___categories___   = ["Sound"]
