@@ -5,7 +5,7 @@ emfcampqueer theme by ganbariley
 ___name___         = "EMFCamp Rainbow Homescreen"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
-___dependencies___ = ["homescreen","emfcampqueer_home/pridelogo.png"]
+___dependencies___ = ["homescreen"]
 ___launchable___   = False
 ___bootstrapped___ = False
 
