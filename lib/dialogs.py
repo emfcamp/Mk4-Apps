@@ -146,12 +146,14 @@ def prompt_option(options, index=0, text = None, title=None, select_text="OK", n
         window.text(5, 10, text, ugfx.BLACK)
 
     options_list = ugfx.List(5, list_y, ugfx.width() - 25, 260 - list_y, parent = window)
+    options_list.disable_draw()
 
     for option in options:
         if isinstance(option, dict) and option["title"]:
             options_list.add_item(option["title"])
         else:
             options_list.add_item(str(option))
+    options_list.enable_draw()
     options_list.selected_index(index)
 
     select_text = "A: " + select_text
