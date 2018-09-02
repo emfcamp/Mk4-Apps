@@ -2,7 +2,7 @@
 
 ___name___         = "Avatar Homescreen"
 ___license___      = "MIT"
-___categories___   = ["Homescreen"]
+___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen", "wifi", "http", "sleep", "app", "buttons"]
 ___bootstrapped___ = False
 ___launchable___   = True
