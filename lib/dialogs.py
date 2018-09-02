@@ -4,6 +4,8 @@ ___license___ = "MIT"
 ___dependencies___ = ["buttons", "sleep"]
 
 import ugfx, buttons, sleep
+from buttons import Buttons
+import time
 
 default_style_badge = ugfx.Style()
 default_style_badge.set_focus(ugfx.RED)
@@ -70,7 +72,7 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", font=F
         if button_no: button_no.destroy()
         label.destroy()
 
-def prompt_text(description, init_text="", true_text="OK", false_text="Back", font=FONT_MEDIUM_BOLD, style=default_style_badge):
+def prompt_text(description, init_text="", true_text="OK", false_text="Back", font=FONT_MEDIUM_BOLD, style=default_style_badge, numeric=False):
     """Shows a dialog and keyboard that allows the user to input/change a string
 
     Returns None if user aborts with button B
@@ -100,18 +102,7 @@ def prompt_text(description, init_text="", true_text="OK", false_text="Back", fo
             if buttons.is_triggered(buttons.Buttons.BTN_A): return edit.text()
             if buttons.is_triggered(buttons.Buttons.BTN_B): return None
             if buttons.is_triggered(buttons.Buttons.BTN_Menu): return edit.text()
-            if buttons.is_triggered(buttons.Buttons.BTN_0): edit.text(edit.text() + "0")
-            if buttons.is_triggered(buttons.Buttons.BTN_1): edit.text(edit.text() + "1")
-            if buttons.is_triggered(buttons.Buttons.BTN_2): edit.text(edit.text() + "2")
-            if buttons.is_triggered(buttons.Buttons.BTN_3): edit.text(edit.text() + "3")
-            if buttons.is_triggered(buttons.Buttons.BTN_4): edit.text(edit.text() + "4")
-            if buttons.is_triggered(buttons.Buttons.BTN_5): edit.text(edit.text() + "5")
-            if buttons.is_triggered(buttons.Buttons.BTN_6): edit.text(edit.text() + "6")
-            if buttons.is_triggered(buttons.Buttons.BTN_7): edit.text(edit.text() + "7")
-            if buttons.is_triggered(buttons.Buttons.BTN_8): edit.text(edit.text() + "8")
-            if buttons.is_triggered(buttons.Buttons.BTN_9): edit.text(edit.text() + "9")
-            if buttons.is_triggered(buttons.Buttons.BTN_Hash): edit.text(edit.text() + "#")
-            if buttons.is_triggered(buttons.Buttons.BTN_Star): edit.text(edit.text() + "*")
+            handle_keypad(edit, numeric)
 
     finally:
         window.hide()
@@ -122,6 +113,49 @@ def prompt_text(description, init_text="", true_text="OK", false_text="Back", fo
         kb.destroy()
         edit.destroy();
     return
+
+last_key = None
+last_keytime = None
+def handle_keypad(edit, numeric):
+    global last_key, last_keytime
+    threshold = 1000
+    keymap = {
+        buttons.Buttons.BTN_0: [" ", "0"],
+        buttons.Buttons.BTN_1: ["1"],
+        buttons.Buttons.BTN_2: ["a", "b", "c", "2"],
+        buttons.Buttons.BTN_3: ["d", "e", "f", "3"],
+        buttons.Buttons.BTN_4: ["g", "h", "i", "4"],
+        buttons.Buttons.BTN_5: ["j", "k", "l", "5"],
+        buttons.Buttons.BTN_6: ["m", "n", "o", "6"],
+        buttons.Buttons.BTN_7: ["p", "q", "r", "s", "7"],
+        buttons.Buttons.BTN_8: ["t", "u", "v", "8"],
+        buttons.Buttons.BTN_9: ["w", "x", "y", "9"],
+        buttons.Buttons.BTN_Hash: ["#"],
+        buttons.Buttons.BTN_Star: ["*", "+"],
+    }
+
+    for key, chars in keymap.items():
+        if buttons.is_triggered(key):
+            if numeric:
+                edit.text(edit.text() + chars[-1])
+            elif key != last_key:
+                edit.text(edit.text() + chars[0])
+            else:
+                if last_keytime is None or (time.ticks_ms() - last_keytime) > threshold:
+                    edit.text(edit.text() + chars[0])
+                else:
+                    last_char = edit.text()[-1]
+                    try:
+                        last_index = chars.index(last_char)
+                    except ValueError:
+                        # not sure how we get here...
+                        return
+                    next_index = (last_index+1) % len(chars)
+                    edit.text(edit.text()[:-1] + chars[next_index])
+            last_key = key
+            last_keytime = time.ticks_ms()
+
+
 
 def prompt_option(options, index=0, text = None, title=None, select_text="OK", none_text=None):
     """Shows a dialog prompting for one of multiple options
@@ -146,12 +180,14 @@ def prompt_option(options, index=0, text = None, title=None, select_text="OK", n
         window.text(5, 10, text, ugfx.BLACK)
 
     options_list = ugfx.List(5, list_y, ugfx.width() - 25, 260 - list_y, parent = window)
+    options_list.disable_draw()
 
     for option in options:
         if isinstance(option, dict) and option["title"]:
             options_list.add_item(option["title"])
         else:
             options_list.add_item(str(option))
+    options_list.enable_draw()
     options_list.selected_index(index)
 
     select_text = "A: " + select_text
@@ -177,6 +213,39 @@ def prompt_option(options, index=0, text = None, title=None, select_text="OK", n
                 return options[options_list.selected_index()]
             if button_none and buttons.is_triggered(buttons.Buttons.BTN_B): return None
             if button_none and buttons.is_triggered(buttons.Buttons.BTN_Menu): return None
+            # These are indexes for selected_index, 1 means "First item", ie index 0. 0 is treated as if it were 10
+            button_nums = {
+                Buttons.BTN_1: 0,
+                Buttons.BTN_2: 1,
+                Buttons.BTN_3: 2,
+                Buttons.BTN_4: 3,
+                Buttons.BTN_5: 4,
+                Buttons.BTN_6: 5,
+                Buttons.BTN_7: 6,
+                Buttons.BTN_8: 7,
+                Buttons.BTN_9: 8,
+                Buttons.BTN_0: 9,
+            }
+            for key, num in button_nums.items():
+                if buttons.is_triggered(key):
+                    # No need to check for too large an index; gwinListSetSelected validates this.
+                    options_list.selected_index(num)
+                    break
+            if buttons.is_triggered(Buttons.BTN_Hash):
+                # Page down
+                idx = options_list.selected_index() + 10
+                cnt = options_list.count()
+                if idx >= cnt:
+                    idx = cnt - 1
+                options_list.selected_index(idx)
+                continue
+            if buttons.is_triggered(Buttons.BTN_Star):
+                # Page up
+                idx = options_list.selected_index() - 10
+                if idx < 0:
+                    idx = 0
+                options_list.selected_index(idx)
+                continue
 
     finally:
         window.hide()

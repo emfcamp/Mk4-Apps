@@ -558,7 +558,7 @@ def btscan(timeout=30000):
     response = command("AT+BTSCAN=1," + str(int(timeout/1000)), timeout+8000, "+BTSCAN: 1")
     for entry in extractvals("+BTSCAN: 0,", response):
         splitentry = entry.split(",")
-        result = [int(splitentry[0]), splitentry[1].strip("\""), splitentry[2], int(splitentry[3])]
+        result.append([int(splitentry[0]), splitentry[1].strip("\""), splitentry[2], int(splitentry[3])])
     return result
 
 # Get the requesting paring device name
