@@ -7,12 +7,14 @@ background is the pride flag.
 ___name___         = "Pride"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
-___dependencies___ = ["homescreen", "app"]
+___dependencies___ = ["homescreen", "app", "buttons"]
 
 
 from app import restart_to_default
 import ugfx
 import homescreen
+from tilda import Buttons
+import buttons
 
 
 homescreen.init()
@@ -25,13 +27,19 @@ info_height = 20
 # Maximum length of name before downscaling
 max_name = 8
 
-# Orientation for other people to see
-ugfx.orientation(90)
+flags = {
+    'LGBT': [0xE70000, 0xFF8C00, 0xFFEF00, 0x00811F, 0x0044FF, 0x760089],
+    'Non-Binary': [0xFFF433, 0xFFFFFF, 0x9B59D0, 0x000000],
+    'Trans': [0x5BCEFA, 0xF5A9B8, 0xFFFFFF, 0xF5A9B8, 0x5BCEFA],
+    'Asexual': [0x000000, 0xA3A3A3, 0xFFFFFF, 0x800080],
+    'Bisexual': [0xFF0080, 0xFF0080, 0xA349A4, 0x0000FF, 0x0000FF],
+    'Pansexual': [0xFF218E, 0xFCD800, 0x0194FC]
+}
 
 
-def draw_flag():
-    # Pride flag colours
-    colours = [0xE70000, 0xFF8C00, 0xFFEF00, 0x00811F, 0x0044FF, 0x760089]
+def draw_flag(colours):
+    # Orientation for other people to see
+    ugfx.orientation(90)
 
     # Draw each "band" of colour in the flag
     colour_width = ugfx.width() / len(colours)
@@ -76,13 +84,36 @@ def draw_user_info():
         ugfx.text(0, ugfx.height() - info_height, battery_message, ugfx.BLACK)
 
 
-draw_flag()
-draw_name()
+# Set variables for WiFi/Battery loop
+selection_change = True
+flag_names = list(flags.keys())
+selection = flag_names.index('LGBT')
 
 # WiFi/Battery update loop
+draw_name()
 while True:
-    draw_user_info()
+    # Buttons will cycle when it reaches either side of the list
+    if buttons.is_pressed(Buttons.JOY_Left):
+        if selection > 0:
+            selection -= 1
+        else:
+            selection = len(flags) - 1
+        selection_change = True
 
+    elif buttons.is_pressed(Buttons.JOY_Right):
+        if selection < len(flags) - 1:
+            selection += 1
+        else:
+            selection = 0
+        selection_change = True
+
+    # Only triggers if the selection has changed
+    if selection_change:
+        draw_flag(flags[flag_names[selection]])
+        selection_change = False
+
+    # Redraw time-sensitive info on each iteration
+    draw_user_info()
     homescreen.sleep_or_exit(1.5)
 
 restart_to_default()
