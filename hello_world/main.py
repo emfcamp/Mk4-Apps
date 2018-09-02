@@ -6,6 +6,7 @@ ___dependencies___ = ["sleep", "app"]
 ___categories___   = ["EMF"]
 
 import ugfx, os, time, sleep, app
+from tilda import Buttons
 
 
 # initialize screen
