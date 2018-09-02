@@ -1,3 +1,6 @@
+"""
+Orbs Game: Set your name and see the scores
+"""
 ___name___         = "Orbs Game"
 ___license___      = "MIT"
 ___dependencies___ = ["app", "dialogs", "sim800", "ugfx_helper"]
