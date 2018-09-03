@@ -4,7 +4,7 @@ ___name___         = "Holland"
 ___license___      = "MIT"
 ___dependencies___ = ["app", "sim800", "ugfx_helper"]
 ___categories___   = ["Villages"]
-___bootstrapped___ = True
+___bootstrapped___ = False
 
 from app import *
 from dialogs import *
