@@ -5,33 +5,32 @@ Warning! Don't use this for anything important, it's probably biased
 
 ___license___ = "MIT"
 
-# todo: simplify this by using "urandom"
-import os
+try:
+    import urandom as sysrand
+except ImportError:
+    import random as sysrand
 
-_bigrand_bytes = 10
-_bigrand_max = pow(256, _bigrand_bytes)
+# arbitrary: max is 32-bit
+_bigrand_max = pow(2, 32)
 
 def _bigrand():
     """generates a random number between 0 (incl) and _bigrand_max (excl)"""
-    base = 0
-    for b in os.urandom(_bigrand_bytes):
-        base = (base << 8) + b
-    return base
+    return int(sysrand.getrandbits(32))
 
 def random():
     """Return the next random floating point number in the range [0.0, 1.0)."""
-    return _bigrand() / _bigrand_max
+    return sysrand.random()
 
 def randrange(start, stop=None):
     """Return a randomly selected element from range(start, stop)"""
     if stop is None:
         stop = start
         start = 0
-    return start + (_bigrand() * (stop - start) // _bigrand_max)
+    return sysrand.randrange(start, stop)
 
 def randint(start, stop):
     """Return a random integer N such that a <= N <= b."""
-    return randrange(start, stop + 1)
+    return sysrand.randint(start, stop)
 
 def shuffle(seq):
     """Shuffle the sequence x in place."""
