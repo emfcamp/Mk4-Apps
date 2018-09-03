@@ -1,6 +1,6 @@
-"""Camp Holland app
-"""
-___name___         = "Holland"
+"""Camp Holland app"""
+
+___title___        = "Holland"
 ___license___      = "MIT"
 ___dependencies___ = ["app", "sim800", "ugfx_helper"]
 ___categories___   = ["Villages"]

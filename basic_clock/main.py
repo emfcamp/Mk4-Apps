@@ -1,5 +1,6 @@
 """An NTP time app"""
-___name___         = "NTP time"
+
+___title___        = "NTP time"
 ___license___      = "MIT"
 ___dependencies___ = ["ntp", "wifi", "app"]
 ___categories___   = ["EMF"]

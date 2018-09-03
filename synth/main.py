@@ -3,7 +3,7 @@
 Todo: fix this, it doesn't work at at the moment
 """
 
-___name___         = "Synthesizers"
+___title___        = "Synthesizers"
 ___license___      = "MIT"
 ___categories___   = ["Sound"]
 ___dependencies___ = ["speaker", "buttons", "ugfx_helper", "app"]

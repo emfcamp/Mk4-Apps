@@ -5,7 +5,7 @@ It gets automatically installed when a badge is
 newly activated or reset.
 """
 
-___name___         = "Homescreen (Default)"
+___title___        = "Homescreen (Default)"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen", "shared/logo.png", "shared/sponsors.png"]

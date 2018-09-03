@@ -1,6 +1,6 @@
 """Phone app for baic calling functions
 """
-___name___         = "Phone"
+___title___        = "Phone"
 ___license___      = "MIT"
 ___dependencies___ = ["app", "dialogs", "sim800", "ugfx_helper"]
 ___categories___   = ["System"]

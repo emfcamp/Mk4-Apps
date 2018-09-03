@@ -1,6 +1,6 @@
 """This app tests all the onboard sensors and system info"""
 
-___name___         = "System Info"
+___title___        = "System Info"
 ___license___      = "MIT"	
 ___dependencies___ = ["sleep", "app", "sim800"]
 ___categories___   = ["EMF", "System"]

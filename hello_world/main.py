@@ -1,6 +1,6 @@
 """This is a simple hello world app"""
 
-___name___         = "Hello World"
+___title___        = "Hello World"
 ___license___      = "MIT"
 ___dependencies___ = ["sleep", "app"]
 ___categories___   = ["EMF"]

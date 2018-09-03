@@ -2,7 +2,7 @@
 
 Get up to date information on what's in stock at The Robot Arms!
 """
-___name___         = "beer"
+___title___        = "beer"
 ___license___      = "MIT"
 ___dependencies___ = ["app", "sleep", "wifi", "http", "ugfx_helper"]
 ___categories___   = ["EMF"]

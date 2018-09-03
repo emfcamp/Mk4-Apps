@@ -1,7 +1,7 @@
 """ Flashes random colours on your screen
 ""  By Pez (@Pezmc)
 """
-___name___         = "Screen Party"
+___title___        = "Screen Party"
 ___license___      = "MIT"
 ___dependencies___ = ["ugfx_helper", "sleep", "random"]
 ___categories___   = ["Homescreens"]

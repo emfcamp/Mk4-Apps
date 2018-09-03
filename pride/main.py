@@ -4,7 +4,7 @@ Similar to the default homescreen, but the
 background is the pride flag.
 """
 
-___name___         = "Pride"
+___title___        = "Pride"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen", "app"]

@@ -4,7 +4,7 @@ Similar to the default homescreen, but the
 background is the enby flag. Based on Pride Flag Homescreen by marekventur
 """
 
-___name___         = "Enby"
+___title___        = "Enby"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen", "app"]

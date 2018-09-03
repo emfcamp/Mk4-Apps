@@ -2,7 +2,7 @@
 emfcampqueer theme by ganbariley
 """
 
-___name___         = "EMFCamp Rainbow Homescreen"
+___title___        = "EMFCamp Rainbow Homescreen"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen"]
