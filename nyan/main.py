@@ -28,7 +28,7 @@ ugfx.clear(ugfx.BLACK)
 ugfx.backlight(100)
 
 n = 0
-r = 90
+r = 270
 while True:
     ugfx.display_image( 0, 90, "shared/nyan/{}.png".format(n) )
     n = (n+2) % 12
