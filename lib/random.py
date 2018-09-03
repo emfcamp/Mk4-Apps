@@ -10,13 +10,6 @@ try:
 except ImportError:
     import random as sysrand
 
-# arbitrary: max is 32-bit
-_bigrand_max = pow(2, 32)
-
-def _bigrand():
-    """generates a random number between 0 (incl) and _bigrand_max (excl)"""
-    return int(sysrand.getrandbits(32))
-
 def random():
     """Return the next random floating point number in the range [0.0, 1.0)."""
     return sysrand.random()
