@@ -113,7 +113,12 @@ def show_remove():
     if app_to_remove:
         ospath.recursive_rmdir(app_to_remove)
         app.uncache_apps()
-        notice("%s has been removed." % app_to_remove, title="Remove Success!", close_text="Back")
+        app_text = "App \"" + app_to_remove + "\""
+        try:
+            app_text += " (" + app_info["title"] + ')'
+        except:
+            pass
+        notice("%s has been removed." % app_text, title="Remove Success!", close_text="Back")
 
 def main_menu():
     while True:
