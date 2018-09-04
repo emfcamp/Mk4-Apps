@@ -95,16 +95,17 @@ def show_app(a,c):
 
 def show_update():
     clear()
-    update = prompt_boolean("Do you want to update all apps on this badge?", title="Update", true_text="OK", false_text="Back")
+    update = prompt_boolean("Do you want to update all apps on this badge?", title="Update all Apps", true_text="OK", false_text="Back")
     if update:
         clear()
-        with WaitingMessage(title=title, text="Please wait...") as message:
+        with WaitingMessage(title=title, text="Getting updates...") as message:
+            update_text = "Downloading files:"
             installers = store.install(_get_current_apps())
             n = len(installers)
             for i, installer in enumerate(installers):
-                message.text = "%s (%s/%s)" % (installer.path, i + 1, n)
+                message.text = "%s\n\n%s (%s/%s)" % (update_text, installer.path, i + 1, n)
                 installer.download()
-        notice("Your badge has been successfully updated", title=title, close_text="Back")
+        notice("Your badge has been successfully updated.", title="Update Success!", close_text="Back")
 
 def show_remove():
     clear()
