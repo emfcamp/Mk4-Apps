@@ -109,11 +109,11 @@ def show_update():
 
 def show_remove():
     clear()
-    app_to_remove = prompt_option(_get_current_apps(), none_text="Back", text="Select App to remove")
+    app_to_remove = prompt_option(_get_current_apps(), title="Remove App...", none_text="Back", text="Select an App to remove.")
     if app_to_remove:
         ospath.recursive_rmdir(app_to_remove)
         app.uncache_apps()
-        notice("%s has been removed" % app_to_remove, title=title, close_text="Back")
+        notice("%s has been removed." % app_to_remove, title="Remove Success!", close_text="Back")
 
 def main_menu():
     while True:
