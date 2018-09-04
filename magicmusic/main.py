@@ -1,6 +1,5 @@
 """BEEP BEEP!
 
-Todo: fix this, it doesn't work at at the moment
 """
 
 ___name___         = "MAGICMUSIC"
