@@ -58,11 +58,19 @@ def show_app(a):
     install = prompt_boolean(app_info["description"], title=a, true_text="Install", false_text="Back")
 
     if install:
-        with WaitingMessage(title="Installing %s" % a, text="Please wait...") as message:
+        app_text = "App:\n"
+        try:
+            app_text += app_info["title"] + '\n'
+        except:
+            pass
+        finally:
+            app_text += a + '\n\n'
+
+        with WaitingMessage(title="Installing App...", text="%sGetting ready..." % app_text) as message:
             installers = store.install(_get_current_apps() + [a])
             n = len(installers)
             for i, installer in enumerate(installers):
-                message.text = "%s (%s/%s)" % (installer.path, i + 1, n)
+                message.text = "%s%s (%s/%s)" % (app_text + "Downloading files...\n\n", installer.path, i + 1, n)
                 installer.download()
             app.uncache_apps()
 
