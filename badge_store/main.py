@@ -13,6 +13,7 @@ ___bootstrapped___ = True
 import ugfx_helper, os, database, wifi, app, ospath
 from dialogs import *
 from lib.badge_store import BadgeStore
+from app import *
 
 ### VIEWS ###
 
@@ -46,11 +47,11 @@ def show_apps(c):
     option = prompt_option(menu_items, none_text="Back", title=title)
 
     if option:
-        show_app(option["app"])
+        show_app(option["app"],c)
     else:
         return
 
-def show_app(a):
+def show_app(a,c):
     clear()
     with WaitingMessage():
         app_info = store.get_app(a)
@@ -74,7 +75,16 @@ def show_app(a):
                 installer.download()
             app.uncache_apps()
 
-        notice("App %s has been successfully installed" % a, title=title, close_text="Back")
+        launch = prompt_boolean(
+            "%sSuccessfully installed.\n\nPress A to launch the app.\n\nPress B to list more \"%s\" apps." % (app_text, c), title="Install Success!", true_text="Launch", false_text="Back")
+        if (launch):
+            for app_obj in get_apps():
+                if app_obj.name == a:
+                    app_obj.boot()
+        else:
+            show_apps(c)
+
+
 
 def show_update():
     clear()
