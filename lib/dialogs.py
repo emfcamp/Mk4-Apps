@@ -41,8 +41,8 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", font=F
     window = ugfx.Container(5, 5,  width, height)
     window.show()
     ugfx.set_default_font(font)
-    window.text(5, 10, title, TILDA_COLOR)
-    window.line(0, 30, width, 30, ugfx.BLACK)
+    window.text(5, 5, title, TILDA_COLOR)
+    window.line(0, 25, width, 25, ugfx.BLACK)
 
     if false_text:
         true_text = "A: " + true_text
@@ -51,9 +51,9 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", font=F
     ugfx.set_default_font(font)
     label = ugfx.Label(5, 30, width - 10, height - 80, text = text, parent=window)
     ugfx.set_default_font(FONT_MEDIUM_BOLD)
-    button_yes = ugfx.Button(5, height - 40, width // 2 - 15 if false_text else width - 15, 30 , true_text, parent=window)
-    button_no = ugfx.Button(width // 2 + 5, height - 40, width // 2 - 15, 30 , false_text, parent=window) if false_text else None
-
+    button_yes = ugfx.Button(5, height - 40, width // 2 - 10 if false_text else width - 15, 30 , true_text, parent=window)
+    button_no = ugfx.Button(width // 2, height - 40, width // 2 - 10, 30 , false_text, parent=window) if false_text else None
+    
     try:
         #button_yes.attach_input(ugfx.BTN_A,0) # todo: re-enable once working
         #if button_no: button_no.attach_input(ugfx.BTN_B,0)
@@ -166,10 +166,11 @@ def prompt_option(options, index=0, text = None, title=None, select_text="OK", n
     ugfx.set_default_font(FONT_SMALL)
     window = ugfx.Container(5, 5, ugfx.width() - 10, ugfx.height() - 10)
     window.show()
+    
 
     list_y = 30
     if title:
-        window.text(5, 10, title, TILDA_COLOR)
+        window.text(5, 5, title, TILDA_COLOR)
         window.line(0, 25, ugfx.width() - 10, 25, ugfx.BLACK)
         list_y = 30
         if text:
@@ -179,7 +180,7 @@ def prompt_option(options, index=0, text = None, title=None, select_text="OK", n
     else:
         window.text(5, 10, text, ugfx.BLACK)
 
-    options_list = ugfx.List(5, list_y, ugfx.width() - 25, 260 - list_y, parent = window)
+    options_list = ugfx.List(5, list_y, ugfx.width() - 24, 265 - list_y, parent = window)
     options_list.disable_draw()
 
     for option in options:
@@ -195,7 +196,7 @@ def prompt_option(options, index=0, text = None, title=None, select_text="OK", n
         none_text = "B: " + none_text
 
     button_select = ugfx.Button(5, ugfx.height() - 50, 105 if none_text else 200, 30 , select_text, parent=window)
-    button_none = ugfx.Button(117, ugfx.height() - 50, 105, 30 , none_text, parent=window) if none_text else None
+    button_none = ugfx.Button(116, ugfx.height() - 50, 105, 30 , none_text, parent=window) if none_text else None
 
     try:
         while True:
@@ -260,8 +261,8 @@ class WaitingMessage:
     def __init__(self, text="Please Wait...", title="TiLDA"):
         self.window = ugfx.Container(30, 30, ugfx.width() - 60, ugfx.height() - 60)
         self.window.show()
-        self.window.text(5, 10, title, TILDA_COLOR)
-        self.window.line(0, 30, ugfx.width() - 60, 30, ugfx.BLACK)
+        self.window.text(5, 5, title, TILDA_COLOR)
+        self.window.line(0, 25, ugfx.width() - 60, 25, ugfx.BLACK)
         self.label = ugfx.Label(5, 40, self.window.width() - 10, ugfx.height() - 40, text = text, parent=self.window)
 
         # Indicator to show something is going on
