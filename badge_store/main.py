@@ -49,7 +49,7 @@ def show_apps(c):
     if option:
         show_app(option["app"],c)
     else:
-        return
+        show_categories()
 
 def show_app(a,c):
     clear()
