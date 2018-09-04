@@ -30,10 +30,10 @@ def clear():
 
 def show_categories():
     clear()
-    with WaitingMessage():
+    with WaitingMessage(title=title, text="Loading categories..."):
         menu_items = [{"title": c, "category": c} for c in store.get_categories()]
 
-    option = prompt_option(menu_items, none_text="Back", text="Categories", title=title)
+    option = prompt_option(menu_items, none_text="Back", title="Install: Categories")
 
     if option:
         show_apps(option["category"])
@@ -44,7 +44,7 @@ def show_apps(c):
     clear()
     menu_items = [{"title": a, "app": a} for a in store.get_apps(c)]
 
-    option = prompt_option(menu_items, none_text="Back", title=title)
+    option = prompt_option(menu_items, none_text="Back", title="Install: " + c)
 
     if option:
         show_app(option["app"],c)
@@ -53,10 +53,17 @@ def show_apps(c):
 
 def show_app(a,c):
     clear()
-    with WaitingMessage():
+    with WaitingMessage(title=title, text="Loading app description..."):
         app_info = store.get_app(a)
 
-    install = prompt_boolean(app_info["description"], title=a, true_text="Install", false_text="Back")
+    app_text = "App:\n"
+    try:
+        app_text += app_info["title"] + '\n'
+    except:
+        pass
+    finally:
+        app_text += a + '\n\nDescription:\n' + app_info["description"].strip()
+    install = prompt_boolean(app_text , title="Install App", true_text="Install", false_text="Back")
 
     if install:
         app_text = "App:\n"
