@@ -2,7 +2,7 @@
 """
 ___name___         = "Nyan"
 ___license___      = "MIT"
-___dependencies___ = ["app", "homescreen", "ugfx_helper", "machine"]
+___dependencies___ = ["app", "homescreen", "ugfx_helper"]
 ___categories___   = ["Homescreens"]
 ___bootstrapped___ = False
 
