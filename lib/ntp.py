@@ -12,7 +12,7 @@ import machine
 # (date(2000, 1, 1) - date(1900, 1, 1)).days * 24*60*60
 NTP_DELTA = 3155673600
 # With Mk3 Firmware an IP address string works 5%, hangs at socket.socket(..) 95%, could be a bug in 2016 upython?
-NTP_HOSTS = ["ntp-gps.emf.camp", "0.emfbadge.pool.ntp.org", "1.emfbadge.pool.ntp.org", "2.emfbadge.pool.ntp.org", "3.emfbadge.pool.ntp.org"]
+NTP_HOSTS = ["0.emfbadge.pool.ntp.org", "1.emfbadge.pool.ntp.org", "2.emfbadge.pool.ntp.org", "3.emfbadge.pool.ntp.org"]
 NTP_PORT = 123
 
 def get_NTP_time():
