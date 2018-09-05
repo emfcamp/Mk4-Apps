@@ -2,7 +2,7 @@
 """
 ___name___         = "DevRant"
 ___license___      = "MIT"
-___dependencies___ = ["app", "wifi", "http", "homescreen", "ugfx_helper", "dialogs"]
+___dependencies___ = ["app", "wifi", "http", "ugfx_helper"]
 ___categories___   = ["Other"]
 ___launchable___   = True
 
