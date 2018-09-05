@@ -3,7 +3,7 @@
 """
 ___name___         = "Screen Party"
 ___license___      = "MIT"
-___dependencies___ = ["ugfx_helper", "sleep", "random"]
+___dependencies___ = ["ugfx_helper", "sleep"]
 ___categories___   = ["Homescreens"]
 ___bootstrapped___ = False
 

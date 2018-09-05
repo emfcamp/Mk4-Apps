@@ -3,7 +3,7 @@
 ___name___         = "Conway game of life"
 ___license___      = "MIT"
 ___categories___   = ["Games"]
-___dependencies___ = ["app", "ugfx_helper", "random", "sleep", "buttons"]
+___dependencies___ = ["app", "ugfx_helper", "sleep", "buttons"]
 
 import app, ugfx, ugfx_helper, buttons, sleep, time, random
 from tilda import Buttons
