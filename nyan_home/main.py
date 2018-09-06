@@ -44,25 +44,7 @@ ugfx.clear()
 ugfx.orientation(180)
 force_backlight()
 
-Buttons.enable_interrupt(
-	Buttons.BTN_A,
-	cbButtonA,
-	on_press=True,
-	on_release=False);
 
-Buttons.enable_interrupt(
-	Buttons.BTN_B,
-	cbButtonB,
-	on_press=True,
-	on_release=False);
-	
-def cbButtonA(button_id):
-	global bkl
-	bkl = True
-
-def cbButtonB(button_id):
-	global ext
-	ext = False
 
 #everything from here onwards is unknown
 # Colour stuff
@@ -93,12 +75,6 @@ while True:
 	i = i + 1
 	if i > 11:
 		i = 0
+	sleep_or_exit(0.5)
 
-	if bkl:
-		force_backlight()
-		continue
-
-	if ext:
-		break
-
-machine.reset()
+app.restart_to_default()

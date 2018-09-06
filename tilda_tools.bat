@@ -1,2 +1,2 @@
 @echo off
-python %CD%/.development\tilda_tools.py %*
+python "%CD%/.development\tilda_tools.py" %*
