@@ -3,7 +3,7 @@
 ___name___         = "3D Spin"
 ___license___      = "MIT"
 ___categories___   = ["Demo"]
-___dependencies___ = ["app", "ugfx_helper", "random", "sleep", "buttons"]
+___dependencies___ = ["app", "ugfx_helper", "sleep", "buttons"]
 
 import ugfx
 from tilda import Buttons
