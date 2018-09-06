@@ -182,11 +182,20 @@ def prompt_option(options, index=0, text = None, title=None, select_text="OK", n
     options_list = ugfx.List(5, list_y, ugfx.width() - 25, 260 - list_y, parent = window)
     options_list.disable_draw()
 
+    optnum = 1
     for option in options:
         if isinstance(option, dict) and option["title"]:
-            options_list.add_item(option["title"])
+            title = option["title"]
         else:
-            options_list.add_item(str(option))
+            title = str(option)
+
+        if optnum < 11:
+            # mod 10 to make 10th item numbered 0
+            options_list.add_item("{}: {}".format((optnum % 10),title))
+        else:
+            options_list.add_item("    {}".format(title))
+        optnum = optnum + 1
+
     options_list.enable_draw()
     options_list.selected_index(index)
 
