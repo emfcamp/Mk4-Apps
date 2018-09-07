@@ -1,6 +1,6 @@
 """3d rotating polyhedra. 2016 badge competition winner, ported for 2018!"""
 
-___name___         = "3D Spin"
+___title___        = "3D Spin"
 ___license___      = "MIT"
 ___categories___   = ["Demo"]
 ___dependencies___ = ["app", "ugfx_helper", "sleep", "buttons"]

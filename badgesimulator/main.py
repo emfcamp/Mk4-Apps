@@ -1,6 +1,6 @@
 """This app creates a real EMF badge experience"""
 
-___name___         = "EMF 2018 badge simulator"
+___title___        = "EMF 2018 badge simulator"
 ___license___      = "MIT"
 ___categories___   = ["EMF"]
 ___dependencies___ = ["sleep", "app"]

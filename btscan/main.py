@@ -1,6 +1,6 @@
 """Scan for and display nearby bluetooth devices"""
 
-___name___         = "Bluetooth Scan"
+___title___        = "Bluetooth Scan"
 ___license___      = "MIT"	
 ___dependencies___ = ["sleep", "app", "sim800"]
 ___categories___   = ["Other", "System"]

@@ -1,6 +1,6 @@
 """Game of Life"""
 
-___name___         = "Conway game of life"
+___title___        = "Conway game of life"
 ___license___      = "MIT"
 ___categories___   = ["Games"]
 ___dependencies___ = ["app", "ugfx_helper", "sleep", "buttons"]

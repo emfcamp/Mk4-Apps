@@ -1,6 +1,6 @@
 """View images from the EMF 2018 time-lapse camera
 """
-___name___         = "Lobster Vision"
+___title___        = "Lobster Vision"
 ___license___      = "MIT"
 ___dependencies___ = ["app", "dialogs", "wifi", "buttons", "http", "ugfx_helper"]
 ___categories___   = ["Other"]

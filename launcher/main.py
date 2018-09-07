@@ -1,6 +1,6 @@
 """Launcher for apps currently installed"""
 
-___name___         = "Launcher"
+___title___        = "Launcher"
 ___license___      = "MIT"
 ___categories___   = ["System"]
 ___dependencies___ = ["dialogs", "app", "ugfx_helper"]

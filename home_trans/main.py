@@ -5,7 +5,7 @@ Press 0 to go back to normal or 8 to show the flag.
 Hold * to activate all LEDs for use as a torch.
 """
 
-___name___         = "Homescreen (Trans)"
+___title___        = "Homescreen (Trans)"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen", "shared/logo.png"]

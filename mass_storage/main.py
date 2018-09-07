@@ -1,6 +1,6 @@
 """Enables mass storage mode in a safe way"""
 
-___name___         = "Mass Storage Enabler"
+___title___        = "Mass Storage Enabler"
 ___license___      = "MIT"
 ___dependencies___ = ["dialogs", "ugfx_helper"]
 ___categories___   = ["EMF"]

@@ -1,6 +1,6 @@
 """A home screen with squares that spin"""
 
-___name___         = "Squares home"
+___title___        = "Squares home"
 ___license___      = "MIT"
 ___dependencies___ = ["sleep", "app", "ugfx_helper", "buttons", "homescreen"]
 ___categories___   = ["Homescreens"]

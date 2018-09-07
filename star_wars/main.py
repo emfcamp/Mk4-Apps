@@ -3,7 +3,7 @@
 Will play music, maybe
 """
 
-___name___         = "Play Music"
+___title___        = "Star Wars Music"
 ___license___      = "MIT"
 ___categories___   = ["Sound"]
 ___dependencies___ = ["speaker", "shared/sw.png", "buttons"]

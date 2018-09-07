@@ -1,6 +1,6 @@
 """A big "thank you" to all our Sponsors who made this year's badge possible!"""
 
-___name___         = "Sponsors"
+___title___        = "Sponsors"
 ___license___      = "MIT"
 ___dependencies___ = ["wifi", "http", "ugfx_helper", "sleep", "app"]
 ___categories___   = ["EMF"]
