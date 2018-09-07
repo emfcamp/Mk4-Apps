@@ -3,7 +3,7 @@
 ___name___         = "serendipity"
 ___license___      = "MIT"
 ___dependencies___ = ["sleep", "app", "ugfx_helper"]
-___categories___   = ["EMF", "Villages"]
+___categories___   = ["Villages"]
 
 import ugfx_helper, os, wifi, ugfx, http, time, sleep, app
 from tilda import Buttons
