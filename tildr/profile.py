@@ -4,7 +4,7 @@ import database, ujson, sim800, dialogs, http
 def get_profile():
     profile_json = database.get("tildr_profile")
     if profile_json is None:
-        return {}
+        return None
 
     profile = ujson.loads(profile_json)
     return profile
