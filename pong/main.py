@@ -3,7 +3,7 @@
 ___name___         = "Pong"
 ___license___      = "WTFPL"
 ___categories___   = ["Games"]
-___dependencies___ = ["dialogs", "app", "ugfx_helper", "random", "sleep", "buttons"]
+___dependencies___ = ["dialogs", "app", "ugfx_helper", "sleep", "buttons"]
 
 import math, ugfx, ugfx_helper, random, sleep, buttons, time
 from tilda import Buttons
