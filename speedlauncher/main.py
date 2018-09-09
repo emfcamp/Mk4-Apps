@@ -2,7 +2,7 @@
 
 ___name___         = "Speed Launcher"
 ___license___      = "WTFPL"
-___categories___   = ["System"]
+___categories___   = ["System", "Launcher"]
 ___dependencies___ = ["app", "ugfx_helper"]
 ___launchable___   = False
 ___bootstrapped___ = False

@@ -51,7 +51,13 @@ def sleep_or_exit(interval = 0.5):
     # todo: do this better - check button multiple times and sleep for only a short while
     if buttons.is_triggered(tilda.Buttons.BTN_Menu):
         clean_up()
-        App("launcher").boot()
+        launcher = "launcher"
+        try:
+            with open("default_launcher.txt", "r") as dl:
+                launcher=dl.readline()
+        except OSError:
+            pass
+        App(launcher).boot()
     sleep.sleep(interval)
 
 
