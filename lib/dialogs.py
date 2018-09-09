@@ -129,7 +129,7 @@ def handle_keypad(edit, numeric):
         buttons.Buttons.BTN_6: ["m", "n", "o", "6"],
         buttons.Buttons.BTN_7: ["p", "q", "r", "s", "7"],
         buttons.Buttons.BTN_8: ["t", "u", "v", "8"],
-        buttons.Buttons.BTN_9: ["w", "x", "y", "9"],
+        buttons.Buttons.BTN_9: ["w", "x", "y", "z", "9"],
         buttons.Buttons.BTN_Hash: ["#"],
         buttons.Buttons.BTN_Star: ["*", "+"],
     }
