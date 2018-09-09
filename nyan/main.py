@@ -8,13 +8,7 @@ ___dependencies___ = ["sleep", "app", "ugfx_helper",
                       "shared/nyan/2.png",
                       "shared/nyan/3.png",
                       "shared/nyan/4.png",
-                      "shared/nyan/5.png",
-                      "shared/nyan/6.png",
-                      "shared/nyan/7.png",
-                      "shared/nyan/8.png",
-                      "shared/nyan/9.png",
-                      "shared/nyan/10.png",
-                      "shared/nyan/11.png"]
+                      "shared/nyan/5.png"]
                       
 ___categories___   = ["Homescreens", "Other"]
 
@@ -31,7 +25,7 @@ n = 0
 r = 270
 while True:
     ugfx.display_image( 0, 90, "shared/nyan/{}.png".format(n) )
-    n = (n+2) % 12
+    n = (n+1) % 6
     sleep.sleep_ms(10)
     
     if Buttons.is_pressed(Buttons.BTN_B):
