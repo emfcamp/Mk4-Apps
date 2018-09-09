@@ -61,6 +61,7 @@ def main():
     cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
     cmd_parser.add_argument('-v', '--verbose', action='store_true', help='adds more output')
     cmd_parser.add_argument('--skip-wifi', action='store_true', help='does not sync wifi.json')
+    cmd_parser.add_argument('--bootstrapped-apps', action='store_true', help='[Sync] only bootstrapped apps by default')
     cmd_parser.add_argument('--print_resources', action='store_true', help='prints resources in json')
     cmd_parser.add_argument('--boot', help='defines which app to boot into after reboot')
     cmd_parser.add_argument('--run', help='like run, but after a sync')
@@ -120,6 +121,13 @@ def main():
         pyboard_util.hard_reset(args)
 
     if command == "sync":
+        if args.bootstrapped_apps:
+            for k,val in list(resources.items()):
+                if val.get("type", None) == "app" and not val.get("bootstrapped", False):
+                    if args.verbose:
+                        print("Removing app '{0}' from sync list".format(k))
+                    del resources[k]
+
         if args.clean:
             sync.clean(args)
         paths = args.paths if len(args.paths) else None
