@@ -121,16 +121,17 @@ def main():
         pyboard_util.hard_reset(args)
 
     if command == "sync":
+        paths = args.paths if len(args.paths) else None
         if args.bootstrapped_apps:
             for k,val in list(resources.items()):
-                if val.get("type", None) == "app" and not val.get("bootstrapped", False):
-                    if args.verbose:
-                        print("Removing app '{0}' from sync list".format(k))
-                    del resources[k]
+                if val.get("type", None) == "app":
+                    if not k in paths and not val.get("bootstrapped", False):
+                        if args.verbose:
+                            print("Removing app '{0}' from sync list".format(k))
+                        del resources[k]
 
         if args.clean:
             sync.clean(args)
-        paths = args.paths if len(args.paths) else None
         synced_resources = sync.sync(args, paths, resources, args.verbose, args.skip_wifi)
 
     if (command in ["reset", "sync"]) or run_tests:
