@@ -34,6 +34,9 @@ class BadgeStore:
     def install(self, apps):
         return self._create_installers(self._call("install", {"apps": ",".join(apps)}))
 
+    def update(self, apps):
+        return self._create_installers(self._call("update", {"apps": ",".join(apps)}))
+
     def bootstrap(self):
         return self._create_installers(self._call("bootstrap"))
 
