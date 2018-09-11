@@ -25,6 +25,7 @@ dirtybuffer = False # Flag if the buffer could have residual end of reresponsesp
 
 # A list of callback functions
 callbacks = []
+server_callback = None
 
 # Globals for remembering callback data
 clip = ""
@@ -105,6 +106,12 @@ def processcallbacks(line):
     # Check for Bluetooth pairing request
     if line.startswith("+BTPAIRING:"):
         btpairing = line[11:].strip()
+    # Handle TCP Server Data
+    if line.startswith("+RECEIVE"):
+        dlen = int(line.split(",")[2].rstrip(":"))
+        payload = uart.read(dlen)
+        if server_callback:
+             micropython.schedule(server_callback, payload)
     # Check for app callbacks
     for entry in callbacks:
         if line.startswith(entry[0]):
@@ -847,7 +854,21 @@ def callbuttonpressed_internal(nullparam=None):
 def endbuttonpressed_internal(nullparam=None):
     hangup()
 
+#GPRS and TCP server functions
 
+def setup_gprs():
+    sim800.command("AT+CIPSHUT", response_timeout=60000, custom_endofdata="SHUT OK")
+    sim800.command("AT+CGATT?", response_timeout=10000)
+    sim800.command("AT+CIPMUX=1", response_timeout=10000)
+
+def connect_gprs(apn):
+    sim800.command("AT+CSTT=\""+apn+"\"", response_timeout=10000)
+    sim800.command("AT+CIICR", response_timeout=10000)
+    sim800.command("AT+CIFSR")
+
+def start_server(port):
+    sim800.command("AT+CIPSERVER=1,"+port, response_timeout=10000)
+    sim800.registercallback('+RECEIVE', handle_data)
 # Startup...
 
 # Start turning on the SIM800 asynchronously
