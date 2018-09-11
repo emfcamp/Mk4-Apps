@@ -108,10 +108,10 @@ def processcallbacks(line):
         btpairing = line[11:].strip()
     # Handle TCP Server Data
     if line.startswith("+RECEIVE"):
-        dlen = int(line.split(",")[2].rstrip(":"))
+        dlen = int(line.split(",")[2].rstrip(":"))+1
         payload = uart.read(dlen)
         if server_callback:
-             micropython.schedule(server_callback, payload)
+             micropython.schedule(server_callback, payload[1:])
     # Check for app callbacks
     for entry in callbacks:
         if line.startswith(entry[0]):
@@ -857,18 +857,18 @@ def endbuttonpressed_internal(nullparam=None):
 #GPRS and TCP server functions
 
 def setup_gprs():
-    sim800.command("AT+CIPSHUT", response_timeout=60000, custom_endofdata="SHUT OK")
-    sim800.command("AT+CGATT?", response_timeout=10000)
-    sim800.command("AT+CIPMUX=1", response_timeout=10000)
+    command("AT+CIPSHUT", response_timeout=60000, custom_endofdata="SHUT OK")
+    command("AT+CGATT?", response_timeout=10000)
+    command("AT+CIPMUX=1", response_timeout=10000)
 
 def connect_gprs(apn):
-    sim800.command("AT+CSTT=\""+apn+"\"", response_timeout=10000)
-    sim800.command("AT+CIICR", response_timeout=10000)
-    sim800.command("AT+CIFSR")
+    command("AT+CSTT=\""+apn+"\"", response_timeout=10000)
+    command("AT+CIICR", response_timeout=10000)
+    command("AT+CIFSR")
 
 def start_server(port):
-    sim800.command("AT+CIPSERVER=1,"+port, response_timeout=10000)
-    sim800.registercallback('+RECEIVE', handle_data)
+    command("AT+CIPSERVER=1,"+port, response_timeout=10000)
+
 # Startup...
 
 # Start turning on the SIM800 asynchronously
