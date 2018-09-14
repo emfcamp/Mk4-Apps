@@ -56,24 +56,15 @@ def show_app(a,c):
     with WaitingMessage(title=title, text="Loading app description..."):
         app_info = store.get_app(a)
 
-    app_text = "App:\n"
-    try:
-        app_text += app_info["title"] + '\n'
-    except:
-        pass
-    finally:
-        app_text += a + '\n\nDescription:\n' + app_info["description"].strip()
+
+    # Try to get the 'title' key from app_info, falling back to the value of a if not present
+    name = app_info.get("title", a)
+    desc = app_info["description"].strip()
+    app_text = """App:\n{}\n\nDescription:\n{}""".format(name, desc)
     install = prompt_boolean(app_text , title="Install App", true_text="Install", false_text="Back")
 
     if install:
-        app_text = "App:\n"
-        try:
-            app_text += app_info["title"] + '\n'
-        except:
-            pass
-        finally:
-            app_text += a + '\n\n'
-
+        app_text = "App:\n{}\n\n".format(name)
         with WaitingMessage(title="Installing App...", text="%sGetting ready..." % app_text) as message:
             installers = store.install(_get_current_apps() + [a])
             n = len(installers)
@@ -113,12 +104,9 @@ def show_remove():
     if app_to_remove:
         ospath.recursive_rmdir(app_to_remove)
         app.uncache_apps()
-        app_text = "App \"" + app_to_remove + "\""
-        try:
-            app_text += " (" + app_info["title"] + ')'
-        except:
-            pass
-        notice("%s has been removed." % app_text, title="Remove Success!", close_text="Back")
+
+        app_text = """App:\n{}""".format(app_to_remove)
+        notice("\"%s\"\n\nThe app has now been removed." % app_text, title="Remove Success!", close_text="Back")
 
 def main_menu():
     while True:
