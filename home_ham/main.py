@@ -3,7 +3,7 @@
 This is a modified version of the default homescreen that allows you to set a callsign
 """
 
-___name___         = "Amateur Radio Homescreen"
+___title___        = "Amateur Radio Homescreen"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen"]

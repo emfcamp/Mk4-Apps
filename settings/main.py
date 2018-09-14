@@ -11,7 +11,7 @@ Todo:
 
 """
 
-___name___         = "Settings"
+___title___        = "Settings"
 ___license___      = "MIT"
 ___dependencies___ = ["dialogs", "ugfx_helper", "database", "app", "stack_nav", "wifi"]
 ___categories___   = ["System"]

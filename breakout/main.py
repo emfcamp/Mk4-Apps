@@ -1,9 +1,9 @@
 """Breakout!"""
 
-___name___         = "Breakout"
+___title___        = "Breakout"
 ___license___      = "MIT"
 ___categories___   = ["Games"]
-___dependencies___ = ["app", "ugfx_helper", "random", "buttons"]
+___dependencies___ = ["app", "ugfx_helper", "buttons"]
 
 from tilda import Buttons
 import ugfx, ugfx_helper, dialogs

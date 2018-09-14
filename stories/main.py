@@ -1,6 +1,6 @@
 """Read stories from twentythreemillionstories.org"""
 
-___name___         = "twenty-three million stories"
+___title___        = "twenty-three million stories"
 ___license___      = "MIT"
 ___categories___   = ["Other"]
 ___dependencies___ = [ "app", "dialogs", "http", "ugfx_helper", "sleep" ]

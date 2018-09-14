@@ -1,6 +1,6 @@
 """A simple homescreen diplaying an avatar from an url and the user's name"""
 
-___name___         = "Avatar Homescreen"
+___title___        = "Avatar Homescreen"
 ___license___      = "WTFPL"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen", "wifi", "http", "sleep", "app", "buttons"]

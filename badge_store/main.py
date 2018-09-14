@@ -66,7 +66,7 @@ def show_app(a,c):
     if install:
         app_text = "App:\n{}\n\n".format(name)
         with WaitingMessage(title="Installing App...", text="%sGetting ready..." % app_text) as message:
-            installers = store.install(_get_current_apps() + [a])
+            installers = store.install([a])
             n = len(installers)
             for i, installer in enumerate(installers):
                 message.text = "%s%s (%s/%s)" % (app_text + "Downloading files...\n\n", installer.path, i + 1, n)

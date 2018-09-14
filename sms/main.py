@@ -1,6 +1,6 @@
 """SMS app for reading and sending messages
 """
-___name___         = "SMS"
+___title___         = "SMS"
 ___license___      = "MIT"
 ___dependencies___ = ["app", "dialogs", "sim800", "ugfx_helper"]
 ___categories___   = ["System"]

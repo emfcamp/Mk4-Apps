@@ -1,6 +1,6 @@
 """Helps to test incoming PRs"""
 
-___name___         = "PR Review Helper"
+___title___        = "PR Review Helper"
 ___license___      = "MIT"
 ___categories___   = ["System"]
 ___dependencies___ = ["dialogs", "app", "ugfx_helper", "badge_store", "http", "stack_nav", "wifi"]

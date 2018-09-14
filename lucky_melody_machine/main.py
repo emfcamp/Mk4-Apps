@@ -2,7 +2,7 @@
 Learn your personal lucky melody.
 """
 
-___name___ = "lucky_melody_machine"
+___title___ = "Lucky Melody Machine"
 ___license___ = "WTFPL"
 ___dependencies___ = ["app", "buttons", "dialogs", "speaker", "sleep", "ugfx_helper"]
 ___categories___ = ["Sound"]

@@ -1,6 +1,6 @@
 """ <your description>
 """
-___name___         = "my_app"
+___title___        = "Warm and Wet"
 ___license___      = "MIT"
 ___dependencies___ = ["dialogs", "ugfx_helper", "app", "sleep"]
 ___categories___   = ["Other"]

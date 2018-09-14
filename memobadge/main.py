@@ -1,6 +1,6 @@
 """This app tests all the onboard sensors and system info"""
 
-___name___         = "Memobadge"
+___title___        = "Memobadge"
 ___license___      = "MIT"
 ___dependencies___ = ["app", "sim800", "sleep", "ugfx_helper"]
 ___categories___   = ["Sound"]

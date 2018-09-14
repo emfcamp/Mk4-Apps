@@ -3,7 +3,7 @@
 This is the Stratum 0 flavored homescreen for the Tilda Mk4.
 """
 
-___name___         = "Homescreen (Stratum 0)"
+___title___        = "Homescreen (Stratum 0)"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen"]

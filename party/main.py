@@ -2,7 +2,7 @@
 '''
 
 ___author___ = 'Skybound - ECS'
-___name___ = 'Party'
+___title___ = 'Party'
 ___license___ = 'MIT'
 ___categories___ = ['LEDs']
 ___bootstrapped___ = False

@@ -5,7 +5,7 @@ Gracefully reboot into main menu on Menu Press.
 Replay Track when user pushes a button. 
 """
 
-___name___         = "Mario Theme"
+___title___        = "Mario Theme"
 ___license___      = ""
 ___categories___   = ["Sound"]
 ___dependencies___ = ["speaker", "buttons", "ugfx_helper", "app", "wifi", "http", "sleep" ]

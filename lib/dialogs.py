@@ -129,7 +129,7 @@ def handle_keypad(edit, numeric):
         buttons.Buttons.BTN_6: ["m", "n", "o", "6"],
         buttons.Buttons.BTN_7: ["p", "q", "r", "s", "7"],
         buttons.Buttons.BTN_8: ["t", "u", "v", "8"],
-        buttons.Buttons.BTN_9: ["w", "x", "y", "9"],
+        buttons.Buttons.BTN_9: ["w", "x", "y", "z", "9"],
         buttons.Buttons.BTN_Hash: ["#"],
         buttons.Buttons.BTN_Star: ["*", "+"],
     }
@@ -183,11 +183,20 @@ def prompt_option(options, index=0, text = None, title=None, select_text="OK", n
     options_list = ugfx.List(5, list_y, ugfx.width() - 24, 265 - list_y, parent = window)
     options_list.disable_draw()
 
+    optnum = 1
     for option in options:
         if isinstance(option, dict) and option["title"]:
-            options_list.add_item(option["title"])
+            title = option["title"]
         else:
-            options_list.add_item(str(option))
+            title = str(option)
+
+        if optnum < 11:
+            # mod 10 to make 10th item numbered 0
+            options_list.add_item("{}: {}".format((optnum % 10),title))
+        else:
+            options_list.add_item("    {}".format(title))
+        optnum = optnum + 1
+
     options_list.enable_draw()
     options_list.selected_index(index)
 

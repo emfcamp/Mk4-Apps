@@ -1,6 +1,6 @@
 """This app goes with the Torch Tutorial"""
 
-___name___         = "Tilda Torch"
+___title___        = "Tilda Torch"
 ___license___      = "MIT"
 ___dependencies___ = ["sleep", "app"]
 ___categories___   = ["EMF"]
