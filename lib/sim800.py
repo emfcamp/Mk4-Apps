@@ -866,8 +866,16 @@ def connect_gprs(apn):
     command("AT+CIICR", response_timeout=10000)
     command("AT+CIFSR")
 
-def start_server(port):
-    command("AT+CIPSERVER=1,"+port, response_timeout=10000)
+def stop_gprs():
+    command("AT+CIPSHUT", response_timeout=60000, custom_endofdata="SHUT OK")
+
+def start_server(port, callback):
+    global server_callback
+    server_callback = callback
+    command("AT+CIPSERVER=1,"+str(port), response_timeout=10000)
+
+def stop_server():
+    command("AT+CIPSERVER=0", response_timeout=10000)
 
 # Startup...
 
