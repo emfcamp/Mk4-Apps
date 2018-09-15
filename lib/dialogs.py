@@ -294,7 +294,7 @@ class WaitingMessage:
         self.window.show()
         self.window.text(5, 5, title, TILDA_COLOR)
         self.window.line(0, 25, ugfx.width() - 60, 25, ugfx.BLACK)
-        self.label = ugfx.Label(5, 40, self.window.width() - 10, ugfx.height() - 40, text = text, parent=self.window)
+        self.label = ugfx.Label(5, 40, self.window.width() - 15, ugfx.height() - 40, text = text, parent=self.window)
 
         # Indicator to show something is going on
         #self.indicator = ugfx.Label(ugfx.width() - 100, 0, 20, 20, text = "...", parent=self.window)
