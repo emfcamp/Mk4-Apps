@@ -81,7 +81,8 @@ def show_app(a,c):
                     app_obj.boot()
         else:
             show_apps(c)
-
+    else:
+        show_apps(c)
 
 
 def show_update():
