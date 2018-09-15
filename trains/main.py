@@ -37,7 +37,7 @@ def init():
     ntp.set_NTP_time()
     # ensure wifi connection
     if not wifi.is_connected():
-        wifi.connect(show_wait_message=False)
+        wifi.connect(show_wait_message=True)
 
 
 def exit():
