@@ -49,11 +49,23 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", font=F
         false_text = "B: " + false_text
 
     ugfx.set_default_font(font)
-    label = ugfx.Label(5, 30, width - 10, height - 80, text = text, parent=window)
+    label = ugfx.Label(5, 30, width - 10, height - 80, text = text, parent=window, justification=4)
+
     ugfx.set_default_font(FONT_MEDIUM_BOLD)
     button_yes = ugfx.Button(5, height - 40, width // 2 - 10 if false_text else width - 15, 30 , true_text, parent=window)
     button_no = ugfx.Button(width // 2, height - 40, width // 2 - 10, 30 , false_text, parent=window) if false_text else None
-    
+
+    # Find newlines in label text to scroll.
+    def find_all(a_str, sub):
+        start = 0
+        while True:
+            start = a_str.find(sub, start)
+            if start == -1: return
+            yield start + 1 # Trap: \n becomes a single character, not 2.
+            start += len(sub) # use start += 1 to find overlapping matches
+    new_line_pos = [0] + list(find_all(text, '\n'))
+    text_scroll_offset = 0
+
     try:
         #button_yes.attach_input(ugfx.BTN_A,0) # todo: re-enable once working
         #if button_no: button_no.attach_input(ugfx.BTN_B,0)
@@ -64,6 +76,16 @@ def prompt_boolean(text, title="TiLDA", true_text="Yes", false_text="No", font=F
             sleep.wfi()
             if buttons.is_triggered(buttons.Buttons.BTN_A): return True
             if buttons.is_triggered(buttons.Buttons.BTN_B): return False
+            # Allow scrolling by new lines.
+            if buttons.is_triggered(buttons.Buttons.JOY_Down):
+                if text_scroll_offset < len(new_line_pos)-1:
+                    text_scroll_offset = text_scroll_offset + 1
+                    label.text(text[new_line_pos[text_scroll_offset]:])
+
+            if buttons.is_triggered(buttons.Buttons.JOY_Up):
+                if (text_scroll_offset > 0):
+                    text_scroll_offset=text_scroll_offset - 1
+                    label.text(text[new_line_pos[text_scroll_offset]:])
 
     finally:
         window.hide()
@@ -166,7 +188,7 @@ def prompt_option(options, index=0, text = None, title=None, select_text="OK", n
     ugfx.set_default_font(FONT_SMALL)
     window = ugfx.Container(5, 5, ugfx.width() - 10, ugfx.height() - 10)
     window.show()
-    
+
 
     list_y = 30
     if title:
