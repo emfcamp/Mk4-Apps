@@ -4,7 +4,7 @@ import database
 from time import time
 from homescreen import time_as_string
 from tilda import Buttons
-from trains.screen import Screen, S_CONTINUE, S_TO_SETTINGS
+from trains.screen import Screen, S_CONTINUE, S_TO_SETTINGS, S_EXIT
 from trains.api import get_trains
 from trains.utils import get_departure, get_title, is_red
 
@@ -27,6 +27,12 @@ class DepartureScreen(Screen):
         Buttons.enable_interrupt(
             Buttons.BTN_A,
             lambda t: self.set_next_state(S_TO_SETTINGS),
+            on_press=True,
+            on_release=False
+        )
+        Buttons.enable_interrupt(
+            Buttons.BTN_Menu,
+            lambda t: self.set_next_state(S_EXIT),
             on_press=True,
             on_release=False
         )
@@ -97,6 +103,7 @@ class DepartureScreen(Screen):
                 ugfx.text(195, 25 + (15 * row_num), departure,ugfx.RED if is_red(service) else ugfx.BLUE)
                 row_num += 1
 
+        ugfx.display_image(0, 300, 'trains/bottom.gif')
         self.should_redraw = False
 
     def show_error(self):
