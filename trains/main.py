@@ -6,107 +6,87 @@ ___title___ = "trains"
 ___license___ = "MIT"
 ___dependencies___ = ["app", "sleep", "wifi", "http", "ugfx_helper"]
 ___categories___ = ["Homescreens", "Other"]
+___bootstrapped___ = False
 
-# Config
 
-STATION_CODE = "DEP"
-API_URL = "https://huxley.apphb.com/all/{}?expand=true&accessToken=D102521A-06C6-44C9-8693-7A0394C757EF"
-
+import database
 import wifi
 import ugfx
-import http
-import ujson
 import app
 import sleep
+import ntp
 from tilda import Buttons, LED
+from trains import api
+from trains import screen
+from trains.departure_screen import DepartureScreen
+from trains.settings_screen import SettingsScreen
+
+def init_screen(orientation):
+    # initialize screen
+    ugfx.clear()
+    ugfx.orientation(orientation)
+    ugfx.backlight(50)
+    # show initial screen
+    # photo credit: https://www.flickr.com/photos/remedy451/8061918891
+    ugfx.display_image(0, 0, 'trains/splash.gif', 90)
+
 
 def init():
-    # initialize screen
+    print('trains/main: Init')
     ugfx.init()
-    ugfx.clear()
-    ugfx.orientation(90)
-    ugfx.backlight(50)
-    
+    ntp.set_NTP_time()
     # ensure wifi connection
     if not wifi.is_connected():
-        wifi.connect(show_wait_message=True)
-    
-    # show initial screen
-    ugfx.text(5, 5, "Will monitor station:", ugfx.BLACK)
-    ugfx.text(200, 5, STATION_CODE, ugfx.BLUE)
-    
-def get_trains():
-    station_data = None
+        wifi.connect(show_wait_message=False)
 
-    LED(LED.RED).on() # Red for total get_trains
-    try:
-        station_json = http.get(API_URL.format(STATION_CODE)).raise_for_status().content
-        LED(LED.GREEN).on() # Green for parsing
-        station_data = ujson.loads(station_json)
-    except:
-        print('Fuck')
 
-    LED(LED.RED).off()
-    LED(LED.GREEN).off()
-    return station_data
-
-def get_time(station_data):
-    return ':'.join(station_data['generatedAt'].split('T')[1].split(':')[0:2])
-
-def is_red(service):
-    return service['isCancelled'] or service['etd'] != 'On time'
-
-def get_arrival(service):
-    if service['isCancelled']:
-        return 'CANX'
-
-    if service['eta'] == 'On time':
-        return service['sta']
-
-    return service['eta']
-
-def get_title(name, has_error):
-    if has_error:
-        return 'ERR ' + name
-    
-    return name
-
-def show_trains(station_data, has_error):
+def exit():
+    print('trains/main: Exit')
     ugfx.clear()
-    ugfx.area(0, 0, 240, 25,
-              ugfx.RED if has_error else ugfx.GRAY)
-    title = get_title(station_data['locationName'], has_error)
-    ugfx.text(5, 5, title,
-              ugfx.WHITE if has_error else ugfx.BLACK)
-    ugfx.text(195, 5, get_time(station_data), ugfx.BLUE)
-    names = ugfx.Container(0, 25, 190, 295)
-    names.show()
-    for idx, service in enumerate(station_data['trainServices']):
-        names.text(5, 15 * idx, service['destination'][0]['locationName'], ugfx.BLACK)
-        ugfx.text(195, 25 + (15 * idx), get_arrival(service), ugfx.RED if is_red(service) else ugfx.BLUE)
+    app.restart_to_default()
 
-def show_error():
-    ugfx.clear()
-    ugfx.text(5, 5, 'Error :(', ugfx.RED)
+
+app_screens = {
+    screen.SETTINGS: SettingsScreen(),
+    screen.DEPARTURES: DepartureScreen()
+}
+
+
+def get_initial_screen():
+    station_code = database.get('trains.station_code', None)
+    if station_code == None:
+        return app_screens[screen.SETTINGS]
+    return app_screens[screen.DEPARTURES]
+
+
+def run_screen(instance):
+    print('trains/main: Starting screen {}'.format(instance))
+    instance.enter()
+
+    is_running = True
+    next_screen_name = None
+    while is_running:
+        status, value = instance.tick()
+
+        if status == screen.SWITCH_SCREEN:
+            is_running = False
+            next_screen_name = value
+        elif status == screen.EXIT_APP:
+            is_running = False
+    
+    print('trains/main: Stopping screen {} (next = {})'.format(instance, next_screen_name))
+    instance.exit()
+    return next_screen_name
 
 init()
-station_data = None
-has_error = False
-while (not Buttons.is_pressed(Buttons.BTN_A)) and (not Buttons.is_pressed(Buttons.BTN_B)) and (not Buttons.is_pressed(Buttons.BTN_Menu)):
-    new_station_data = get_trains()
-    if new_station_data == None:
-        has_error = True
-    else:
-        station_data = new_station_data
-        has_error = False
-    
-    if station_data == None:
-        show_error()
-    else:
-        show_trains(station_data, has_error)
-    sleep.sleep_ms(30 * 1000)
+current_screen = get_initial_screen()
+is_app_running = True
+while is_app_running:
+    init_screen(current_screen.orientation())
+    next_screen_name = run_screen(current_screen)
 
-
-# closing
-ugfx.clear()
-app.restart_to_default()
+    if next_screen_name != None:
+        current_screen = app_screens[next_screen_name]
+    else:
+        is_app_running = False
+        exit()
