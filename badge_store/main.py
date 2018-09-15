@@ -90,7 +90,7 @@ def show_update():
     update = prompt_boolean("Do you want to update all apps on this badge?", title="Update all Apps", true_text="OK", false_text="Back")
     if update:
         clear()
-        with WaitingMessage(title=title, text="Getting updates...") as message:
+        with WaitingMessage(title="Updating Apps...", text="Getting updates...") as message:
             update_text = "Downloading files:"
             installers = store.install(_get_current_apps())
             n = len(installers)
