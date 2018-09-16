@@ -74,7 +74,7 @@ def show_update():
     if update:
         clear()
         with WaitingMessage(title=title, text="Please wait...") as message:
-            installers = store.install(_get_current_apps())
+            installers = store.update(_get_current_apps())
             n = len(installers)
             for i, installer in enumerate(installers):
                 message.text = "%s (%s/%s)" % (installer.path, i + 1, n)
