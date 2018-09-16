@@ -6,7 +6,7 @@ Values can be anything json can store, including a dict
 Usage:
 
 import database
-with database.open() as db:
+with database.Database() as db:
     print(db.get("hello", "default"))
     db.set("foo", "world")
     db.delete("bar")
