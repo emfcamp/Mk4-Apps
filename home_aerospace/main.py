@@ -8,7 +8,6 @@ ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen", "wifi", "http", "ugfx_helper", "sleep"]
 ___launchable___   = False
-___bootstrapped___ = True
 
 import ugfx, random, time, wifi, http, math
 from tilda import LED, Buttons
