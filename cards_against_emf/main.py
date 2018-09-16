@@ -2,7 +2,7 @@
 
 ___name___         = "Cards Against EMF"
 ___license___      = ["MIT"]
-___dependencies___ = ["random", "ugfx_helper", "sleep"]
+___dependencies___ = ["ugfx_helper", "sleep"]
 ___categories___   = ["Games"]
 ___bootstrapped___ = False # Whether or not apps get downloaded on first install. Defaults to "False", mostly likely you won't have to use this at all.
 
