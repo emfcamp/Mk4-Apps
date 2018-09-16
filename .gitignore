@@ -2,3 +2,5 @@
 __pycache__
 wifi*.json
 config.json
+cmd.exe.lnk
+tilda_tools.bat
