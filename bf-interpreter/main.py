@@ -1,4 +1,4 @@
-"""Simple brainfuck interpreter.
+"""Simple brainfuck (an esoteric programming language) interpreter.
 
 Runs very slowly... prints sierpinski triangle"""
 
