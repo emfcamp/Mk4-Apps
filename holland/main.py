@@ -1,6 +1,6 @@
-"""Camp Holland app
-"""
-___name___         = "Holland"
+"""Camp Holland app"""
+
+___title___        = "Holland"
 ___license___      = "MIT"
 ___dependencies___ = ["app", "sim800", "ugfx_helper"]
 ___categories___   = ["Villages"]
@@ -98,6 +98,9 @@ freq = {
     "B":   4938,
     "C2":  5322,
 }
+
+def cbButtonMenu(button_id):
+	restart_to_default()
 	
 def cbButtonCall(button_id):
 	sim800.speakervolume(100)
@@ -155,6 +158,12 @@ def cbButtonHash(button_id):
 	global vip
 	vip = False
 	ugfx.display_image(0, 0, "holland/brenno.png")
+
+Buttons.enable_interrupt(
+	Buttons.BTN_Menu,
+	cbButtonMenu,
+	on_press=True,
+	on_release=False);
 		
 Buttons.enable_interrupt(
 	Buttons.BTN_Call,

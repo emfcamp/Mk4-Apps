@@ -1,6 +1,6 @@
 """This is a dowsing rod for WiFi APs"""
 
-___name___         = "Dowsing Rod"
+___title___        = "Dowsing Rod"
 ___license___      = "MIT"	
 ___dependencies___ = ["sleep", "app", "wifi", "sim800"]
 ___categories___   = ["EMF", "System"]

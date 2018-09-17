@@ -1,11 +1,11 @@
 """Snake!"""
 
-___name___         = "Snake"
+___title___        = "Snake"
 ___license___      = "MIT"
 ___categories___   = ["Games"]
-___dependencies___ = ["dialogs", "app", "ugfx_helper", "random", "sleep", "buttons"]
+___dependencies___ = ["dialogs", "app", "ugfx_helper", "sleep", "buttons"]
 
-import math, ugfx, ugfx_helper, random, sleep, buttons
+import app, math, ugfx, ugfx_helper, random, sleep, buttons
 from tilda import Buttons
 
 ugfx_helper.init()

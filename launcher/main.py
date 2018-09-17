@@ -1,8 +1,8 @@
 """Launcher for apps currently installed"""
 
-___name___         = "Launcher"
+___title___        = "Launcher"
 ___license___      = "MIT"
-___categories___   = ["System"]
+___categories___   = ["System", "Launcher"]
 ___dependencies___ = ["dialogs", "app", "ugfx_helper"]
 ___launchable___   = False
 ___bootstrapped___ = True

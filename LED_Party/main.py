@@ -1,6 +1,6 @@
 """ starts an LED party on your badge
 """
-___name___         = "LED Party (Party Party)"
+___title___        = "LED Party (Party Party)"
 ___license___      = "MIT"
 ___dependencies___ = ["wifi", "http", "ugfx_helper", "sleep"]
 ___categories___   = ["LEDs"]

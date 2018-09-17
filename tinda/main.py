@@ -1,7 +1,7 @@
 """
 TiNDA: A dating app for TiLDA. Find your perfect EMF match!
 """
-___name___ = "tinda"
+___title___ = "TiNDA"
 ___license___ = "WTFPL"
 ___dependencies___ = ["app", "buttons", "database", "dialogs", "http", "sleep", "ugfx_helper"]
 ___categories___ = ["Other", "EMF"]

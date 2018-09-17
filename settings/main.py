@@ -11,7 +11,7 @@ Todo:
 
 """
 
-___name___         = "Settings"
+___title___        = "Settings"
 ___license___      = "MIT"
 ___dependencies___ = ["dialogs", "ugfx_helper", "database", "app", "stack_nav", "wifi"]
 ___categories___   = ["System"]
@@ -33,12 +33,19 @@ def settings_startup_app(state):
 def settings_wifi(state):
     wifi.choose_wifi()
 
+def settings_launcher(state):
+    apps = app.get_apps("Launcher")
+    selection = prompt_option([{"title": a.title, "app": a} for a in apps], text="Select App:", none_text="Back", title="Set default launcher")
+    if selection:
+       app.write_launch_file(selection["app"].name, "default_launcher.txt")
+
 def settings_main(state):
     return selection({
         "Homescreen Name": change_database_string("Set your name", "homescreen.name"),
         "Homescreen Callsign": change_database_string("Set your callsign", "homescreen.callsign"),
         "Wifi": settings_wifi,
         "Startup app": settings_startup_app,
+        "Default Launcher": settings_launcher,
         "Badge Store": settings_badge_store
     }, none_text="Exit")
 

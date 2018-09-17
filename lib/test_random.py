@@ -1,7 +1,7 @@
 """Tests for random lib"""
 
 ___license___      = "MIT"
-___dependencies___ = ["upip:unittest", "random"]
+___dependencies___ = ["upip:unittest"]
 
 import unittest
 from random import *

@@ -3,7 +3,7 @@
 Annoy your friends! Annoy your enemies! Annoy yourself! Maybe (maybe) make music!
 """
 
-___name___         = "Sequencer"
+___title___        = "Sequencer"
 ___license___      = "MIT"
 ___categories___   = ["Sound"]
 ___dependencies___ = ["speaker", "buttons", "ugfx_helper", "app", "shared/sequencer_info.png"]

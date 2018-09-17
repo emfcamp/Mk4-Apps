@@ -2,7 +2,7 @@
 emfcampqueer theme by ganbariley
 """
 
-___name___         = "EMFCamp Rainbow Homescreen"
+___title___        = "EMFCamp Rainbow Homescreen"
 ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen"]
@@ -12,6 +12,12 @@ ___bootstrapped___ = False
 import ugfx
 from homescreen import *
 import time
+from tilda import Buttons
+from machine import Pin
+from machine import Neopix
+
+torch = Pin(Pin.GPIO_FET)
+neo = Neopix()
 
 # Padding for name
 intro_height = 30
@@ -25,6 +31,8 @@ logo_width = 56
 
 # Maximum length of name before downscaling
 max_name = 8
+
+torch_on = False
 
 # Background stuff
 init()
@@ -82,4 +90,13 @@ while True:
     if value_battery:
         text += "Battery: %s%%" % int(value_battery)
     status.text(text)
+    if Buttons.is_pressed(Buttons.BTN_Star):
+        if torch_on:
+            torch_on = False
+            torch.off()
+            neo.display([0,0])
+        else:
+            torch_on = True
+            torch.on()
+            neo.display([0xffffff,0xffffff])
     sleep_or_exit(0.5)

@@ -1,6 +1,6 @@
 """This app tests all the onboard sensors and system info"""
 
-___name___         = "System Info"
+___title___        = "System Info"
 ___license___      = "MIT"	
 ___dependencies___ = ["sleep", "app", "sim800"]
 ___categories___   = ["EMF", "System"]
@@ -9,6 +9,7 @@ ___bootstrapped___ = True
 #import ugfx, os, time, sleep, app, sim800
 
 import ugfx, app, sim800
+import os
 from tilda import Buttons
 from tilda import Sensors
 from machine import ADC
@@ -37,6 +38,8 @@ else:
     ugfx.Label(5, 170, 240, 15, "Your network is " + simoperator)
 
 ugfx.Label(5, 185, 240, 15, simversion)
+
+ugfx.Label(5, 215, 240, 30, "Badge firmware version:\n{}".format(os.uname().version))
 
 ugfx.Label(5, 300, 240, 15, "** Hold A or B or MENU to exit **")
 
