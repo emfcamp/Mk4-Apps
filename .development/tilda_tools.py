@@ -124,8 +124,11 @@ def main():
         paths = args.paths if len(args.paths) else None
         if args.bootstrapped_apps:
             for k,val in list(resources.items()):
+                requested = paths and k in paths
+                bootstrapped = val.get("bootstrapped", False)
                 if val.get("type", None) == "app":
-                    if not k in paths and not val.get("bootstrapped", False):
+                    if not (bootstrapped or (paths and requested)):
+                        # App is not in the bootstrap list, and isn't explicitly requested
                         if args.verbose:
                             print("Removing app '{0}' from sync list".format(k))
                         del resources[k]
