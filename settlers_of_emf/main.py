@@ -318,6 +318,9 @@ class Hex:
             self.highlight = highlight
             self.changed = True
 
+    def kind(self):
+        return self.resource['kind']
+
     @staticmethod
     def get_neighbouring_hex_coords(coords, direction):
         return [a + b for a, b in zip(coords, Hex.directions[direction])]
@@ -334,7 +337,7 @@ class Hex:
             if self.robber:
                 ugfx.text(round(self.centre[0] - Hex.size * 0.75), round(self.centre[1] - text_offset), "Rob ", text_colour)
             else:
-                if self.resource['kind'] != 5:
+                if self.kind() != 5:
                     ugfx.text(round(self.centre[0] - text_offset), round(self.centre[1] - text_offset), "{} ".format(self.number['roll']), text_colour)
 
 
@@ -414,10 +417,31 @@ class Road:
             ugfx.thickline(self.edge[0][0], self.edge[0][1], self.edge[1][0], self.edge[1][1], self.team['colour'], 4, False)
 
 
+class Resource():
+
+    def __init__(self, resource):
+        self.resource = resource
+        self.quantity = 0
+
+    def kind(self):
+        return self.resource['kind']
+
+    def colour(self):
+        return self.resource['col']
+
+    def increment(self, num=1):
+        self.quantity = self.quantity + num
+
+    def decrement(self, num=1):
+        self.quantity = self.quantity - num
+        if self.quantity < 0:
+            self.quantity = 0
+
+
 class Player:
     """The player's hand of resource cards and their score and what not."""
 
-    def __init__(self, team, roads, settlements, resources):
+    def __init__(self, team, roads, settlements):
         # Player team details
         self.team = team
 
@@ -425,17 +449,17 @@ class Player:
         self.roads = roads
         self.settlements = settlements
 
-        # Player resources
+        # Player's hand of resources
         self.resources = []
-        for r in resources.copy():
-            r['quantity'] = 0
+        for kind in [GameBoard.SHEEP, GameBoard.WHEAT, GameBoard.WOOD, GameBoard.BRICK, GameBoard.ORE]:
+            r = Resource(kind)
             self.resources.append(r)
 
             # Collect starting resources from the hexes adjacent to our starting settlements
             for s in [x for x in self.settlements if x.team == self.team]:
                 for h in s.hexes:
-                    if r['kind'] == h.resource['kind']:
-                        r['quantity'] = r['quantity'] + 1
+                    if r.kind() == h.kind():
+                        r.increment()
 
     def score(self):
         points = 0
@@ -443,18 +467,42 @@ class Player:
             points = points + s.contents
         return points
 
+    def num_resources(self):
+        return sum([x.quantity for x in self.resources])
+
+    def collect(self, num):
+        if num == 7:
+            # If total number of resources is over 7, lose half of them (rounded down)
+            total = self.num_resources()
+            if total > 7:
+                lose = int(total / 2)
+                while self.num_resources() > total - lose:
+                    self.resources[random.randrange(0, len(self.resources))].decrement()
+        else:
+            # Collect resources for each hex adjacent to our settlements that corresponds
+            # with the given dice roll
+            for s in [x for x in self.settlements if x.team == self.team]:
+                for h in s.hexes:
+                    if h.number['roll'] == num and not h.robber:
+                        for r in self.resources:
+                            if r.kind() == h.kind():
+                                if s.contents == Settlement.TOWN:
+                                    r.increment()
+                                elif s.contents == Settlement.CITY:
+                                    r.increment(2)
+
     def draw(self):
         # Player's team and score
         ugfx.text(5, 8, "{} ".format(self.team['name']), self.team['colour'])
         ugfx.text(5, 28, "Points: {} ".format(self.score()), ugfx.WHITE)
 
         # Player's resources
-        ugfx.area(0, 280, 120, 40, ugfx.BLACK)
+        ugfx.area(0, 290, 240, 30, ugfx.BLACK)
         offset = int(ugfx.width() / len(self.resources))
         square = int(offset / 3)
         for i in range(len(self.resources)):
-            ugfx.area((offset * i) + 1, 285, square, 22, self.resources[i]['col'])
-            ugfx.text((offset * i) + 1 + square, 285, "{} ".format(self.resources[i]['quantity']), ugfx.WHITE)
+            ugfx.area((offset * i) + 1, 295, square, 20, self.resources[i].colour())
+            ugfx.text((offset * i) + 1 + square, 295, "{} ".format(self.resources[i].quantity), ugfx.WHITE)
 
 
 class Dice:
@@ -623,7 +671,7 @@ class GameBoard(State):
         self.dice = Dice()
 
         # The player details
-        self.player = Player(team, self.roads, self.settlements, [GameBoard.SHEEP, GameBoard.WHEAT, GameBoard.WOOD, GameBoard.BRICK, GameBoard.ORE])
+        self.player = Player(team, self.roads, self.settlements)
 
     def get_roads_for_settlement(self, settlement):
         """Return a list of roads that connect to the given settlement"""
@@ -704,7 +752,8 @@ class GameBoard(State):
                         h.set_highlight(True)
                     else:
                         h.set_highlight(False)
-                # TODO collect resources
+                self.player.collect(num)
+                # TODO: Move the robber on a seven
                 self.redraw = True
 
 
