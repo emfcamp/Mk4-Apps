@@ -26,6 +26,7 @@ BUTTONS = [
     Buttons.BTN_7,
     Buttons.BTN_8,
     Buttons.BTN_9,
+    Buttons.BTN_0,
     ]
 
 
@@ -74,7 +75,7 @@ class Menu(State):
     def draw(self):
         # Draw the menu on screen
         ugfx.clear(ugfx.BLACK)
-        ugfx.display_image(0, 0, 'settlers_game/title.png')
+        ugfx.display_image(0, 0, 'settlers_of_emf/title.png')
         ugfx.text(5, 95, self.question, ugfx.WHITE)
         i = 0
         for c in self.choices:
@@ -639,6 +640,10 @@ class GameBoard(State):
             number = n_copy.pop(0)
         self.hexes.append(Hex(coords, resource, number, number['roll'] == 7))
 
+        # Note the initial location of the robber to ensure it moves when activated
+        self.robber_mode = False
+        self.robber_hex = self.get_robber_hex()
+
         # Generate lists of unique valid locations for building
         self.roads = []
         self.settlements = []
@@ -712,49 +717,109 @@ class GameBoard(State):
     def initialise(self):
         # Register callbacks
         Buttons.enable_interrupt(Buttons.BTN_Menu, self._button_callback)
+        Buttons.enable_interrupt(Buttons.BTN_A, self._button_callback)
         Buttons.enable_interrupt(Buttons.BTN_B, self._button_callback)
         Buttons.enable_interrupt(Buttons.BTN_Star, self._button_callback)
         Buttons.enable_interrupt(Buttons.BTN_Hash, self._button_callback)
+        # For moving the robber
+        Buttons.enable_interrupt(Buttons.JOY_Up, self._button_callback)
+        Buttons.enable_interrupt(Buttons.JOY_Down, self._button_callback)
+        Buttons.enable_interrupt(Buttons.JOY_Left, self._button_callback)
+        Buttons.enable_interrupt(Buttons.JOY_Right, self._button_callback)
 
     def deinitialise(self):
         # Unregister callbacks
         Buttons.disable_interrupt(Buttons.BTN_Menu)
+        Buttons.disable_interrupt(Buttons.BTN_A)
         Buttons.disable_interrupt(Buttons.BTN_B)
         Buttons.disable_interrupt(Buttons.BTN_Star)
         Buttons.disable_interrupt(Buttons.BTN_Hash)
+        # For moving the robber
+        Buttons.disable_interrupt(Buttons.JOY_Up)
+        Buttons.disable_interrupt(Buttons.JOY_Down)
+        Buttons.disable_interrupt(Buttons.JOY_Left)
+        Buttons.disable_interrupt(Buttons.JOY_Right)
 
         # Ensure all hexes are drawn next time we enter this state
         for h in self.hexes:
             h.changed = True
 
     def _button_callback(self, btn):
-        if btn == Buttons.BTN_Menu:
-            self.selection = GameBoard.MAIN_MENU
-            self.done = True
-        if btn == Buttons.BTN_B:
-            self.selection = GameBoard.BUILD_MENU
-            self.done = True
-        if btn == Buttons.BTN_Star:
-            # End the turn
-            self.selection = GameBoard.END_TURN
-            self.done = True
-            self.dice.reset()
-            for h in self.hexes:
-                h.set_highlight(False)
-        if btn == Buttons.BTN_Hash:
-            # Only roll the dice if not already rolled
-            if self.dice.total() == 0:
-                self.dice.roll()
-                # Highlight the hexes corresponding with the dice roll
-                num = self.dice.total()
-                for h in self.hexes:
-                    if h.number['roll'] == num or (num == 7 and h.robber):
-                        h.set_highlight(True)
-                    else:
+        if not self.robber_mode:
+            if btn == Buttons.BTN_Menu:
+                self.selection = GameBoard.MAIN_MENU
+                self.done = True
+            if btn == Buttons.BTN_B:
+                self.selection = GameBoard.BUILD_MENU
+                self.done = True
+            if btn == Buttons.BTN_Star:
+                # Can end the turn if dice were rolled
+                if self.dice.total() != 0:
+                    self.selection = GameBoard.END_TURN
+                    self.done = True
+                    self.dice.reset()
+                    for h in self.hexes:
                         h.set_highlight(False)
-                self.player.collect(num)
-                # TODO: Move the robber on a seven
-                self.redraw = True
+            if btn == Buttons.BTN_Hash:
+                # Only roll the dice if not already rolled
+                if self.dice.total() == 0:
+                    self.dice.roll()
+                    # Highlight the hexes corresponding with the dice roll
+                    num = self.dice.total()
+                    for h in self.hexes:
+                        if (h.number['roll'] == num and not h.robber) or (num == 7 and h.robber):
+                            h.set_highlight(True)
+                        else:
+                            h.set_highlight(False)
+                    # Collect resources corresponding with the dice roll
+                    self.player.collect(num)
+                    # Activate the robber on a seven
+                    if num == 7:
+                        self.robber_mode = True
+                    self.redraw = True
+        else:
+            h_current = self.get_robber_hex()
+            if btn == Buttons.BTN_A:
+                # The robber may not stay in the same hex, ensure it moved
+                if h_current != self.robber_hex:
+                    self.robber_hex = h_current
+                    self.robber_hex.set_highlight(False)
+                    self.robber_mode = False
+                    self.redraw = True
+                    # TODO: Steal a card from a player at this hex
+            if btn == Buttons.JOY_Up:
+                self._move_robber(h_current, 4)
+            if btn == Buttons.JOY_Down:
+                self._move_robber(h_current, 1)
+            if btn == Buttons.JOY_Left:
+                self._move_robber(h_current, 0 if h_current.coords[0] % 2 == 0 else 5)
+            if btn == Buttons.JOY_Right:
+                self._move_robber(h_current, 2 if h_current.coords[0] % 2 == 0 else 3)
+
+    def _move_robber(self, h_current, direction):
+        coords = Hex.get_neighbouring_hex_coords(h_current.coords, direction)
+        h_next = self.get_hex_for_coords(coords)
+        self.move_robber(h_current, h_next)
+        self.redraw = True
+
+    def get_robber_hex(self):
+        for h in self.hexes:
+            if h.robber:
+                return h
+        return None
+
+    def get_hex_for_coords(self, coords):
+        for h in self.hexes:
+            if h.coords == coords:
+                return h
+        return None
+
+    def move_robber(self, from_hex, to_hex):
+        if to_hex:
+            from_hex.robber = False
+            from_hex.set_highlight(False)
+            to_hex.robber = True
+            to_hex.set_highlight(True)
 
 
 class Settlers:
