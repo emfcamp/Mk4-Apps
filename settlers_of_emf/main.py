@@ -515,11 +515,17 @@ class Player:
                     if r.kind() == h.kind():
                         r.increment()
 
+        # Turn number
+        self.turn = 0
+
     def score(self):
         points = 0
         for s in [x for x in self.settlements if x.team == self.team]:
             points = points + s.contents
         return points
+
+    def increment_turn(self):
+        self.turn = self.turn + 1
 
     def num_resources(self):
         return sum([x.quantity for x in self.resources])
@@ -549,6 +555,7 @@ class Player:
         # Player's team and score
         ugfx.text(5, 8, "{} ".format(self.team['name']), self.team['colour'])
         ugfx.text(5, 28, "Points: {} ".format(self.score()), ugfx.WHITE)
+        ugfx.text(5, 48, "Turn: {} ".format(self.turn), ugfx.WHITE)
 
         # Player's resources
         ugfx.area(0, 290, 240, 30, ugfx.BLACK)
@@ -731,6 +738,17 @@ class GameBoard(State):
                 roads.append(road)
         return roads
 
+    def can_build_settlement(self, settlement):
+        """Determines if a given settlement is at least two roads from any other settlement"""
+        for r in self.get_roads_for_settlement(settlement):
+            # Get coords for the settlement at the other end of the road
+            for coords in r.edge:
+                for s in self.settlements:
+                    if s.node == coords and s != settlement:
+                        if not s.is_empty():
+                            return False
+        return True
+
     def pick_starting_settlement(self, team):
         """Choose a starting settlement for the given team, and place a town and a connecting road there"""
 
@@ -740,8 +758,7 @@ class GameBoard(State):
 
         # Build at the highest probability settlement that is still available
         for s in sorted_settlements:
-            # TODO check the towns are not too close to one another
-            if s.is_empty():
+            if s.is_empty() and self.can_build_settlement(s):
                 s.build_town(team)
                 s_roads = self.get_roads_for_settlement(s)
                 s_roads[random.randrange(0, len(s_roads))].build_road(team)
@@ -802,9 +819,6 @@ class GameBoard(State):
                 if self.dice.total() != 0:
                     self.selection = GameBoard.END_TURN
                     self.done = True
-                    self.dice.reset()
-                    for h in self.hexes:
-                        h.set_highlight(False)
             if btn == Buttons.BTN_Hash:
                 # Only roll the dice if not already rolled
                 if self.dice.total() == 0:
@@ -866,6 +880,12 @@ class GameBoard(State):
             to_hex.robber = True
             to_hex.set_highlight(True)
 
+    def next_player(self):
+        """ Call from the state machine to reset the board for the next player"""
+        self.player.increment_turn()
+        self.dice.reset()
+        for h in self.hexes:
+            h.set_highlight(False)
 
 class Settlers:
     """A lean mean state machine"""
@@ -902,6 +922,7 @@ class Settlers:
                     self.state = Settlers.MAIN_MENU
                 else:
                     self.game = GameBoard(menu.get_selected_team())
+                    self.game.next_player()
                     self.state = Settlers.GAME
 
             if self.state == Settlers.GAME:
@@ -923,6 +944,7 @@ class Settlers:
                     self.state = Settlers.GAME
 
             if self.state == Settlers.END_TURN_MENU:
+                self.game.next_player()
                 # TODO: Ask for confirmation
                 self.state = Settlers.GAME
 
