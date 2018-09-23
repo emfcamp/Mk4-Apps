@@ -29,6 +29,14 @@ BUTTONS = [
     Buttons.BTN_0,
     ]
 
+# Kinds of resource
+SHEEP = {'kind':0, 'col': ugfx.html_color(0xd4e157)}
+WHEAT = {'kind':1, 'col': ugfx.html_color(0xffc107)}
+WOOD = {'kind':2, 'col': ugfx.html_color(0x993300)}
+BRICK = {'kind':3, 'col': ugfx.html_color(0xff0000)}
+ORE = {'kind':4, 'col': ugfx.html_color(0x757575)}
+DESERT = {'kind':5, 'col': ugfx.html_color(0xffee55)}  # Not really a resource
+
 
 class State:
 
@@ -72,23 +80,38 @@ class Menu(State):
         self.question = question
         self.choices = choices
 
+    def is_choice_enabled(self, num):
+        c = self.choices[num]
+        return 'disabled' not in c or not c['disabled']
+
     def draw(self):
         # Draw the menu on screen
         ugfx.clear(ugfx.BLACK)
         ugfx.display_image(0, 0, 'settlers_of_emf/title.png')
-        ugfx.text(5, 95, self.question, ugfx.WHITE)
-        i = 0
-        for c in self.choices:
+        ugfx.text(5, 100, self.question, ugfx.WHITE)
+        offset = 0
+        for i in range(len(self.choices)):
+            c = self.choices[i]
             col = ugfx.WHITE
             if 'colour' in c:
                 col = c['colour']
-            if 'disabled' in c and c['disabled']:
+            if not self.is_choice_enabled(i):
                 col = ugfx.html_color(0x676767)
-            ugfx.text(20, (20 * i) + 125, "{} - {} ".format(i + 1, c['name']), col)
-            i = i + 1
+            text = "{} - {} ".format(i + 1, c['name'])
+            ugfx.text(20, offset + 125, text, col)
+            offset = offset + 20
+            if 'cost' in c:
+                for j in range(len(c['cost'])):
+                    cost = c['cost'][j]
+                    ugfx.area((42 * j) + 48, offset + 125, 18, 18, cost['resource']['col'])
+                    ugfx.text((42 * j) + 66, offset + 125, "x{} ".format(cost['amount']), col)
+                offset = offset + 20
 
         # Set the initial selection
-        self._set_selection(self.selection)
+        if self.is_choice_enabled(self.selection):
+            self._set_selection(self.selection)
+        else:
+            self._set_selection(self._next_valid_selection(self.selection))
 
     def initialise(self):
         # Register callbacks
@@ -96,8 +119,7 @@ class Menu(State):
         Buttons.enable_interrupt(Buttons.JOY_Up, self._button_callback)
         Buttons.enable_interrupt(Buttons.JOY_Down, self._button_callback)
         for i in range(len(self.choices)):
-            c = self.choices[i]
-            if 'disabled' not in c or not c['disabled']:
+            if self.is_choice_enabled(i):
                 Buttons.enable_interrupt(BUTTONS[i], self._button_callback)
 
     def deinitialise(self):
@@ -106,8 +128,7 @@ class Menu(State):
         Buttons.disable_interrupt(Buttons.JOY_Up)
         Buttons.disable_interrupt(Buttons.JOY_Down)
         for i in range(len(self.choices)):
-            c = self.choices[i]
-            if 'disabled' not in c or not c['disabled']:
+            if self.is_choice_enabled(i):
                 Buttons.disable_interrupt(BUTTONS[i])
 
     def _button_callback(self, btn):
@@ -131,8 +152,7 @@ class Menu(State):
         else:
             next_sel = sel - 1
         while True:
-            c = self.choices[next_sel]
-            if 'disabled' not in c or not c['disabled']:
+            if self.is_choice_enabled(next_sel):
                 break
             if next_sel == 0:
                 next_sel = len(self.choices) - 1
@@ -147,8 +167,7 @@ class Menu(State):
         else:
             next_sel = sel + 1
         while True:
-            c = self.choices[next_sel]
-            if 'disabled' not in c or not c['disabled']:
+            if self.is_choice_enabled(next_sel):
                 break
             if next_sel == len(self.choices) - 1:
                 next_sel = 0
@@ -158,9 +177,22 @@ class Menu(State):
 
     def _set_selection(self, new_selection):
         # Redraws the selection box
-        ugfx.box(0, (20 * self.selection) + 125, 240, 20, ugfx.BLACK)
+        size = 2 if 'cost' in self.choices[self.selection] else 1
+        ugfx.box(0, self._get_offset_for_selection(self.selection) + 125, 240, 20 * size, ugfx.BLACK)
         self.selection = new_selection
-        ugfx.box(0, (20 * self.selection) + 125, 240, 20, ugfx.WHITE)
+        size = 2 if 'cost' in self.choices[self.selection] else 1
+        ugfx.box(0, self._get_offset_for_selection(self.selection) + 125, 240, 20 * size, ugfx.WHITE)
+
+    def _get_offset_for_selection(self, sel):
+        # Menu items are double height if they need to show a cost, so iterate
+        # through the choices to find out exactly what the offset should be
+        offset = 0
+        for i in range(len(self.choices)):
+            if i == sel:
+                return offset
+            offset = offset + 20
+            if 'cost' in self.choices[i]:
+                offset = offset + 20
 
 
 class MainMenu(Menu):
@@ -180,7 +212,6 @@ class MainMenu(Menu):
 
 
 class TeamMenu(Menu):
-    BACK = 6
 
     options = [
         {'name': "Scottish Consulate",
@@ -198,6 +229,8 @@ class TeamMenu(Menu):
         {'name': "Back"},
         ]
 
+    BACK = len(options) - 1
+
     def __init__(self):
         super().__init__('Choose your team:', TeamMenu.options)
 
@@ -206,19 +239,39 @@ class TeamMenu(Menu):
 
 
 class BuildMenu(Menu):
-    BACK = 0
 
     options = [
-        {'name': "Road"},
-        {'name': "Town"},
-        {'name': "City"},
+        {'name': "Road (0 points)",
+         'cost': [{'resource': BRICK, 'amount': 1},
+                  {'resource': WOOD, 'amount': 1}]},
+        {'name': "Town (1 point)",
+         'cost': [{'resource': BRICK, 'amount': 1},
+                  {'resource': WOOD, 'amount': 1},
+                  {'resource': SHEEP, 'amount': 1},
+                  {'resource': WHEAT, 'amount': 1}]},
+        {'name': "City (2 points)",
+         'cost': [{'resource': WHEAT, 'amount': 2},
+                  {'resource': ORE, 'amount': 3}]},
         {'name': "Back"},
         ]
 
-    def __init__(self):
+    BACK = len(options) - 1
+
+    def __init__(self, resources):
+        # Disable options based on whether the player can afford them
+        for option in BuildMenu.options:
+            option['disabled'] = False
+            if 'cost' not in option:
+                continue
+            for cost in option['cost']:
+                for resource in resources:
+                    if resource.resource == cost['resource']:
+                        if resource.quantity < cost['amount']:
+                            option['disabled'] = True
         super().__init__('Build a thing:', BuildMenu.options)
-        # TODO: show the build cost
-        # TODO: enable options based on whether the player can afford them
+
+    def get_selected_build(self):
+        return BuildMenu.options[self.selection].copy()
 
 
 class Hex:
@@ -452,7 +505,7 @@ class Player:
 
         # Player's hand of resources
         self.resources = []
-        for kind in [GameBoard.SHEEP, GameBoard.WHEAT, GameBoard.WOOD, GameBoard.BRICK, GameBoard.ORE]:
+        for kind in [SHEEP, WHEAT, WOOD, BRICK, ORE]:
             r = Resource(kind)
             self.resources.append(r)
 
@@ -569,14 +622,6 @@ class GameBoard(State):
     MAIN_MENU = 0
     BUILD_MENU = 1
     END_TURN = 2
-
-    # Kinds of resource
-    SHEEP = {'kind':0, 'col': ugfx.html_color(0xd4e157)}
-    WHEAT = {'kind':1, 'col': ugfx.html_color(0xffc107)}
-    WOOD = {'kind':2, 'col': ugfx.html_color(0x993300)}
-    BRICK = {'kind':3, 'col': ugfx.html_color(0xff0000)}
-    ORE = {'kind':4, 'col': ugfx.html_color(0x757575)}
-    DESERT = {'kind':5, 'col': ugfx.html_color(0xffee55)}  # Not really a resource
 
     # List of resources (pre-randomised to combat the not-very random number
     # generator) that make up the hexes on the game board for 4 players
@@ -869,7 +914,7 @@ class Settlers:
                     self.state = Settlers.END_TURN_MENU
 
             if self.state == Settlers.BUILD_MENU:
-                menu = BuildMenu()
+                menu = BuildMenu(self.game.player.resources)
                 x = menu.run()
                 if x == BuildMenu.BACK:
                     self.state = Settlers.GAME
