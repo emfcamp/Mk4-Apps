@@ -1,6 +1,10 @@
 """Settlers of EMF
 
-After a long voyage of great deprivation of wifi, your vehicles have finally reached the edge of an uncharted field at the foot of a great castle. The Electromagnetic Field! But you are not the only discoverer. Other fearless voyagers have also arrived at the foot the castle: the race to settle the Electricmagnetic Field has begun! """
+After a long voyage and great deprivation of wifi, your vehicles have finally reached the edge of an uncharted field at the foot of a great castle. The Electromagnetic Field!
+
+But you are not the only discoverer. Other fearless voyagers have also arrived at the foot the castle; the race to settle the Electricmagnetic Field has begun!
+
+Settlers of EMF is a pass-and-play game of ruthless strategy for up to 4 players of all ages."""
 
 ___title___ = "Settlers of EMF"
 ___license___ = "MIT"
@@ -97,14 +101,17 @@ class Menu(State):
                 col = c['colour']
             if not self.is_choice_enabled(i):
                 col = ugfx.html_color(0x676767)
-            text = "{} - {} ".format(i + 1, c['name'])
-            ugfx.text(20, offset + 125, text, col)
+            if len(self.choices) == 1:
+                text = "{} ".format(c['name'])
+            else:
+                text = "{} - {} ".format(i + 1, c['name'])
+            ugfx.text(18, offset + 125, text, col)
             offset = offset + 20
             if 'cost' in c:
                 for j in range(len(c['cost'])):
                     cost = c['cost'][j]
-                    ugfx.area((42 * j) + 48, offset + 125, 18, 18, cost['resource']['col'])
-                    ugfx.text((42 * j) + 66, offset + 125, "x{} ".format(cost['amount']), col)
+                    ugfx.area((42 * j) + 46, offset + 125, 18, 18, cost['resource']['col'])
+                    ugfx.text((42 * j) + 64, offset + 125, "x{} ".format(cost['amount']), col)
                 offset = offset + 20
 
         # Set the initial selection
@@ -207,8 +214,8 @@ class MainMenu(Menu):
         ]
 
     def __init__(self, disable_continue_option=True):
-        MainMenu.options[1]['disabled'] = disable_continue_option
-        super().__init__('Main menu:', MainMenu.options)
+        MainMenu.options[MainMenu.CONTINUE_GAME]['disabled'] = disable_continue_option
+        super().__init__('Welcome!', MainMenu.options)
 
 
 class TeamMenu(Menu):
@@ -226,52 +233,76 @@ class TeamMenu(Menu):
          'colour': ugfx.html_color(0xeaeaea)},
         {'name': "Null Sector",
          'colour': ugfx.html_color(0x9c27b0)},
+        {'name': "Start Game"},
         {'name': "Back"},
         ]
 
+    TEAM_MAX = len(options) - 3
+    START_GAME = len(options) - 2
     BACK = len(options) - 1
 
-    def __init__(self):
-        super().__init__('Choose your team:', TeamMenu.options)
+    def __init__(self, teams):
+        # Disable team options based on which have already been chosen
+        for option in TeamMenu.options:
+            if 'colour' not in option:
+                continue
+            option['disabled'] = option['name'] in [team['name'] for team in teams]
+        TeamMenu.options[TeamMenu.START_GAME]['disabled'] = len(teams) == 0
+        super().__init__('Player {}, choose a team:'.format(len(teams) + 1), TeamMenu.options)
 
     def get_selected_team(self):
         return TeamMenu.options[self.selection].copy()
 
 
-class BuildMenu(Menu):
+class ActionMenu(Menu):
 
     options = [
-        {'name': "Road (0 points)",
+        {'name': "Build Road (0 points)",
          'cost': [{'resource': BRICK, 'amount': 1},
                   {'resource': WOOD, 'amount': 1}]},
-        {'name': "Town (1 point)",
+        {'name': "Build Town (1 point)",
          'cost': [{'resource': BRICK, 'amount': 1},
                   {'resource': WOOD, 'amount': 1},
                   {'resource': SHEEP, 'amount': 1},
                   {'resource': WHEAT, 'amount': 1}]},
-        {'name': "City (2 points)",
+        {'name': "Upgrade to City (2 points)",
          'cost': [{'resource': WHEAT, 'amount': 2},
                   {'resource': ORE, 'amount': 3}]},
+        # TODO Implement trading
+        {'name': "Trade", 'disabled': True},
+        {'name': "End Turn"},
         {'name': "Back"},
         ]
 
+    TRADE = len(options) - 3
+    END_TURN = len(options) - 2
     BACK = len(options) - 1
 
-    def __init__(self, resources):
-        # Disable options based on whether the player can afford them
-        for option in BuildMenu.options:
-            option['disabled'] = False
+    def __init__(self, resources, dice_roll):
+        # Disable build options based on whether the player can afford them
+        for option in ActionMenu.options:
             if 'cost' not in option:
                 continue
+            option['disabled'] = False
             for cost in option['cost']:
                 for resource in resources:
                     if resource.resource == cost['resource']:
                         if resource.quantity < cost['amount']:
                             option['disabled'] = True
-        super().__init__('Build a thing:', BuildMenu.options)
+        # Rolling the dice is mandatory, so don't let the turn end unless it happened
+        ActionMenu.options[ActionMenu.END_TURN]['disabled'] = dice_roll == 0
+        super().__init__('Do a thing:', ActionMenu.options)
 
     def get_selected_build(self):
-        return BuildMenu.options[self.selection].copy()
+        return ActionMenu.options[self.selection].copy()
+
+
+class NextPlayer(Menu):
+
+    START_TURN = 0
+
+    def __init__(self, team):
+        super().__init__('Pass the badge to next team:', [team])
 
 
 class Hex:
@@ -627,8 +658,7 @@ class Dice:
 
 class GameBoard(State):
     MAIN_MENU = 0
-    BUILD_MENU = 1
-    END_TURN = 2
+    ACTION_MENU = 1
 
     # List of resources (pre-randomised to combat the not-very random number
     # generator) that make up the hexes on the game board for 4 players
@@ -653,7 +683,7 @@ class GameBoard(State):
     numbers = [FIVE, TWO, SIX, THREE, EIGHT, TEN, NINE, TWELVE, ELEVEN, FOUR,
                EIGHT, TEN, NINE, FOUR, FIVE, SIX, THREE, ELEVEN]
 
-    def __init__(self, team):
+    def __init__(self, teams):
         # Two rings of hexes around the centre
         radius = 2
 
@@ -696,7 +726,7 @@ class GameBoard(State):
         self.robber_mode = False
         self.robber_hex = self.get_robber_hex()
 
-        # Generate lists of unique valid locations for building
+        # Generate lists of unique valid locations for building settlements and roads
         self.roads = []
         self.settlements = []
         for h in self.hexes:
@@ -719,16 +749,23 @@ class GameBoard(State):
                     s.hexes.append(h)
                     self.settlements.append(s)
 
-        # Give the team starting towns in the two settlements with the highest probability score
-        # TODO interleave starting town choices for multi-player
-        self.pick_starting_settlement(team)
-        self.pick_starting_settlement(team)
+        # Create a player for each team and give the team starting towns in the two settlements
+        # with the highest probability score that not already taken
+        # Each team gets a settlement in player order, then again but in reverse, so the last
+        # player gets the first pick of the second settlements
+        for team in teams:
+            self.pick_starting_settlement(team)
+        teams.reverse()
+        for team in teams:
+            self.pick_starting_settlement(team)
+        teams.reverse()
+        self.players = []
+        for team in teams:
+            self.players.append(Player(team, self.roads, self.settlements))
+        self.player = self.players[-1]
 
         # The dice roller
         self.dice = Dice()
-
-        # The player details
-        self.player = Player(team, self.roads, self.settlements)
 
     def get_roads_for_settlement(self, settlement):
         """Return a list of roads that connect to the given settlement"""
@@ -811,14 +848,9 @@ class GameBoard(State):
             if btn == Buttons.BTN_Menu:
                 self.selection = GameBoard.MAIN_MENU
                 self.done = True
-            if btn == Buttons.BTN_B:
-                self.selection = GameBoard.BUILD_MENU
-                self.done = True
             if btn == Buttons.BTN_Star:
-                # Can end the turn if dice were rolled
-                if self.dice.total() != 0:
-                    self.selection = GameBoard.END_TURN
-                    self.done = True
+                self.selection = GameBoard.ACTION_MENU
+                self.done = True
             if btn == Buttons.BTN_Hash:
                 # Only roll the dice if not already rolled
                 if self.dice.total() == 0:
@@ -830,8 +862,9 @@ class GameBoard(State):
                             h.set_highlight(True)
                         else:
                             h.set_highlight(False)
-                    # Collect resources corresponding with the dice roll
-                    self.player.collect(num)
+                    # All players collect resources corresponding with the dice roll
+                    for p in self.players:
+                        p.collect(num)
                     # Activate the robber on a seven
                     if num == 7:
                         self.robber_mode = True
@@ -882,10 +915,18 @@ class GameBoard(State):
 
     def next_player(self):
         """ Call from the state machine to reset the board for the next player"""
+        for i in range(len(self.players)):
+            if self.player == self.players[i]:
+                if i + 1 == len(self.players):
+                    self.player = self.players[0]
+                else:
+                    self.player = self.players[i + 1]
+                break
         self.player.increment_turn()
         self.dice.reset()
         for h in self.hexes:
             h.set_highlight(False)
+
 
 class Settlers:
     """A lean mean state machine"""
@@ -895,12 +936,13 @@ class Settlers:
     MAIN_MENU = 1
     TEAM_MENU = 2
     GAME = 3
-    BUILD_MENU = 4
-    END_TURN_MENU = 5
+    ACTION_MENU = 4
+    END_TURN = 5
 
     def __init__(self):
         self.state = Settlers.MAIN_MENU
         self.game = None
+        self.teams = []
 
     def run(self):
         while self.state != Settlers.EXIT:
@@ -909,6 +951,7 @@ class Settlers:
                 menu = MainMenu(self.game is None)
                 x = menu.run()
                 if x == MainMenu.NEW_GAME:
+                    self.teams = []
                     self.state = Settlers.TEAM_MENU
                 if x == MainMenu.CONTINUE_GAME:
                     self.state = Settlers.GAME
@@ -916,12 +959,16 @@ class Settlers:
                     self.state = Settlers.EXIT
 
             if self.state == Settlers.TEAM_MENU:
-                menu = TeamMenu()
+                menu = TeamMenu(self.teams)
                 x = menu.run()
+                if x <= TeamMenu.TEAM_MAX:
+                    self.teams.append(menu.get_selected_team())
+                    if len(self.teams) >= 4:
+                        x = TeamMenu.START_GAME
                 if x == TeamMenu.BACK:
                     self.state = Settlers.MAIN_MENU
-                else:
-                    self.game = GameBoard(menu.get_selected_team())
+                if x == TeamMenu.START_GAME:
+                    self.game = GameBoard(self.teams)
                     self.game.next_player()
                     self.state = Settlers.GAME
 
@@ -929,23 +976,22 @@ class Settlers:
                 x = self.game.run()
                 if x == GameBoard.MAIN_MENU:
                     self.state = Settlers.MAIN_MENU
-                if x == GameBoard.BUILD_MENU:
-                    self.state = Settlers.BUILD_MENU
-                if x == GameBoard.END_TURN:
-                    self.state = Settlers.END_TURN_MENU
+                if x == GameBoard.ACTION_MENU:
+                    self.state = Settlers.ACTION_MENU
 
-            if self.state == Settlers.BUILD_MENU:
-                menu = BuildMenu(self.game.player.resources)
+            if self.state == Settlers.ACTION_MENU:
+                menu = ActionMenu(self.game.player.resources, self.game.dice.total())
                 x = menu.run()
-                if x == BuildMenu.BACK:
+                if x == ActionMenu.BACK:
                     self.state = Settlers.GAME
-                else:
-                    # TODO initiate building a thing
-                    self.state = Settlers.GAME
+                if x == ActionMenu.END_TURN:
+                    self.state = Settlers.END_TURN
+                # TODO initiate building a thing
 
-            if self.state == Settlers.END_TURN_MENU:
+            if self.state == Settlers.END_TURN:
                 self.game.next_player()
-                # TODO: Ask for confirmation
+                menu = NextPlayer(self.game.player.team)
+                x = menu.run()
                 self.state = Settlers.GAME
 
         # User chose exit, a machine reset is the easiest way :-)
