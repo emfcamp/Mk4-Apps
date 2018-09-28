@@ -1,4 +1,4 @@
-"""Default homescreen
+"""PyCon homescreen
 
 This is the default homescreen for the Tilda Mk4.
 It gets automatically installed when a badge is
@@ -10,7 +10,7 @@ ___license___      = "MIT"
 ___categories___   = ["Homescreens"]
 ___dependencies___ = ["homescreen"]
 ___launchable___   = False
-___bootstrapped___ = True
+___bootstrapped___ = False
 
 import ugfx
 from homescreen import *

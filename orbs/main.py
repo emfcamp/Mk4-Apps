@@ -5,7 +5,7 @@ ___name___         = "Orbs Game"
 ___license___      = "MIT"
 ___dependencies___ = ["app", "dialogs", "sim800", "ugfx_helper"]
 ___categories___   = ["Games"]
-___bootstrapped___ = True
+___bootstrapped___ = False
 
 from app import *
 from dialogs import *
