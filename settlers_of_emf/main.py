@@ -80,19 +80,28 @@ class State:
 
 class Menu(State):
 
-    def __init__(self, question, choices):
+    MENU_ITEM_OFFSET = 120
+
+    def __init__(self, question, choices, clear_title=True):
         self.question = question
         self.choices = choices
+        self.clear_title = clear_title
 
     def is_choice_enabled(self, num):
         c = self.choices[num]
         return 'disabled' not in c or not c['disabled']
 
+    def get_selected_choice(self):
+        return self.choices[self.selection].copy()
+
     def draw(self):
         # Draw the menu on screen
-        ugfx.clear(ugfx.BLACK)
-        ugfx.display_image(0, 0, 'settlers_of_emf/title.png')
-        ugfx.text(5, 100, self.question, ugfx.WHITE)
+        if self.clear_title:
+            ugfx.clear(ugfx.BLACK)
+            ugfx.display_image(0, 0, 'settlers_of_emf/title.png')
+        else:
+            ugfx.area(0, 95, 240, 225, ugfx.BLACK)
+        ugfx.text(5, 95, self.question, ugfx.WHITE)
         offset = 0
         for i in range(len(self.choices)):
             c = self.choices[i]
@@ -105,13 +114,13 @@ class Menu(State):
                 text = "{} ".format(c['name'])
             else:
                 text = "{} - {} ".format(i + 1, c['name'])
-            ugfx.text(18, offset + 125, text, col)
+            ugfx.text(18, offset + Menu.MENU_ITEM_OFFSET, text, col)
             offset = offset + 20
             if 'cost' in c:
                 for j in range(len(c['cost'])):
                     cost = c['cost'][j]
-                    ugfx.area((42 * j) + 46, offset + 125, 18, 18, cost['resource']['col'])
-                    ugfx.text((42 * j) + 64, offset + 125, "x{} ".format(cost['amount']), col)
+                    ugfx.area((42 * j) + 46, offset + Menu.MENU_ITEM_OFFSET, 18, 18, cost['resource']['col'])
+                    ugfx.text((42 * j) + 64, offset + Menu.MENU_ITEM_OFFSET, "x{} ".format(cost['amount']), col)
                 offset = offset + 20
 
         # Set the initial selection
@@ -185,10 +194,10 @@ class Menu(State):
     def _set_selection(self, new_selection):
         # Redraws the selection box
         size = 2 if 'cost' in self.choices[self.selection] else 1
-        ugfx.box(0, self._get_offset_for_selection(self.selection) + 125, 240, 20 * size, ugfx.BLACK)
+        ugfx.box(0, self._get_offset_for_selection(self.selection) + Menu.MENU_ITEM_OFFSET, 240, 20 * size, ugfx.BLACK)
         self.selection = new_selection
         size = 2 if 'cost' in self.choices[self.selection] else 1
-        ugfx.box(0, self._get_offset_for_selection(self.selection) + 125, 240, 20 * size, ugfx.WHITE)
+        ugfx.box(0, self._get_offset_for_selection(self.selection) + Menu.MENU_ITEM_OFFSET, 240, 20 * size, ugfx.WHITE)
 
     def _get_offset_for_selection(self, sel):
         # Menu items are double height if they need to show a cost, so iterate
@@ -203,9 +212,6 @@ class Menu(State):
 
 
 class MainMenu(Menu):
-    NEW_GAME = 0
-    CONTINUE_GAME = 1
-    EXIT = 2
 
     options = [
         {'name': "Start New Game"},
@@ -213,9 +219,13 @@ class MainMenu(Menu):
         {'name': "Exit"},
         ]
 
-    def __init__(self, disable_continue_option=True):
+    NEW_GAME = 0
+    CONTINUE_GAME = 1
+    EXIT = 2
+
+    def __init__(self, disable_continue_option=True, clear_title=True):
         MainMenu.options[MainMenu.CONTINUE_GAME]['disabled'] = disable_continue_option
-        super().__init__('Welcome!', MainMenu.options)
+        super().__init__('Welcome!', MainMenu.options, clear_title)
 
 
 class TeamMenu(Menu):
@@ -248,13 +258,30 @@ class TeamMenu(Menu):
                 continue
             option['disabled'] = option['name'] in [team['name'] for team in teams]
         TeamMenu.options[TeamMenu.START_GAME]['disabled'] = len(teams) == 0
-        super().__init__('Player {}, choose a team:'.format(len(teams) + 1), TeamMenu.options)
-
-    def get_selected_team(self):
-        return TeamMenu.options[self.selection].copy()
+        super().__init__('Player {}, choose a team:'.format(len(teams) + 1), TeamMenu.options, False)
 
 
 class ActionMenu(Menu):
+
+    options = [
+        {'name': "Build"},
+        {'name': "Trade"},
+        {'name': "End Turn"},
+        {'name': "Back"},
+        ]
+
+    BUILD = 0
+    TRADE = 1
+    END_TURN = 2
+    BACK = 3
+
+    def __init__(self, dice_roll, clear_title=True):
+        # Rolling the dice is mandatory, so don't let the turn end unless it happened
+        ActionMenu.options[ActionMenu.END_TURN]['disabled'] = dice_roll == 0
+        super().__init__('Do a thing:', ActionMenu.options, clear_title)
+
+
+class BuildMenu(Menu):
 
     options = [
         {'name': "Build Road (0 points)",
@@ -268,19 +295,14 @@ class ActionMenu(Menu):
         {'name': "Upgrade to City (2 points)",
          'cost': [{'resource': WHEAT, 'amount': 2},
                   {'resource': ORE, 'amount': 3}]},
-        # TODO Implement trading
-        {'name': "Trade", 'disabled': True},
-        {'name': "End Turn"},
         {'name': "Back"},
         ]
 
-    TRADE = len(options) - 3
-    END_TURN = len(options) - 2
     BACK = len(options) - 1
 
-    def __init__(self, resources, dice_roll):
+    def __init__(self, resources):
         # Disable build options based on whether the player can afford them
-        for option in ActionMenu.options:
+        for option in BuildMenu.options:
             if 'cost' not in option:
                 continue
             option['disabled'] = False
@@ -289,12 +311,39 @@ class ActionMenu(Menu):
                     if resource.resource == cost['resource']:
                         if resource.quantity < cost['amount']:
                             option['disabled'] = True
-        # Rolling the dice is mandatory, so don't let the turn end unless it happened
-        ActionMenu.options[ActionMenu.END_TURN]['disabled'] = dice_roll == 0
-        super().__init__('Do a thing:', ActionMenu.options)
+        super().__init__('Build:', BuildMenu.options, False)
 
-    def get_selected_build(self):
-        return ActionMenu.options[self.selection].copy()
+
+class TradeMenu(Menu):
+
+    options = [
+        {'name': "Buy a Resource",
+         'cost': [{'resource': BRICK, 'amount': 4}]},
+        {'name': "Buy a Resource",
+         'cost': [{'resource': WOOD, 'amount': 4}]},
+        {'name': "Buy a Resource",
+         'cost': [{'resource': SHEEP, 'amount': 4}]},
+        {'name': "Buy a Resource",
+         'cost': [{'resource': WHEAT, 'amount': 4}]},
+        {'name': "Buy a Resource",
+         'cost': [{'resource': ORE, 'amount': 4}]},
+        {'name': "Back"},
+        ]
+
+    BACK = len(options) - 1
+
+    def __init__(self, resources):
+        # Disable trade options based on whether the player can afford them
+        for option in TradeMenu.options:
+            if 'cost' not in option:
+                continue
+            option['disabled'] = False
+            for cost in option['cost']:
+                for resource in resources:
+                    if resource.resource == cost['resource']:
+                        if resource.quantity < cost['amount']:
+                            option['disabled'] = True
+        super().__init__('Trade:', TradeMenu.options, False)
 
 
 class NextPlayer(Menu):
@@ -302,7 +351,7 @@ class NextPlayer(Menu):
     START_TURN = 0
 
     def __init__(self, team):
-        super().__init__('Pass the badge to next team:', [team])
+        super().__init__('Pass the badge to next team:', [team], False)
 
 
 class Hex:
@@ -937,62 +986,86 @@ class Settlers:
     TEAM_MENU = 2
     GAME = 3
     ACTION_MENU = 4
-    END_TURN = 5
+    ACTION_TRADE_MENU = 5
+    ACTION_BUILD_MENU = 6
+    ACTION_END_TURN = 7
 
     def __init__(self):
+        self.old_state = None
         self.state = Settlers.MAIN_MENU
         self.game = None
         self.teams = []
+
+    def enter_state(self, state):
+        self.old_state = self.state
+        self.state = state
 
     def run(self):
         while self.state != Settlers.EXIT:
 
             if self.state == Settlers.MAIN_MENU:
-                menu = MainMenu(self.game is None)
+                menu = MainMenu(self.game is None, self.old_state != Settlers.TEAM_MENU)
                 x = menu.run()
                 if x == MainMenu.NEW_GAME:
                     self.teams = []
-                    self.state = Settlers.TEAM_MENU
+                    self.enter_state(Settlers.TEAM_MENU)
                 if x == MainMenu.CONTINUE_GAME:
-                    self.state = Settlers.GAME
+                    self.enter_state(Settlers.GAME)
                 if x == MainMenu.EXIT:
-                    self.state = Settlers.EXIT
+                    self.enter_state(Settlers.EXIT)
 
-            if self.state == Settlers.TEAM_MENU:
+            elif self.state == Settlers.TEAM_MENU:
                 menu = TeamMenu(self.teams)
                 x = menu.run()
                 if x <= TeamMenu.TEAM_MAX:
-                    self.teams.append(menu.get_selected_team())
+                    self.teams.append(menu.get_selected_choice())
                     if len(self.teams) >= 4:
                         x = TeamMenu.START_GAME
                 if x == TeamMenu.BACK:
-                    self.state = Settlers.MAIN_MENU
+                    self.enter_state(Settlers.MAIN_MENU)
                 if x == TeamMenu.START_GAME:
                     self.game = GameBoard(self.teams)
                     self.game.next_player()
-                    self.state = Settlers.GAME
+                    self.enter_state(Settlers.GAME)
 
-            if self.state == Settlers.GAME:
+            elif self.state == Settlers.GAME:
                 x = self.game.run()
                 if x == GameBoard.MAIN_MENU:
-                    self.state = Settlers.MAIN_MENU
+                    self.enter_state(Settlers.MAIN_MENU)
                 if x == GameBoard.ACTION_MENU:
-                    self.state = Settlers.ACTION_MENU
+                    self.enter_state(Settlers.ACTION_MENU)
 
-            if self.state == Settlers.ACTION_MENU:
-                menu = ActionMenu(self.game.player.resources, self.game.dice.total())
+            elif self.state == Settlers.ACTION_MENU:
+                menu = ActionMenu(self.game.dice.total(), self.old_state != Settlers.ACTION_BUILD_MENU and self.old_state != Settlers.ACTION_TRADE_MENU)
                 x = menu.run()
-                if x == ActionMenu.BACK:
-                    self.state = Settlers.GAME
+                if x == ActionMenu.BUILD:
+                    self.enter_state(Settlers.ACTION_BUILD_MENU)
+                if x == ActionMenu.TRADE:
+                    self.enter_state(Settlers.ACTION_TRADE_MENU)
                 if x == ActionMenu.END_TURN:
-                    self.state = Settlers.END_TURN
+                    self.enter_state(Settlers.ACTION_END_TURN)
+                if x == ActionMenu.BACK:
+                    self.enter_state(Settlers.GAME)
+
+            elif self.state == Settlers.ACTION_BUILD_MENU:
+                menu = BuildMenu(self.game.player.resources)
+                x = menu.run()
+                if x == BuildMenu.BACK:
+                    self.enter_state(Settlers.ACTION_MENU)
                 # TODO initiate building a thing
 
-            if self.state == Settlers.END_TURN:
+            elif self.state == Settlers.ACTION_TRADE_MENU:
+                menu = TradeMenu(self.game.player.resources)
+                x = menu.run()
+                if x == TradeMenu.BACK:
+                    self.enter_state(Settlers.ACTION_MENU)
+                # TODO initiate trading a thing
+
+            elif self.state == Settlers.ACTION_END_TURN:
                 self.game.next_player()
                 menu = NextPlayer(self.game.player.team)
                 x = menu.run()
-                self.state = Settlers.GAME
+                self.enter_state(Settlers.GAME)
 
         # User chose exit, a machine reset is the easiest way :-)
         restart_to_default()
