@@ -80,12 +80,14 @@ class State:
 
 class Menu(State):
 
-    MENU_ITEM_OFFSET = 120
-
     def __init__(self, question, choices, clear_title=True):
         self.question = question
         self.choices = choices
         self.clear_title = clear_title
+        if self.question:
+            self.menu_offset = 120
+        else:
+            self.menu_offset = 100
 
     def is_choice_enabled(self, num):
         c = self.choices[num]
@@ -101,7 +103,8 @@ class Menu(State):
             ugfx.display_image(0, 0, 'settlers_of_emf/title.png')
         else:
             ugfx.area(0, 95, 240, 225, ugfx.BLACK)
-        ugfx.text(5, 95, self.question, ugfx.WHITE)
+        if self.question:
+            ugfx.text(5, 95, self.question, ugfx.WHITE)
         offset = 0
         for i in range(len(self.choices)):
             c = self.choices[i]
@@ -114,13 +117,13 @@ class Menu(State):
                 text = "{} ".format(c['name'])
             else:
                 text = "{} - {} ".format(i + 1, c['name'])
-            ugfx.text(18, offset + Menu.MENU_ITEM_OFFSET, text, col)
+            ugfx.text(18, offset + self.menu_offset, text, col)
             offset = offset + 20
             if 'cost' in c:
                 for j in range(len(c['cost'])):
                     cost = c['cost'][j]
-                    ugfx.area((42 * j) + 46, offset + Menu.MENU_ITEM_OFFSET, 18, 18, cost['resource']['col'])
-                    ugfx.text((42 * j) + 64, offset + Menu.MENU_ITEM_OFFSET, "x{} ".format(cost['amount']), col)
+                    ugfx.area((42 * j) + 46, offset + self.menu_offset, 18, 18, cost['resource']['col'])
+                    ugfx.text((42 * j) + 64, offset + self.menu_offset, "x{} ".format(cost['amount']), col)
                 offset = offset + 20
 
         # Set the initial selection
@@ -194,10 +197,10 @@ class Menu(State):
     def _set_selection(self, new_selection):
         # Redraws the selection box
         size = 2 if 'cost' in self.choices[self.selection] else 1
-        ugfx.box(0, self._get_offset_for_selection(self.selection) + Menu.MENU_ITEM_OFFSET, 240, 20 * size, ugfx.BLACK)
+        ugfx.box(0, self._get_offset_for_selection(self.selection) + self.menu_offset, 240, 20 * size, ugfx.BLACK)
         self.selection = new_selection
         size = 2 if 'cost' in self.choices[self.selection] else 1
-        ugfx.box(0, self._get_offset_for_selection(self.selection) + Menu.MENU_ITEM_OFFSET, 240, 20 * size, ugfx.WHITE)
+        ugfx.box(0, self._get_offset_for_selection(self.selection) + self.menu_offset, 240, 20 * size, ugfx.WHITE)
 
     def _get_offset_for_selection(self, sel):
         # Menu items are double height if they need to show a cost, so iterate
@@ -311,7 +314,7 @@ class BuildMenu(Menu):
                     if resource.resource == cost['resource']:
                         if resource.quantity < cost['amount']:
                             option['disabled'] = True
-        super().__init__('Build:', BuildMenu.options, False)
+        super().__init__(None, BuildMenu.options, False)
 
 
 class TradeMenu(Menu):
@@ -343,7 +346,7 @@ class TradeMenu(Menu):
                     if resource.resource == cost['resource']:
                         if resource.quantity < cost['amount']:
                             option['disabled'] = True
-        super().__init__('Trade:', TradeMenu.options, False)
+        super().__init__(None, TradeMenu.options, False)
 
 
 class NextPlayer(Menu):
