@@ -40,6 +40,7 @@ WOOD = {'kind':2, 'col': ugfx.html_color(0x993300)}
 BRICK = {'kind':3, 'col': ugfx.html_color(0xff0000)}
 ORE = {'kind':4, 'col': ugfx.html_color(0x757575)}
 DESERT = {'kind':5, 'col': ugfx.html_color(0xffee55)}  # Not really a resource
+RESOURCE_KINDS = [ SHEEP, WHEAT, WOOD, BRICK, ORE ]
 
 
 class State:
@@ -107,23 +108,9 @@ class Menu(State):
             ugfx.text(5, 95, self.question, ugfx.WHITE)
         offset = 0
         for i in range(len(self.choices)):
-            c = self.choices[i]
-            col = ugfx.WHITE
-            if 'colour' in c:
-                col = c['colour']
-            if not self.is_choice_enabled(i):
-                col = ugfx.html_color(0x676767)
-            if len(self.choices) == 1:
-                text = "{} ".format(c['name'])
-            else:
-                text = "{} - {} ".format(i + 1, c['name'])
-            ugfx.text(18, offset + self.menu_offset, text, col)
+            self._draw_choice(i, offset)
             offset = offset + 20
-            if 'cost' in c:
-                for j in range(len(c['cost'])):
-                    cost = c['cost'][j]
-                    ugfx.area((42 * j) + 46, offset + self.menu_offset, 18, 18, cost['resource']['col'])
-                    ugfx.text((42 * j) + 64, offset + self.menu_offset, "x{} ".format(cost['amount']), col)
+            if 'cost' in self.choices[i]:
                 offset = offset + 20
 
         # Set the initial selection
@@ -131,6 +118,31 @@ class Menu(State):
             self._set_selection(self.selection)
         else:
             self._set_selection(self._next_valid_selection(self.selection))
+
+    def _draw_choice(self, i, offset):
+        c = self.choices[i]
+        col = ugfx.WHITE
+        if 'colour' in c:
+            col = c['colour']
+        if not self.is_choice_enabled(i):
+            col = ugfx.html_color(0x676767)
+        if len(self.choices) == 1:
+            text = "{} ".format(c['name'])
+        else:
+            text = "{} - {} ".format(i + 1, c['name'])
+        ugfx.text(18, offset + self.menu_offset, text, col)
+        if 'cost' in c:
+            for j in range(len(c['cost'])):
+                cost = c['cost'][j]
+                if 'cost_or' in c and c['cost_or']:
+                    cost_text = "x{}  / ".format(cost['amount'])
+                    if j == len(c['cost']) - 1:
+                        cost_text = "x{} ".format(cost['amount'])
+                    ugfx.area((63 * j) + 45, 21 + offset + self.menu_offset, 16, 16, cost['resource']['col'])
+                    ugfx.text((63 * j) + 61, 20 + offset + self.menu_offset, cost_text, col)
+                else:
+                    ugfx.area((42 * j) + 45, 21 + offset + self.menu_offset, 16, 16, cost['resource']['col'])
+                    ugfx.text((42 * j) + 61, 20 + offset + self.menu_offset, "x{} ".format(cost['amount']), col)
 
     def initialise(self):
         # Register callbacks
@@ -196,10 +208,10 @@ class Menu(State):
 
     def _set_selection(self, new_selection):
         # Redraws the selection box
-        size = 2 if 'cost' in self.choices[self.selection] else 1
+        size = 2 if 'cost' in self.choices[self.selection] and len(self.choices[self.selection]['cost']) > 0 else 1
         ugfx.box(0, self._get_offset_for_selection(self.selection) + self.menu_offset, 240, 20 * size, ugfx.BLACK)
         self.selection = new_selection
-        size = 2 if 'cost' in self.choices[self.selection] else 1
+        size = 2 if 'cost' in self.choices[self.selection] and len(self.choices[self.selection]['cost']) > 0 else 1
         ugfx.box(0, self._get_offset_for_selection(self.selection) + self.menu_offset, 240, 20 * size, ugfx.WHITE)
 
     def _get_offset_for_selection(self, sel):
@@ -245,7 +257,8 @@ class TeamMenu(Menu):
         {'name': "Robot Arms",
          'colour': ugfx.html_color(0xeaeaea)},
         {'name': "Null Sector",
-         'colour': ugfx.html_color(0x9c27b0)},
+         'colour': ugfx.html_color(0x9c27b0),
+         'cost': []},
         {'name': "Start Game"},
         {'name': "Back"},
         ]
@@ -319,39 +332,31 @@ class BuildMenu(Menu):
 
 class TradeMenu(Menu):
 
-    options = [
-        {'name': "Buy a Resource",
-         'cost': [{'resource': BRICK, 'amount': 4}]},
-        {'name': "Buy a Resource",
-         'cost': [{'resource': WOOD, 'amount': 4}]},
-        {'name': "Buy a Resource",
-         'cost': [{'resource': SHEEP, 'amount': 4}]},
-        {'name': "Buy a Resource",
-         'cost': [{'resource': WHEAT, 'amount': 4}]},
-        {'name': "Buy a Resource",
-         'cost': [{'resource': ORE, 'amount': 4}]},
-        {'name': "Back"},
-        ]
-
-    BACK = len(options) - 1
+    BACK = len(RESOURCE_KINDS)
 
     def __init__(self, resources):
         # Disable trade options based on whether the player can afford them
-        for option in TradeMenu.options:
-            if 'cost' not in option:
-                continue
-            option['disabled'] = False
-            for cost in option['cost']:
-                for resource in resources:
-                    if resource.resource == cost['resource']:
-                        if resource.quantity < cost['amount']:
-                            option['disabled'] = True
-        super().__init__(None, TradeMenu.options, False)
+        options = []
+        for i in range(len(RESOURCE_KINDS)):
+            option = {'name': "Buy a", 'resource': RESOURCE_KINDS[i], 'cost': [], 'cost_or': True}
+            option['disabled'] = True
+            for resource_kind in RESOURCE_KINDS:
+                if resource_kind['kind'] != i:
+                    for resource in resources:
+                        if resource.resource == resource_kind and resource.quantity >= 4:
+                            option['cost'].append({'resource': resource_kind, 'amount': 4})
+                            option['disabled'] = False
+            options.append(option)
+        options.append({'name': "Back"})
+        super().__init__(None, options, False)
+
+    def _draw_choice(self, i, offset):
+        super()._draw_choice(i, offset)
+        if i < len(RESOURCE_KINDS):
+            ugfx.area(93, 1 + offset + self.menu_offset, 16, 16, RESOURCE_KINDS[i]['col'])
 
 
 class NextPlayer(Menu):
-
-    START_TURN = 0
 
     def __init__(self, team):
         super().__init__('Pass the badge to next team:', [team], False)
@@ -455,9 +460,6 @@ class Hex:
             self.highlight = highlight
             self.changed = True
 
-    def kind(self):
-        return self.resource['kind']
-
     @staticmethod
     def get_neighbouring_hex_coords(coords, direction):
         return [a + b for a, b in zip(coords, Hex.directions[direction])]
@@ -474,7 +476,7 @@ class Hex:
             if self.robber:
                 ugfx.text(round(self.centre[0] - Hex.size * 0.75), round(self.centre[1] - text_offset), "Rob ", text_colour)
             else:
-                if self.kind() != 5:
+                if self.resource != DESERT:
                     ugfx.text(round(self.centre[0] - text_offset), round(self.centre[1] - text_offset), "{} ".format(self.number['roll']), text_colour)
 
 
@@ -560,12 +562,6 @@ class Resource():
         self.resource = resource
         self.quantity = 0
 
-    def kind(self):
-        return self.resource['kind']
-
-    def colour(self):
-        return self.resource['col']
-
     def increment(self, num=1):
         self.quantity = self.quantity + num
 
@@ -588,14 +584,14 @@ class Player:
 
         # Player's hand of resources
         self.resources = []
-        for kind in [SHEEP, WHEAT, WOOD, BRICK, ORE]:
+        for kind in RESOURCE_KINDS:
             r = Resource(kind)
             self.resources.append(r)
 
             # Collect starting resources from the hexes adjacent to our starting settlements
             for s in [x for x in self.settlements if x.team == self.team]:
                 for h in s.hexes:
-                    if r.kind() == h.kind():
+                    if r.resource == h.resource:
                         r.increment()
 
         # Turn number
@@ -628,11 +624,18 @@ class Player:
                 for h in s.hexes:
                     if h.number['roll'] == num and not h.robber:
                         for r in self.resources:
-                            if r.kind() == h.kind():
+                            if r.resource == h.resource:
                                 if s.contents == Settlement.TOWN:
                                     r.increment()
                                 elif s.contents == Settlement.CITY:
                                     r.increment(2)
+
+    def trade(self, buy_kind, sell_kind, sell_amount):
+        for r in self.resources:
+            if r.resource == buy_kind:
+                r.increment()
+            if r.resource == sell_kind:
+                r.decrement(sell_amount)
 
     def draw(self):
         # Player's team and score
@@ -645,7 +648,7 @@ class Player:
         offset = int(ugfx.width() / len(self.resources))
         square = int(offset / 3)
         for i in range(len(self.resources)):
-            ugfx.area((offset * i) + 1, 295, square, 20, self.resources[i].colour())
+            ugfx.area((offset * i) + 1, 295, square, 20, self.resources[i].resource['col'])
             ugfx.text((offset * i) + 1 + square, 295, "{} ".format(self.resources[i].quantity), ugfx.WHITE)
 
 
@@ -1062,12 +1065,18 @@ class Settlers:
                 x = menu.run()
                 if x == TradeMenu.BACK:
                     self.enter_state(Settlers.ACTION_MENU)
-                # TODO initiate trading a thing
+                else:
+                    trade_choice = menu.get_selected_choice()
+                    # TODO ask user which resource to trade when they have >= 4 of more than one kind of resource
+                    # TODO for now, just trade the first one in the cost list
+                    cost = trade_choice['cost'][0]
+                    self.game.player.trade(trade_choice['resource'], cost['resource'], cost['amount'])
+                    self.enter_state(Settlers.GAME)
 
             elif self.state == Settlers.ACTION_END_TURN:
                 self.game.next_player()
                 menu = NextPlayer(self.game.player.team)
-                x = menu.run()
+                menu.run()
                 self.enter_state(Settlers.GAME)
 
         # User chose exit, a machine reset is the easiest way :-)
