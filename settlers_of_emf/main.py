@@ -314,7 +314,10 @@ class BuildMenu(Menu):
         {'name': "Back"},
         ]
 
-    BACK = len(options) - 1
+    ROAD = 0
+    TOWN = 1
+    CITY = 2
+    BACK = 3
 
     def __init__(self, resources):
         # Disable build options based on whether the player can afford them
@@ -500,6 +503,9 @@ class Settlement:
         self.team = None
         self.contents = Settlement.EMPTY
 
+        # Whether to draw selection indicator
+        self.selected = False
+
     def is_empty(self):
         return self.contents == Settlement.EMPTY
 
@@ -519,6 +525,12 @@ class Settlement:
         assert self.contents == Settlement.TOWN and self.team['name'] == team['name'], 'City can only be built in place of one of your own towns'
         self.contents = Settlement.CITY
 
+    def set_selection(self, selected):
+        self.selected = selected
+        # Notify the surrounding hexes that they need to redraw themselves
+        for h in self.hexes:
+            h.changed = True
+
     def draw(self):
         if self.contents == Settlement.TOWN:
             ugfx.fill_circle(self.node[0], self.node[1], 4, self.team['colour'])
@@ -526,6 +538,10 @@ class Settlement:
         elif self.contents == Settlement.CITY:
             ugfx.fill_circle(self.node[0], self.node[1], 8, self.team['colour'])
             ugfx.circle(self.node[0], self.node[1], 8, ugfx.WHITE)
+        # A selection highlight
+        if self.selected:
+            ugfx.circle(self.node[0], self.node[1], 11, ugfx.WHITE)
+            ugfx.circle(self.node[0], self.node[1], 10, ugfx.WHITE)
 
 
 class Road:
@@ -607,9 +623,11 @@ class Player:
         self.turn = self.turn + 1
 
     def num_resources(self):
+        """Total number of all resources the player has"""
         return sum([x.quantity for x in self.resources])
 
     def collect(self, num):
+        """Execute resource collection or loss for a given dice roll"""
         if num == 7:
             # If total number of resources is over 7, lose half of them (rounded down)
             total = self.num_resources()
@@ -631,13 +649,43 @@ class Player:
                                     r.increment(2)
 
     def trade(self, buy_kind, sell_kind, sell_amount):
+        """Executes a simple resource trade"""
         for r in self.resources:
             if r.resource == buy_kind:
                 r.increment()
             if r.resource == sell_kind:
                 r.decrement(sell_amount)
 
+    def pay(self, cost):
+        for c in cost:
+            for r in self.resources:
+                if c['resource'] == r.resource:
+                    r.decrement(c['amount'])
+
+    def build_road_candidates(self):
+        """Return the list of all roads that are valid candidates for building"""
+        candidates = []
+        # TODO
+        return candidates
+
+    def build_town_candidates(self):
+        """Return the list of all settlements that are valid candidates for towns to be built"""
+        candidates = []
+        # TODO
+        return candidates
+
+    def build_city_candidates(self):
+        """Return the list of all settlements that are valid candidates for being upgraded to city"""
+        candidates = []
+        for s in [x for x in self.settlements if x.team == self.team]:
+            if s.contents == Settlement.TOWN:
+                candidates.append(s)
+        return candidates
+
     def draw(self):
+        # Blank out the score in case it changed
+        ugfx.area(60, 28, 25, 18, ugfx.BLACK)
+
         # Player's team and score
         ugfx.text(5, 8, "{} ".format(self.team['name']), self.team['colour'])
         ugfx.text(5, 28, "Points: {} ".format(self.score()), ugfx.WHITE)
@@ -738,6 +786,12 @@ class GameBoard(State):
     numbers = [FIVE, TWO, SIX, THREE, EIGHT, TEN, NINE, TWELVE, ELEVEN, FOUR,
                EIGHT, TEN, NINE, FOUR, FIVE, SIX, THREE, ELEVEN]
 
+    # Interactivity modes for allowing the the user to navigate and select things on the game board
+    ROBBER_MODE = 1
+    ROAD_MODE = 2
+    TOWN_MODE = 3
+    CITY_MODE = 4
+
     def __init__(self, teams):
         # Two rings of hexes around the centre
         radius = 2
@@ -778,8 +832,10 @@ class GameBoard(State):
         self.hexes.append(Hex(coords, resource, number, number['roll'] == 7))
 
         # Note the initial location of the robber to ensure it moves when activated
-        self.robber_mode = False
         self.robber_hex = self.get_robber_hex()
+
+        # The mode that dictates how we are interpreting button presses
+        self.interactive_mode = None
 
         # Generate lists of unique valid locations for building settlements and roads
         self.roads = []
@@ -875,7 +931,7 @@ class GameBoard(State):
         Buttons.enable_interrupt(Buttons.BTN_B, self._button_callback)
         Buttons.enable_interrupt(Buttons.BTN_Star, self._button_callback)
         Buttons.enable_interrupt(Buttons.BTN_Hash, self._button_callback)
-        # For moving the robber
+        # For moving the robber and building selections
         Buttons.enable_interrupt(Buttons.JOY_Up, self._button_callback)
         Buttons.enable_interrupt(Buttons.JOY_Down, self._button_callback)
         Buttons.enable_interrupt(Buttons.JOY_Left, self._button_callback)
@@ -888,7 +944,7 @@ class GameBoard(State):
         Buttons.disable_interrupt(Buttons.BTN_B)
         Buttons.disable_interrupt(Buttons.BTN_Star)
         Buttons.disable_interrupt(Buttons.BTN_Hash)
-        # For moving the robber
+        # For moving the robber and building selections
         Buttons.disable_interrupt(Buttons.JOY_Up)
         Buttons.disable_interrupt(Buttons.JOY_Down)
         Buttons.disable_interrupt(Buttons.JOY_Left)
@@ -899,7 +955,7 @@ class GameBoard(State):
             h.changed = True
 
     def _button_callback(self, btn):
-        if not self.robber_mode:
+        if not self.interactive_mode:
             if btn == Buttons.BTN_Menu:
                 self.selection = GameBoard.MAIN_MENU
                 self.done = True
@@ -922,18 +978,20 @@ class GameBoard(State):
                         p.collect(num)
                     # Activate the robber on a seven
                     if num == 7:
-                        self.robber_mode = True
+                        self.interactive_mode = GameBoard.ROBBER_MODE
+                        # TODO give user hint about moving the robber
                     self.redraw = True
-        else:
+        elif self.interactive_mode == GameBoard.ROBBER_MODE:
             h_current = self.get_robber_hex()
             if btn == Buttons.BTN_A:
                 # The robber may not stay in the same hex, ensure it moved
                 if h_current != self.robber_hex:
                     self.robber_hex = h_current
                     self.robber_hex.set_highlight(False)
-                    self.robber_mode = False
+                    self.interactive_mode = None
                     self.redraw = True
                     # TODO: Steal a card from a player at this hex
+                # TODO tell user that the robber must move
             if btn == Buttons.JOY_Up:
                 self._move_robber(h_current, 4)
             if btn == Buttons.JOY_Down:
@@ -942,11 +1000,56 @@ class GameBoard(State):
                 self._move_robber(h_current, 0 if h_current.coords[0] % 2 == 0 else 5)
             if btn == Buttons.JOY_Right:
                 self._move_robber(h_current, 2 if h_current.coords[0] % 2 == 0 else 3)
+        elif self.interactive_mode == GameBoard.ROAD_MODE:
+            # TODO implement road building
+            pass
+        elif self.interactive_mode == GameBoard.TOWN_MODE:
+            # TODO implement town building
+            pass
+        elif self.interactive_mode == GameBoard.CITY_MODE:
+            candidates = self.player.build_city_candidates()
+            if btn == Buttons.BTN_A:
+                # Upgrade the selected settlement to a city
+                for candidate in candidates:
+                    if candidate.selected:
+                        candidate.build_city(self.player.team)
+                        candidate.set_selection(False)
+                self.player.pay(self.build_cost)
+                self.interactive_mode = None
+                self.redraw = True
+            if btn == Buttons.JOY_Left or btn == Buttons.JOY_Up:
+                self._select_prev_build_candidate(candidates)
+            if btn == Buttons.JOY_Right or btn == Buttons.JOY_Down:
+                self._select_next_build_candidate(candidates)
 
     def _move_robber(self, h_current, direction):
         coords = Hex.get_neighbouring_hex_coords(h_current.coords, direction)
         h_next = self.get_hex_for_coords(coords)
         self.move_robber(h_current, h_next)
+        self.redraw = True
+
+    def _select_prev_build_candidate(self, candidates):
+        if len(candidates) > 1:
+            for i in range(len(candidates)):
+                if candidates[i].selected:
+                    candidates[i].set_selection(False)
+                    if i == 0:
+                        candidates[len(candidates) - 1].set_selection(True)
+                    else:
+                        candidates[i - 1].set_selection(True)
+                    break
+        self.redraw = True
+
+    def _select_next_build_candidate(self, candidates):
+        if len(candidates) > 1:
+            for i in range(len(candidates)):
+                if candidates[i].selected:
+                    candidates[i].set_selection(False)
+                    if i == len(candidates) - 1:
+                        candidates[0].set_selection(True)
+                    else:
+                        candidates[i + 1].set_selection(True)
+                    break
         self.redraw = True
 
     def get_robber_hex(self):
@@ -969,7 +1072,7 @@ class GameBoard(State):
             to_hex.set_highlight(True)
 
     def next_player(self):
-        """ Call from the state machine to reset the board for the next player"""
+        """Called from the state machine to reset the board for the next player"""
         for i in range(len(self.players)):
             if self.player == self.players[i]:
                 if i + 1 == len(self.players):
@@ -981,6 +1084,20 @@ class GameBoard(State):
         self.dice.reset()
         for h in self.hexes:
             h.set_highlight(False)
+
+    def build_mode(self, mode, cost):
+        """Called from the state machine to enter building selection mode"""
+        if mode == GameBoard.ROAD_MODE:
+            candidates = self.player.build_road_candidates()
+        if mode == GameBoard.TOWN_MODE:
+            candidates = self.player.build_town_candidates()
+        if mode == GameBoard.CITY_MODE:
+            candidates = self.player.build_city_candidates()
+        if candidates:
+            candidates[0].set_selection(True)
+            self.interactive_mode = mode
+            self.build_cost = cost
+        # TODO tell user there are no valid candidates
 
 
 class Settlers:
@@ -1058,7 +1175,15 @@ class Settlers:
                 x = menu.run()
                 if x == BuildMenu.BACK:
                     self.enter_state(Settlers.ACTION_MENU)
-                # TODO initiate building a thing
+                else:
+                    choice = menu.get_selected_choice()
+                    if x == BuildMenu.ROAD:
+                        self.game.build_mode(GameBoard.ROAD_MODE, choice['cost'])
+                    if x == BuildMenu.TOWN:
+                        self.game.build_mode(GameBoard.TOWN_MODE, choice['cost'])
+                    if x == BuildMenu.CITY:
+                        self.game.build_mode(GameBoard.CITY_MODE, choice['cost'])
+                    self.enter_state(Settlers.GAME)
 
             elif self.state == Settlers.ACTION_TRADE_MENU:
                 menu = TradeMenu(self.game.player.resources)
