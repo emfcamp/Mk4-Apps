@@ -483,31 +483,41 @@ class Hex:
                     ugfx.text(round(self.centre[0] - text_offset), round(self.centre[1] - text_offset), "{} ".format(self.number['roll']), text_colour)
 
 
-class Settlement:
-    """A node at which it is possible to build a settlement."""
+class Selectable:
 
-    # Possible things this location may contain, the values here are the number of
-    # victory points that the building is worth to the player who built it
     EMPTY = 0
-    TOWN = 1
-    CITY = 2
 
-    def __init__(self, node):
-        # Screen coords that define the settlement
-        self.node = node
+    def __init__(self, data):
+        # Screen coords that define the selectable object
+        self.data = data
 
-        # The list of hexes to which this settlement is adjacent
+        # The list of hexes next to which this selectable object is adjacent
         self.hexes = []
 
         # What is built here and who owns it
         self.team = None
-        self.contents = Settlement.EMPTY
+        self.contents = Selectable.EMPTY
 
         # Whether to draw selection indicator
         self.selected = False
 
     def is_empty(self):
-        return self.contents == Settlement.EMPTY
+        return self.contents == Selectable.EMPTY
+
+    def set_selection(self, selected):
+        self.selected = selected
+        # Notify the surrounding hexes that they need to redraw themselves
+        for h in self.hexes:
+            h.changed = True
+
+
+class Settlement(Selectable):
+    """A node at which it is possible to build a settlement."""
+
+    # Possible things this location may contain, the values here are the number of
+    # victory points that the building is worth to the player who built it
+    TOWN = 1
+    CITY = 2
 
     def prob_score(self):
         """The probability score of the location is the sum of the probability of all adjacent hexes"""
@@ -517,7 +527,7 @@ class Settlement:
         return score
 
     def build_town(self, team):
-        assert self.contents == Settlement.EMPTY, 'Town can only be built in empty location'
+        assert self.contents == Selectable.EMPTY, 'Town can only be built in empty location'
         self.team = team
         self.contents = Settlement.TOWN
 
@@ -525,51 +535,58 @@ class Settlement:
         assert self.contents == Settlement.TOWN and self.team['name'] == team['name'], 'City can only be built in place of one of your own towns'
         self.contents = Settlement.CITY
 
-    def set_selection(self, selected):
-        self.selected = selected
-        # Notify the surrounding hexes that they need to redraw themselves
-        for h in self.hexes:
-            h.changed = True
-
     def draw(self):
         if self.contents == Settlement.TOWN:
-            ugfx.fill_circle(self.node[0], self.node[1], 4, self.team['colour'])
-            ugfx.circle(self.node[0], self.node[1], 4, ugfx.WHITE)
+            ugfx.fill_circle(self.data[0], self.data[1], 4, self.team['colour'])
+            ugfx.circle(self.data[0], self.data[1], 4, ugfx.WHITE)
         elif self.contents == Settlement.CITY:
-            ugfx.fill_circle(self.node[0], self.node[1], 8, self.team['colour'])
-            ugfx.circle(self.node[0], self.node[1], 8, ugfx.WHITE)
+            ugfx.fill_circle(self.data[0], self.data[1], 8, self.team['colour'])
+            ugfx.circle(self.data[0], self.data[1], 8, ugfx.WHITE)
         # A selection highlight
         if self.selected:
-            ugfx.circle(self.node[0], self.node[1], 11, ugfx.WHITE)
-            ugfx.circle(self.node[0], self.node[1], 10, ugfx.WHITE)
+            # We can't draw circle primitives with thick lines, so need to draw it twice
+            ugfx.circle(self.data[0], self.data[1], 10, ugfx.WHITE)
+            ugfx.circle(self.data[0], self.data[1], 9, ugfx.WHITE)
 
 
-class Road:
+class Road(Selectable):
     """An edge along which it is possible to build a road."""
 
-    EMPTY = 0
     ROAD = 1
 
-    def __init__(self, edge):
-        # List of screen coords that define the road
-        self.edge = edge
-
-        # What is built here and who owns it
-        self.team = None
-        self.contents = Road.EMPTY
-
-    def is_empty(self):
-        return self.contents == Road.EMPTY
-
     def build_road(self, team):
-        assert self.contents == Road.EMPTY, 'Road can only be built in empty location'
+        assert self.contents == Selectable.EMPTY, 'Road can only be built in empty location'
         self.team = team
         self.contents = Road.ROAD
 
     def draw(self):
+        x0, y0 = (self.data[0][0], self.data[0][1])
+        x1, y1 = (self.data[1][0], self.data[1][1])
         if self.contents == Road.ROAD:
-            ugfx.thickline(self.edge[0][0], self.edge[0][1], self.edge[1][0], self.edge[1][1], ugfx.WHITE, 6, False)
-            ugfx.thickline(self.edge[0][0], self.edge[0][1], self.edge[1][0], self.edge[1][1], self.team['colour'], 4, False)
+            ugfx.thickline(x0, y0, x1, y1, ugfx.WHITE, 6, False)
+            ugfx.thickline(x0, y0, x1, y1, self.team['colour'], 4, False)
+        # A selection highlight
+        if self.selected:
+            # We can't draw a rectangle at an angle, so lets calculate the points for an
+            # appropriate polygon manually for drawing the selection box...
+
+            # Get the vector and a normal, we'll use the magnitude of the normal for the
+            # width of the selection box, so make it half the size for a long narrow box
+            vx, vy = (x1 - x0, y1 - y0)
+            nx, ny = (int(vy / 2), -(int(vx / 2)))
+
+            # Draw with an origin that is offset by half the width of the box to straddle
+            # the two adjacent hexes
+            x = x0 - int(nx / 2)
+            y = y0 - int(ny / 2)
+
+            # It would be more efficient to call polygon directly like this:
+            #   ugfx.polygon(x, y, [[0, 0], [nx, ny], [vx + nx, vy + ny], [vx, vy]], ugfx.WHITE)
+            # But we can't draw polygon primitives with thick lines, so draw them individually
+            ugfx.thickline(x, y, x + nx, y + ny, ugfx.WHITE, 2, False)
+            ugfx.thickline(x + nx, y + ny, x + nx + vx, y + ny + vy, ugfx.WHITE, 2, False)
+            ugfx.thickline(x + nx + vx, y + ny + vy, x + vx, y + vy, ugfx.WHITE, 2, False)
+            ugfx.thickline(x + vx, y + vy, x, y, ugfx.WHITE, 2, False)
 
 
 class Resource():
@@ -665,21 +682,30 @@ class Player:
     def build_road_candidates(self):
         """Return the list of all roads that are valid candidates for building"""
         candidates = []
-        # TODO
+        # Road segments that belong to us
+        for r in [x for x in self.roads if x.team == self.team]:
+            # Settlement spaces that these road segments connect
+            for s in [x for x in self.settlements if x.data in r.data]:
+                # Empty road segments connecting those settlement spaces
+                for road in [x for x in self.roads if x.is_empty() and s.data in x.data]:
+                    candidates.append(road)
         return candidates
 
     def build_town_candidates(self):
         """Return the list of all settlements that are valid candidates for towns to be built"""
         candidates = []
-        # TODO
+        for s in self.settlements:
+            # TODO it's way more complex than this...
+            if s.is_empty():
+                candidates.append(s)
         return candidates
 
     def build_city_candidates(self):
         """Return the list of all settlements that are valid candidates for being upgraded to city"""
         candidates = []
-        for s in [x for x in self.settlements if x.team == self.team]:
-            if s.contents == Settlement.TOWN:
-                candidates.append(s)
+        # Settlement spaces that belong to us and contain a town
+        for s in [x for x in self.settlements if x.team == self.team and x.contents == Settlement.TOWN]:
+            candidates.append(s)
         return candidates
 
     def draw(self):
@@ -844,15 +870,17 @@ class GameBoard(State):
             for edge in h.edges:
                 already_got = False
                 for r in self.roads:
-                    if r.edge == edge:
+                    if r.data == edge:
                         already_got = True
+                        r.hexes.append(h)
                 if not already_got:
                     r = Road(edge)
+                    r.hexes.append(h)
                     self.roads.append(r)
             for node in h.nodes:
                 already_got = False
                 for s in self.settlements:
-                    if s.node == node:
+                    if s.data == node:
                         already_got = True
                         s.hexes.append(h)
                 if not already_got:
@@ -882,7 +910,7 @@ class GameBoard(State):
         """Return a list of roads that connect to the given settlement"""
         roads = []
         for road in self.roads:
-            if settlement.node in road.edge:
+            if settlement.data in road.data:
                 roads.append(road)
         return roads
 
@@ -890,9 +918,9 @@ class GameBoard(State):
         """Determines if a given settlement is at least two roads from any other settlement"""
         for r in self.get_roads_for_settlement(settlement):
             # Get coords for the settlement at the other end of the road
-            for coords in r.edge:
+            for coords in r.data:
                 for s in self.settlements:
-                    if s.node == coords and s != settlement:
+                    if s.data == coords and s != settlement:
                         if not s.is_empty():
                             return False
         return True
@@ -979,7 +1007,7 @@ class GameBoard(State):
                     # Activate the robber on a seven
                     if num == 7:
                         self.interactive_mode = GameBoard.ROBBER_MODE
-                        # TODO give user hint about moving the robber
+                        # TODO: give user hint about moving the robber
                     self.redraw = True
         elif self.interactive_mode == GameBoard.ROBBER_MODE:
             h_current = self.get_robber_hex()
@@ -991,7 +1019,7 @@ class GameBoard(State):
                     self.interactive_mode = None
                     self.redraw = True
                     # TODO: Steal a card from a player at this hex
-                # TODO tell user that the robber must move
+                # TODO: tell user that the robber must move
             if btn == Buttons.JOY_Up:
                 self._move_robber(h_current, 4)
             if btn == Buttons.JOY_Down:
@@ -1000,27 +1028,27 @@ class GameBoard(State):
                 self._move_robber(h_current, 0 if h_current.coords[0] % 2 == 0 else 5)
             if btn == Buttons.JOY_Right:
                 self._move_robber(h_current, 2 if h_current.coords[0] % 2 == 0 else 3)
-        elif self.interactive_mode == GameBoard.ROAD_MODE:
-            # TODO implement road building
-            pass
-        elif self.interactive_mode == GameBoard.TOWN_MODE:
-            # TODO implement town building
-            pass
-        elif self.interactive_mode == GameBoard.CITY_MODE:
-            candidates = self.player.build_city_candidates()
+        elif self.interactive_mode in (GameBoard.ROAD_MODE, GameBoard.TOWN_MODE, GameBoard.CITY_MODE):
             if btn == Buttons.BTN_A:
-                # Upgrade the selected settlement to a city
-                for candidate in candidates:
+                for candidate in self.build_candidates:
                     if candidate.selected:
-                        candidate.build_city(self.player.team)
+                        # Build a town on the selected settlement
+                        if self.interactive_mode == GameBoard.ROAD_MODE:
+                            candidate.build_road(self.player.team)
+                        # Build a town on the selected settlement
+                        if self.interactive_mode == GameBoard.TOWN_MODE:
+                            candidate.build_town(self.player.team)
+                        # Upgrade a town on the selected settlement to a city
+                        if self.interactive_mode == GameBoard.CITY_MODE:
+                            candidate.build_city(self.player.team)
                         candidate.set_selection(False)
                 self.player.pay(self.build_cost)
                 self.interactive_mode = None
                 self.redraw = True
             if btn == Buttons.JOY_Left or btn == Buttons.JOY_Up:
-                self._select_prev_build_candidate(candidates)
+                self._select_prev_build_candidate(self.build_candidates)
             if btn == Buttons.JOY_Right or btn == Buttons.JOY_Down:
-                self._select_next_build_candidate(candidates)
+                self._select_next_build_candidate(self.build_candidates)
 
     def _move_robber(self, h_current, direction):
         coords = Hex.get_neighbouring_hex_coords(h_current.coords, direction)
@@ -1088,16 +1116,16 @@ class GameBoard(State):
     def build_mode(self, mode, cost):
         """Called from the state machine to enter building selection mode"""
         if mode == GameBoard.ROAD_MODE:
-            candidates = self.player.build_road_candidates()
+            self.build_candidates = self.player.build_road_candidates()
         if mode == GameBoard.TOWN_MODE:
-            candidates = self.player.build_town_candidates()
+            self.build_candidates = self.player.build_town_candidates()
         if mode == GameBoard.CITY_MODE:
-            candidates = self.player.build_city_candidates()
-        if candidates:
-            candidates[0].set_selection(True)
-            self.interactive_mode = mode
+            self.build_candidates = self.player.build_city_candidates()
+        if self.build_candidates:
+            self.build_candidates[0].set_selection(True)
             self.build_cost = cost
-        # TODO tell user there are no valid candidates
+            self.interactive_mode = mode
+        # TODO: tell user there are no valid candidates
 
 
 class Settlers:
