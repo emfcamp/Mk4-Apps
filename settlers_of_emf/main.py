@@ -688,7 +688,8 @@ class Player:
             for s in [x for x in self.settlements if x.data in r.data]:
                 # Empty road segments connecting those settlement spaces
                 for road in [x for x in self.roads if x.is_empty() and s.data in x.data]:
-                    candidates.append(road)
+                    if road not in candidates:
+                        candidates.append(road)
         return candidates
 
     def build_town_candidates(self):
@@ -1032,7 +1033,7 @@ class GameBoard(State):
             if btn == Buttons.BTN_A:
                 for candidate in self.build_candidates:
                     if candidate.selected:
-                        # Build a town on the selected settlement
+                        # Build a road on the selected road segment
                         if self.interactive_mode == GameBoard.ROAD_MODE:
                             candidate.build_road(self.player.team)
                         # Build a town on the selected settlement
