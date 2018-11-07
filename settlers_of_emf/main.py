@@ -250,7 +250,7 @@ class TeamMenu(Menu):
          'colour': ugfx.html_color(0x0000ff)},
         {'name': "Camp Holland",
          'colour': ugfx.html_color(0xff8c00)},
-        {'name': "Sheffield Hackers",
+        {'name': "Sheffield Hackspace",
          'colour': ugfx.html_color(0x26c6da)},
         {'name': "Milliways",
          'colour': ugfx.html_color(0xff00ff)},
@@ -621,12 +621,6 @@ class Player:
             r = Resource(kind)
             self.resources.append(r)
 
-            # Collect starting resources from the hexes adjacent to our starting settlements
-            for s in [x for x in self.settlements if x.team == self.team]:
-                for h in s.hexes:
-                    if r.resource == h.resource:
-                        r.increment()
-
         # Turn number
         self.turn = 0
 
@@ -642,6 +636,16 @@ class Player:
     def num_resources(self):
         """Total number of all resources the player has"""
         return sum([x.quantity for x in self.resources])
+
+    def collect_starting(self):
+        """Execute resource collection for our starting towns"""
+        # Find the hexes adjacent to our settlements
+        for s in [x for x in self.settlements if x.team == self.team]:
+            for h in s.hexes:
+                # Increment the appropriate resource
+                for r in self.resources:
+                    if r.resource == h.resource:
+                        r.increment()
 
     def collect(self, num):
         """Execute resource collection or loss for a given dice roll"""
@@ -692,13 +696,28 @@ class Player:
                         candidates.append(road)
         return candidates
 
+    def can_build_town_at(self, settlement):
+        """Determines whether a town can be built at the given settlement according to proximity rules"""
+        # Find the road segments connecting the given settlement
+        for road in [x for x in self.roads if settlement.data in x.data]:
+            # Get adjacent settlements (those at the other end of the road segments)
+            for s in [x for x in self.settlements if x.data in road.data and x != settlement]:
+                # If all adjacent settlements are empty, it means that we are at least two road
+                # segments from any other built settlement, which is the required distance
+                if not s.is_empty():
+                    return False
+        return True
+
     def build_town_candidates(self):
         """Return the list of all settlements that are valid candidates for towns to be built"""
         candidates = []
-        for s in self.settlements:
-            # TODO it's way more complex than this...
-            if s.is_empty():
-                candidates.append(s)
+        # Road segments that belong to us
+        for r in [x for x in self.roads if x.team == self.team]:
+            # Empty settlement spaces at each end of the road segments
+            for s in [x for x in self.settlements if x.is_empty() and x.data in r.data]:
+                # Settlement is a candidate if we can build there
+                if self.can_build_town_at(s) and s not in candidates:
+                    candidates.append(s)
         return candidates
 
     def build_city_candidates(self):
@@ -893,16 +912,20 @@ class GameBoard(State):
         # with the highest probability score that not already taken
         # Each team gets a settlement in player order, then again but in reverse, so the last
         # player gets the first pick of the second settlements
-        for team in teams:
-            self.pick_starting_settlement(team)
-        teams.reverse()
-        for team in teams:
-            self.pick_starting_settlement(team)
-        teams.reverse()
         self.players = []
         for team in teams:
             self.players.append(Player(team, self.roads, self.settlements))
         self.player = self.players[-1]
+        for team in teams:
+            self.pick_starting_settlement(team)
+        teams.reverse()
+        for team in teams:
+            self.pick_starting_settlement(team)
+        teams.reverse()
+
+        # Each player can now collect their starting resources
+        for p in self.players:
+            p.collect_starting()
 
         # The dice roller
         self.dice = Dice()
@@ -915,17 +938,6 @@ class GameBoard(State):
                 roads.append(road)
         return roads
 
-    def can_build_settlement(self, settlement):
-        """Determines if a given settlement is at least two roads from any other settlement"""
-        for r in self.get_roads_for_settlement(settlement):
-            # Get coords for the settlement at the other end of the road
-            for coords in r.data:
-                for s in self.settlements:
-                    if s.data == coords and s != settlement:
-                        if not s.is_empty():
-                            return False
-        return True
-
     def pick_starting_settlement(self, team):
         """Choose a starting settlement for the given team, and place a town and a connecting road there"""
 
@@ -935,7 +947,7 @@ class GameBoard(State):
 
         # Build at the highest probability settlement that is still available
         for s in sorted_settlements:
-            if s.is_empty() and self.can_build_settlement(s):
+            if s.is_empty() and self.player.can_build_town_at(s):
                 s.build_town(team)
                 s_roads = self.get_roads_for_settlement(s)
                 s_roads[random.randrange(0, len(s_roads))].build_road(team)
@@ -1221,8 +1233,8 @@ class Settlers:
                     self.enter_state(Settlers.ACTION_MENU)
                 else:
                     trade_choice = menu.get_selected_choice()
-                    # TODO ask user which resource to trade when they have >= 4 of more than one kind of resource
-                    # TODO for now, just trade the first one in the cost list
+                    # TODO: ask user which resource to trade when they have >= 4 of more than one kind of resource
+                    # TODO: for now, just trade the first one in the cost list
                     cost = trade_choice['cost'][0]
                     self.game.player.trade(trade_choice['resource'], cost['resource'], cost['amount'])
                     self.enter_state(Settlers.GAME)
@@ -1232,6 +1244,8 @@ class Settlers:
                 menu = NextPlayer(self.game.player.team)
                 menu.run()
                 self.enter_state(Settlers.GAME)
+
+        # TODO: Game over!
 
         # User chose exit, a machine reset is the easiest way :-)
         restart_to_default()
