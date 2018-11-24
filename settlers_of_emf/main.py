@@ -42,6 +42,11 @@ ORE = {'kind':4, 'col': ugfx.html_color(0x757575)}
 DESERT = {'kind':5, 'col': ugfx.html_color(0xffee55)}  # Not really a resource
 RESOURCE_KINDS = [ SHEEP, WHEAT, WOOD, BRICK, ORE ]
 
+# Set this to true to enable a "cheat code" to get more resources for testing
+# When in the main game running state, press 5 five times to get five more of
+# every resource
+TEST_MODE = False
+
 
 class State:
 
@@ -89,6 +94,7 @@ class Menu(State):
             self.menu_offset = 120
         else:
             self.menu_offset = 100
+        self.back = -1
 
     def is_choice_enabled(self, num):
         c = self.choices[num]
@@ -129,7 +135,11 @@ class Menu(State):
         if len(self.choices) == 1:
             text = "{} ".format(c['name'])
         else:
-            text = "{} - {} ".format(i + 1, c['name'])
+            if c['name'] == "Back":
+                text = "B - {} ".format(c['name'])
+                self.back = i
+            else:
+                text = "{} - {} ".format(i + 1, c['name'])
         ugfx.text(18, offset + self.menu_offset, text, col)
         if 'cost' in c:
             for j in range(len(c['cost'])):
@@ -147,6 +157,7 @@ class Menu(State):
     def initialise(self):
         # Register callbacks
         Buttons.enable_interrupt(Buttons.BTN_A, self._button_callback)
+        Buttons.enable_interrupt(Buttons.BTN_B, self._button_callback)
         Buttons.enable_interrupt(Buttons.JOY_Up, self._button_callback)
         Buttons.enable_interrupt(Buttons.JOY_Down, self._button_callback)
         for i in range(len(self.choices)):
@@ -156,6 +167,7 @@ class Menu(State):
     def deinitialise(self):
         # Unregister callbacks
         Buttons.disable_interrupt(Buttons.BTN_A)
+        Buttons.disable_interrupt(Buttons.BTN_B)
         Buttons.disable_interrupt(Buttons.JOY_Up)
         Buttons.disable_interrupt(Buttons.JOY_Down)
         for i in range(len(self.choices)):
@@ -165,6 +177,10 @@ class Menu(State):
     def _button_callback(self, btn):
         if btn == Buttons.BTN_A:
             self.done = True
+        elif btn == Buttons.BTN_B:
+            if self.back > -1:
+                self._set_selection(self.back)
+                self.done = True
         else:
             if btn == Buttons.JOY_Up:
                 new_selection = self._prev_valid_selection(self.selection)
@@ -283,13 +299,15 @@ class ActionMenu(Menu):
         {'name': "Build"},
         {'name': "Trade"},
         {'name': "End Turn"},
+        {'name': "Exit Game"},
         {'name': "Back"},
         ]
 
     BUILD = 0
     TRADE = 1
     END_TURN = 2
-    BACK = 3
+    EXIT_GAME = 3
+    BACK = 4
 
     def __init__(self, dice_roll, clear_title=True):
         # Rolling the dice is mandatory, so don't let the turn end unless it happened
@@ -607,6 +625,13 @@ class Resource():
 class Player:
     """The player's hand of resource cards and their score and what not."""
 
+    STATUS_ACTIONS_DICE = "menu = actions / # = roll dice "
+    STATUS_ACTIONS = "menu = actions "
+    STATUS_MOVE_ROBBER = "Move the robber! "
+    STATUS_MUST_MOVE_ROBBER = "Robber MUST be moved! "
+    STATUS_BUILD = "Select a build location. "
+    STATUS_NO_BUILD = "No valid build locations. "
+
     def __init__(self, team, roads, settlements):
         # Player team details
         self.team = team
@@ -623,6 +648,7 @@ class Player:
 
         # Turn number
         self.turn = 0
+        self.status = Player.STATUS_ACTIONS_DICE
 
     def score(self):
         points = 0
@@ -632,6 +658,7 @@ class Player:
 
     def increment_turn(self):
         self.turn = self.turn + 1
+        self.status = Player.STATUS_ACTIONS_DICE
 
     def num_resources(self):
         """Total number of all resources the player has"""
@@ -737,8 +764,13 @@ class Player:
         ugfx.text(5, 28, "Points: {} ".format(self.score()), ugfx.WHITE)
         ugfx.text(5, 48, "Turn: {} ".format(self.turn), ugfx.WHITE)
 
+        # Blank out the status/resource area
+        ugfx.area(0, 275, 240, 50, ugfx.BLACK)
+
+        # Status line
+        ugfx.text(5, 275, self.status, ugfx.WHITE)
+
         # Player's resources
-        ugfx.area(0, 290, 240, 30, ugfx.BLACK)
         offset = int(ugfx.width() / len(self.resources))
         square = int(offset / 3)
         for i in range(len(self.resources)):
@@ -806,8 +838,7 @@ class Dice:
 
 
 class GameBoard(State):
-    MAIN_MENU = 0
-    ACTION_MENU = 1
+    MENU = 0
 
     # List of resources (pre-randomised to combat the not-very random number
     # generator) that make up the hexes on the game board for 4 players
@@ -930,6 +961,9 @@ class GameBoard(State):
         # The dice roller
         self.dice = Dice()
 
+        # Cheat code counter
+        self.cheat = 0
+
     def get_roads_for_settlement(self, settlement):
         """Return a list of roads that connect to the given settlement"""
         roads = []
@@ -970,26 +1004,28 @@ class GameBoard(State):
         Buttons.enable_interrupt(Buttons.BTN_Menu, self._button_callback)
         Buttons.enable_interrupt(Buttons.BTN_A, self._button_callback)
         Buttons.enable_interrupt(Buttons.BTN_B, self._button_callback)
-        Buttons.enable_interrupt(Buttons.BTN_Star, self._button_callback)
         Buttons.enable_interrupt(Buttons.BTN_Hash, self._button_callback)
         # For moving the robber and building selections
         Buttons.enable_interrupt(Buttons.JOY_Up, self._button_callback)
         Buttons.enable_interrupt(Buttons.JOY_Down, self._button_callback)
         Buttons.enable_interrupt(Buttons.JOY_Left, self._button_callback)
         Buttons.enable_interrupt(Buttons.JOY_Right, self._button_callback)
+        # Cheat code button
+        Buttons.enable_interrupt(Buttons.BTN_5, self._button_callback)
 
     def deinitialise(self):
         # Unregister callbacks
         Buttons.disable_interrupt(Buttons.BTN_Menu)
         Buttons.disable_interrupt(Buttons.BTN_A)
         Buttons.disable_interrupt(Buttons.BTN_B)
-        Buttons.disable_interrupt(Buttons.BTN_Star)
         Buttons.disable_interrupt(Buttons.BTN_Hash)
         # For moving the robber and building selections
         Buttons.disable_interrupt(Buttons.JOY_Up)
         Buttons.disable_interrupt(Buttons.JOY_Down)
         Buttons.disable_interrupt(Buttons.JOY_Left)
         Buttons.disable_interrupt(Buttons.JOY_Right)
+        # Cheat code button
+        Buttons.disable_interrupt(Buttons.BTN_5)
 
         # Ensure all hexes are drawn next time we enter this state
         for h in self.hexes:
@@ -998,10 +1034,7 @@ class GameBoard(State):
     def _button_callback(self, btn):
         if not self.interactive_mode:
             if btn == Buttons.BTN_Menu:
-                self.selection = GameBoard.MAIN_MENU
-                self.done = True
-            if btn == Buttons.BTN_Star:
-                self.selection = GameBoard.ACTION_MENU
+                self.selection = GameBoard.MENU
                 self.done = True
             if btn == Buttons.BTN_Hash:
                 # Only roll the dice if not already rolled
@@ -1020,19 +1053,31 @@ class GameBoard(State):
                     # Activate the robber on a seven
                     if num == 7:
                         self.interactive_mode = GameBoard.ROBBER_MODE
-                        # TODO: give user hint about moving the robber
+                        self.player.status = Player.STATUS_MOVE_ROBBER
+                    else:
+                        self.player.status = Player.STATUS_ACTIONS
+                    self.redraw = True
+            # Cheat code to get more resources for testing
+            if btn == Buttons.BTN_5 and TEST_MODE:
+                self.cheat = self.cheat + 1
+                if self.cheat == 5:
+                    self.cheat = 0
+                    for r in self.player.resources:
+                        r.increment(5)
                     self.redraw = True
         elif self.interactive_mode == GameBoard.ROBBER_MODE:
             h_current = self.get_robber_hex()
             if btn == Buttons.BTN_A:
+                self.redraw = True
                 # The robber may not stay in the same hex, ensure it moved
                 if h_current != self.robber_hex:
                     self.robber_hex = h_current
                     self.robber_hex.set_highlight(False)
                     self.interactive_mode = None
-                    self.redraw = True
+                    self.player.status = Player.STATUS_ACTIONS
                     # TODO: Steal a card from a player at this hex
-                # TODO: tell user that the robber must move
+                else:
+                    self.player.status = Player.STATUS_MUST_MOVE_ROBBER
             if btn == Buttons.JOY_Up:
                 self._move_robber(h_current, 4)
             if btn == Buttons.JOY_Down:
@@ -1058,6 +1103,10 @@ class GameBoard(State):
                 self.player.pay(self.build_cost)
                 self.interactive_mode = None
                 self.redraw = True
+                if self.dice.total():
+                    self.player.status = Player.STATUS_ACTIONS
+                else:
+                    self.player.status = Player.STATUS_ACTIONS_DICE
             if btn == Buttons.JOY_Left or btn == Buttons.JOY_Up:
                 self._select_prev_build_candidate(self.build_candidates)
             if btn == Buttons.JOY_Right or btn == Buttons.JOY_Down:
@@ -1138,7 +1187,9 @@ class GameBoard(State):
             self.build_candidates[0].set_selection(True)
             self.build_cost = cost
             self.interactive_mode = mode
-        # TODO: tell user there are no valid candidates
+            self.player.status = Player.STATUS_BUILD
+        else:
+            self.player.status = Player.STATUS_NO_BUILD
 
 
 class Settlers:
@@ -1194,9 +1245,7 @@ class Settlers:
 
             elif self.state == Settlers.GAME:
                 x = self.game.run()
-                if x == GameBoard.MAIN_MENU:
-                    self.enter_state(Settlers.MAIN_MENU)
-                if x == GameBoard.ACTION_MENU:
+                if x == GameBoard.MENU:
                     self.enter_state(Settlers.ACTION_MENU)
 
             elif self.state == Settlers.ACTION_MENU:
@@ -1208,6 +1257,8 @@ class Settlers:
                     self.enter_state(Settlers.ACTION_TRADE_MENU)
                 if x == ActionMenu.END_TURN:
                     self.enter_state(Settlers.ACTION_END_TURN)
+                if x == ActionMenu.EXIT_GAME:
+                    self.enter_state(Settlers.MAIN_MENU)
                 if x == ActionMenu.BACK:
                     self.enter_state(Settlers.GAME)
 
