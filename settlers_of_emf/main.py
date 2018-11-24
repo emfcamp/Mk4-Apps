@@ -91,7 +91,11 @@ class Menu(State):
         self.choices = choices
         self.clear_title = clear_title
         if self.question:
-            self.menu_offset = 120
+            if isinstance(self.question, list):
+                self.menu_offset = 100 + (20 * len(self.question))
+            else:
+                self.question = [question]
+                self.menu_offset = 120
         else:
             self.menu_offset = 100
         self.back = -1
@@ -111,7 +115,8 @@ class Menu(State):
         else:
             ugfx.area(0, 95, 240, 225, ugfx.BLACK)
         if self.question:
-            ugfx.text(5, 95, self.question, ugfx.WHITE)
+            for i in range(len(self.question)):
+                ugfx.text(2, 95 + (i * 20), self.question[i], ugfx.WHITE)
         offset = 0
         for i in range(len(self.choices)):
             self._draw_choice(i, offset)
@@ -381,6 +386,12 @@ class NextPlayer(Menu):
 
     def __init__(self, team):
         super().__init__('Pass the badge to next team:', [team], False)
+
+
+class GameOver(Menu):
+
+    def __init__(self, team):
+        super().__init__(['Game over!', 'Congrats to the winning team:'], [team], False)
 
 
 class Hex:
@@ -1219,7 +1230,7 @@ class Settlers:
         while self.state != Settlers.EXIT:
 
             if self.state == Settlers.MAIN_MENU:
-                menu = MainMenu(self.game is None, self.old_state != Settlers.TEAM_MENU)
+                menu = MainMenu(self.game is None, self.old_state != Settlers.TEAM_MENU and self.old_state != Settlers.ACTION_END_TURN)
                 x = menu.run()
                 if x == MainMenu.NEW_GAME:
                     self.teams = []
@@ -1291,12 +1302,16 @@ class Settlers:
                     self.enter_state(Settlers.GAME)
 
             elif self.state == Settlers.ACTION_END_TURN:
-                self.game.next_player()
-                menu = NextPlayer(self.game.player.team)
-                menu.run()
-                self.enter_state(Settlers.GAME)
-
-        # TODO: Game over!
+                if self.game.player.score() >= 10:
+                    menu = GameOver(self.game.player.team)
+                    menu.run()
+                    self.game = None
+                    self.enter_state(Settlers.MAIN_MENU)
+                else:
+                    self.game.next_player()
+                    menu = NextPlayer(self.game.player.team)
+                    menu.run()
+                    self.enter_state(Settlers.GAME)
 
         # User chose exit, a machine reset is the easiest way :-)
         restart_to_default()
