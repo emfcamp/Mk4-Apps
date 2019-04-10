@@ -19,9 +19,8 @@ They also *may*:
 ___license___      = "MIT"
 ___dependencies___ = ["database", "buttons", "app", "sleep", "ugfx_helper", "wifi", "sim800"]
 
-import database, ugfx, random, buttons, tilda, sleep, ugfx_helper, wifi, time, sim800
+import database, ugfx, random, buttons, tilda, sleep, ugfx_helper, wifi, time, sim800, machine, math
 from app import App
-
 _state = None
 def init(enable_menu_button = True):
     global _state
@@ -58,6 +57,11 @@ def sleep_or_exit(interval = 0.5):
         except OSError:
             pass
         App(launcher).boot()
+
+    # Adjust backlight to save power
+    backlight = max(min(tilda.Sensors.get_lux(), 99), 1)
+    machine.PWM(machine.PWM.PWM_LCDBL).duty(math.floor(backlight))
+
     sleep.sleep(interval)
 
 
