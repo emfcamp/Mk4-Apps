@@ -1,5 +1,4 @@
 """App that estimates time until the ISS next passes over head.
-Currently hardcoded lat/lon to Eastnor Deer Park.
 
 Influenced by EMF Beer. As all things should be.
 """
@@ -19,15 +18,7 @@ def get_data(api_url):
     try:
         data_json = http.get(api_url).raise_for_status().content
         data = ujson.loads(data_json)
-        if iss['message'] == "success":
-            LED(LED.GREEN).on()
-        elif iss['message'] == "failure":
-            LED(LED.RED).on()
-            ugfx.clear(ugfx.BLACK)
-            ugfx.text(5, 5, str(iss['reason']), ugfx.RED)
-            return
-        else:
-            LED(LED.RED).on()
+        LED(LED.GREEN).on()
     except: 
         print('Something has gone wrong')
 
@@ -64,8 +55,8 @@ def get_wait(time1, time2):
 
 def draw_screen():
     loc_data = get_data("https://freegeoip.app/json/")
-    lat = loc_data["latitude"]
-    lon = loc_data["longitude"]
+    lat = str(loc_data["latitude"])
+    lon = str(loc_data["longitude"])
     city = loc_data["city"]
     country = loc_data["country_name"]
     iss_data = get_data("http://api.open-notify.org/iss-pass.json?lat=" + lat + "&lon=" + lon)
@@ -77,9 +68,9 @@ def draw_screen():
         ugfx.clear(ugfx.BLACK)
         ugfx.text(5, 5, "When does the ISS next pass?", ugfx.WHITE)
         ugfx.line(5, 20, ugfx.width(), 20, ugfx.GREY)
-        ugfx.text(5, 35, "Location: " + str(city + ", " + country, ugfx.WHITE)
-        ugfx.text(5, 50, "Latitude: " + str(lat), ugfx.WHITE)
-        ugfx.text(5, 65, "Longitude: " + str(lon), ugfx.WHITE)
+        ugfx.text(5, 35, "Location: " + city + ", " + country, ugfx.WHITE)
+        ugfx.text(5, 50, "Latitude: " + lat, ugfx.WHITE)
+        ugfx.text(5, 65, "Longitude: " + lon, ugfx.WHITE)
         ugfx.text(5, 80, "Rise time: " + str(get_time(risetime)), ugfx.WHITE)
         ugfx.text(5, 95, "Duration: " + str(get_seconds(iss_data['response'][0]['duration'])), ugfx.WHITE)
         countdown +=1
