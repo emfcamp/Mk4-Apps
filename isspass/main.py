@@ -14,12 +14,11 @@ from tilda import Buttons, LED
 orientation = 270
 countdown = 0
 
-def get_data():
+def get_data(api_url):
     
     try:
-        api_url = "http://api.open-notify.org/iss-pass.json?lat=54.251790&lon=-7.169730"
-        iss_json = http.get(api_url).raise_for_status().content
-        iss = ujson.loads(iss_json)
+        data_json = http.get(api_url).raise_for_status().content
+        data = ujson.loads(data_json)
         if iss['message'] == "success":
             LED(LED.GREEN).on()
         elif iss['message'] == "failure":
@@ -32,7 +31,7 @@ def get_data():
     except: 
         print('Something has gone wrong')
 
-    return iss
+    return data
 
 def get_time(timestamp):
     convtime = utime.localtime(timestamp)
@@ -64,7 +63,12 @@ def get_wait(time1, time2):
     return wait
 
 def draw_screen():
-    iss_data = get_data()
+    loc_data = get_data("https://freegeoip.app/json/")
+    lat = loc_data["latitude"]
+    lon = loc_data["longitude"]
+    city = loc_data["city"]
+    country = loc_data["country_name"]
+    iss_data = get_data("http://api.open-notify.org/iss-pass.json?lat=" + lat + "&lon=" + lon)
     risetime = iss_data['response'][0]['risetime']
     datetime = iss_data['request']['datetime']
     countdown = datetime
@@ -73,10 +77,13 @@ def draw_screen():
         ugfx.clear(ugfx.BLACK)
         ugfx.text(5, 5, "When does the ISS next pass?", ugfx.WHITE)
         ugfx.line(5, 20, ugfx.width(), 20, ugfx.GREY)
-        ugfx.text(5, 35, "Rise time: " + str(get_time(risetime)), ugfx.WHITE)
-        ugfx.text(5, 50, "Duration: " + str(get_seconds(iss_data['response'][0]['duration'])), ugfx.WHITE)
+        ugfx.text(5, 35, "Location: " + str(city + ", " + country, ugfx.WHITE)
+        ugfx.text(5, 50, "Latitude: " + str(lat), ugfx.WHITE)
+        ugfx.text(5, 65, "Longitude: " + str(lon), ugfx.WHITE)
+        ugfx.text(5, 80, "Rise time: " + str(get_time(risetime)), ugfx.WHITE)
+        ugfx.text(5, 95, "Duration: " + str(get_seconds(iss_data['response'][0]['duration'])), ugfx.WHITE)
         countdown +=1
-        ugfx.text(5, 65, "Countdown: " + str(get_wait(risetime, countdown)), ugfx.WHITE)
+        ugfx.text(5, 110, "Countdown: " + str(get_wait(risetime, countdown)), ugfx.WHITE)
         utime.sleep(1)
     else:
         LED(LED.GREEN).on()
